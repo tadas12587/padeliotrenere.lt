@@ -2,7 +2,7 @@
 
 Padelio trenerio rezervacijų ir turinio valdymo sistema.
 
-**Stackas:** Next.js 16 · TypeScript · Prisma 7 · PostgreSQL · NextAuth.js v4 · Tailwind CSS v4 · Resend · Web Push
+**Stackas:** Next.js 16 · TypeScript · Prisma 7 · **MySQL/MariaDB** · NextAuth.js v4 · Tailwind CSS v4 · Resend · Web Push
 
 ---
 
@@ -12,15 +12,16 @@ Padelio trenerio rezervacijų ir turinio valdymo sistema.
 
 ```bash
 npm install
+npx prisma generate
 ```
 
 ### 2. Aplinkos kintamieji
 
-Sukurkite `.env` failą projekto šaknyje:
+Sukurkite `.env` failą projekto šaknyje (žr. `.env.example`):
 
 ```env
-# Duomenų bazė (PostgreSQL)
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/padeliotrenere"
+# Duomenų bazė (MySQL/MariaDB)
+DATABASE_URL="mysql://USER:PASSWORD@localhost:3306/padeliotrenere"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -35,7 +36,6 @@ RESEND_API_KEY=""
 EMAIL_FROM="noreply@padeliotrenere.lt"
 
 # Web Push VAPID raktai
-# Generuokite: npx web-push generate-vapid-keys
 VAPID_PUBLIC_KEY=""
 VAPID_PRIVATE_KEY=""
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=""
@@ -49,13 +49,15 @@ ADMIN_EMAIL="admin@padeliotrenere.lt"
 
 ### 3. Duomenų bazė
 
+Lokaliai paleiskite MySQL (pvz., su Docker):
+
 ```bash
-# Paleiskite PostgreSQL (pvz., su Docker)
-docker run -d --name pg -p 5432:5432 \
-  -e POSTGRES_DB=padeliotrenere \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  postgres:16-alpine
+docker run -d --name mysql -p 3306:3306 \
+  -e MYSQL_DATABASE=padeliotrenere \
+  -e MYSQL_USER=ptrenere \
+  -e MYSQL_PASSWORD=slapta \
+  -e MYSQL_ROOT_PASSWORD=root \
+  mysql:8.0
 
 # Prisma klientas + migracijos
 npx prisma generate
@@ -87,65 +89,39 @@ Pirmą kartą prisijungus su `ADMIN_EMAIL` adresu, paskyra automatiškai gaus `A
 
 ---
 
-## Diegimas į VPS
+## Diegimas į freehosting.lt
 
-### Reikalavimai
+### Reikalavimai (kartą)
 
-- Ubuntu 22.04+
-- Node.js 20+
-- PostgreSQL 15+
-- Nginx
-- PM2 (`npm install -g pm2`)
-- Certbot (Let's Encrypt SSL)
+1. Panelėje sukurkite MySQL duomenų bazę (Databases → MySQL)
+2. Panelėje įjunkite **Node.js BETA** (Settings → Node.js)
 
-### Pirmasis diegimas
+### Pirmas diegimas (iš savo kompiuterio)
 
 ```bash
-# Serverio paruošimas
-sudo apt update && sudo apt install -y nginx postgresql certbot python3-certbot-nginx
-npm install -g pm2
+# 1. Build + pakuoti + įkelti + išpakuoti serveryje
+bash scripts/deploy-freehosting.sh
 
-# Klonuokite repozitoriją
-sudo mkdir -p /var/www
-cd /var/www
-git clone git@github.com:tadas12587/padeliotrenere.lt.git padeliotrenere.lt
-cd padeliotrenere.lt
+# 2. Serveryje sukurkite ~/.env failą
+ssh -p 2231 l01s9uzjmz@web4.freehosting.lt
+nano ~/.env   # užpildykite pagal .env.example
+exit
 
-# .env konfigūracija
-cp .env.example .env   # (arba sukurkite rankiniu būdu)
-nano .env
+# 3. Serveryje paleiskite migracijas
+ssh -p 2231 l01s9uzjmz@web4.freehosting.lt
+cd ~/padeliotrenere && bash first-deploy.sh
+exit
 
-# Duomenų bazė
-sudo -u postgres psql -c "CREATE DATABASE padeliotrenere;"
-sudo -u postgres psql -c "CREATE USER ptrenere WITH PASSWORD 'slapta';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE padeliotrenere TO ptrenere;"
-
-# Prisma migracijos
-npx prisma migrate deploy
-
-# Build
-npm ci --omit=dev
-npm run build
-
-# PM2
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup    # ir vykdykite sugeneruotą komandą
-
-# Nginx
-sudo cp nginx.conf /etc/nginx/sites-available/padeliotrenere.lt
-sudo ln -s /etc/nginx/sites-available/padeliotrenere.lt /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-
-# SSL (Let's Encrypt)
-sudo certbot --nginx -d padeliotrenere.lt -d www.padeliotrenere.lt
+# 4. Panelėje paleiskite Node.js aplikaciją
+# Startup file: app.js
+# Working dir: ~/padeliotrenere
 ```
 
 ### Atnaujinimas
 
 ```bash
-cd /var/www/padeliotrenere.lt
-bash deploy.sh
+bash scripts/deploy-freehosting.sh
+# Panelėje restart Node.js
 ```
 
 ---
