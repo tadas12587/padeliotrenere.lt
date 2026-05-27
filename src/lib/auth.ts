@@ -38,7 +38,22 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
+        // On first sign-in: promote ADMIN_EMAIL to ADMIN role
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        if (
+          dbUser &&
+          dbUser.role === "CLIENT" &&
+          process.env.ADMIN_EMAIL &&
+          dbUser.email === process.env.ADMIN_EMAIL
+        ) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { role: "ADMIN" },
+          });
+          token.role = "ADMIN";
+        } else {
+          token.role = dbUser?.role ?? (user as any).role;
+        }
         token.id = user.id;
       }
       return token;
