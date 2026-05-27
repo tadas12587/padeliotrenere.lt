@@ -1,41 +1,35 @@
 #!/usr/bin/env bash
-# deploy.sh – Pull latest code, build, and restart Next.js on the VPS
-# Run on the VPS:  bash deploy.sh
-# Or from GitHub Actions / CI via SSH.
-
+# deploy.sh – Zero-downtime atnaujinimas (paleidžiamas serveryje)
+# Naudojimas: bash deploy.sh [branch]
+# Pavyzdys:   bash deploy.sh main
 set -euo pipefail
 
+GREEN='\033[0;32m'; NC='\033[0m'
+step() { echo -e "\n${GREEN}▶  $1${NC}"; }
+
 APP_DIR="/var/www/padeliotrenere.lt"
-BRANCH="main"
+BRANCH="${1:-main}"
 
-echo "▶  Deploying padeliotrenere.lt…"
-
+step "Atnaujinimas iš branch: $BRANCH"
 cd "$APP_DIR"
 
-# 1. Pull latest code
-echo "── git pull origin $BRANCH"
 git fetch origin "$BRANCH"
 git reset --hard "origin/$BRANCH"
 
-# 2. Install / update dependencies (production only)
-echo "── npm ci --omit=dev"
+step "Priklausomybės"
 npm ci --omit=dev
 
-# 3. Generate Prisma client
-echo "── prisma generate"
+step "Prisma: generuoti klientą"
 npx prisma generate
 
-# 4. Apply pending DB migrations
-echo "── prisma migrate deploy"
+step "Prisma: migracijos"
 npx prisma migrate deploy
 
-# 5. Build Next.js
-echo "── next build"
+step "Next.js build"
 npm run build
 
-# 6. Reload PM2 with zero downtime
-echo "── pm2 reload ecosystem.config.js"
+step "PM2: zero-downtime reload"
 pm2 reload ecosystem.config.js --update-env
 
-echo "✅  Deploy complete!"
+echo -e "\n${GREEN}✅  Deploy baigtas!${NC}"
 pm2 list

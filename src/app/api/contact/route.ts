@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rateLimit";
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -21,6 +22,25 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Rate limit: max 5 žinutės per valandą iš vieno IP
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  const rl = rateLimit({ key: `contact:${ip}`, limit: 5, windowMs: 60 * 60 * 1000 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Per daug užklausų. Pabandykite vėliau." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+        },
+      }
+    );
+  }
+
   const body = await req.json();
   const parsed = schema.safeParse(body);
 
