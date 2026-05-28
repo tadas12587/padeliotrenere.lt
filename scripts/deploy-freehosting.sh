@@ -34,6 +34,7 @@ echo "  DB: ${DB_USER}@localhost/${DB_NAME}"
 
 # ── 2. Build ──────────────────────────────────────────────────────────────────
 step "2/6 – Next.js build"
+npx prisma generate
 npm run build
 
 # ── 3. Standalone paruošimas ──────────────────────────────────────────────────
