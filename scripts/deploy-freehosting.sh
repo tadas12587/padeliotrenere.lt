@@ -81,13 +81,14 @@ module.exports = {
 };
 ECOSYSTEM
 
-# Copy both migrations
-mkdir -p .next/standalone/prisma/migrations/20250101000000_init
-cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/prisma/migrations/20250101000000_init/migration.sql
-mkdir -p .next/standalone/prisma/migrations/20250601000000_multi_trainer
-cp prisma/migrations/20250601000000_multi_trainer/migration.sql .next/standalone/prisma/migrations/20250601000000_multi_trainer/migration.sql
-# Keep old single migration.sql for backward compat
-cp prisma/migrations/20250601000000_multi_trainer/migration.sql .next/standalone/migration.sql
+# Copy all migrations
+for dir in prisma/migrations/*/; do
+  name=$(basename "$dir")
+  mkdir -p ".next/standalone/prisma/migrations/$name"
+  cp "$dir/migration.sql" ".next/standalone/prisma/migrations/$name/migration.sql"
+done
+# Combined migration for easy server-side apply
+cat prisma/migrations/*/migration.sql > .next/standalone/migration.sql
 
 # ── 4. Pakavimas ──────────────────────────────────────────────────────────────
 step "4/6 – Pakavama"
@@ -122,9 +123,11 @@ ssh "${SSH_ALIAS}" bash << ENDSSH
   echo "  ✓ /web/_next/static/ sukurtas"
 
   echo "▶ Prisma migracijos (MySQL)"
-  mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < /web/migration.sql 2>/dev/null \
-    && echo "  ✓ Migracijos įvykdytos" \
-    || echo "  ℹ Migracijos jau buvo įvykdytos anksčiau"
+  for f in /web/prisma/migrations/*/migration.sql; do
+    mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < "$f" 2>/dev/null \
+      && echo "  ✓ $(basename $(dirname $f))" \
+      || echo "  ℹ $(basename $(dirname $f)) – jau įvykdyta"
+  done
 
   echo "▶ PM2 paleidimas"
   if pm2 describe padeliotrenere &>/dev/null; then

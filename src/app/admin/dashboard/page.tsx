@@ -168,10 +168,10 @@ export default async function AdminDashboardPage() {
                     <p className="text-xs text-gray-400">{b.user.email}</p>
                   </td>
                   <td className="py-3 pr-4 text-gray-600">
-                    {formatDateLT(b.slot.date)}
+                    {b.slot ? formatDateLT(b.slot.date) : "—"}
                   </td>
                   <td className="py-3 pr-4 text-gray-600">
-                    {b.slot.startTime} – {b.slot.endTime}
+                    {b.slot ? `${b.slot.startTime} – ${b.slot.endTime}` : "—"}
                   </td>
                   <td className="py-3">
                     <span className={`badge ${bookingStatusColor(b.status)}`}>

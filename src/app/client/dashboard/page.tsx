@@ -95,11 +95,11 @@ export default async function ClientDashboardPage() {
                   </div>
                   <div>
                     <p className="font-700 text-[#16213e] text-sm">
-                      {formatDateLT(b.slot.date)}
+                      {b.slot ? formatDateLT(b.slot.date) : "—"}
                     </p>
                     <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
                       <Clock size={12} />
-                      {b.slot.startTime} – {b.slot.endTime}
+                      {b.slot ? `${b.slot.startTime} – ${b.slot.endTime}` : "—"}
                     </p>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default async function ClientDashboardPage() {
               <div key={b.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-700 text-sm text-[#16213e]">
-                    {formatDateLT(b.slot.date)} · {b.slot.startTime}
+                    {b.slot ? `${formatDateLT(b.slot.date)} · ${b.slot.startTime}` : "—"}
                   </p>
                   <span className={`badge ${bookingStatusColor(b.status)}`}>
                     {bookingStatusLabel(b.status)}

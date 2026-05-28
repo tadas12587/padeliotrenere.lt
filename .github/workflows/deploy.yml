@@ -37,7 +37,13 @@ jobs:
         run: |
           cp -r .next/static .next/standalone/.next/static
           cp -r public .next/standalone/public
-          cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/migration.sql
+          # Copy all migrations
+          for dir in prisma/migrations/*/; do
+            name=$(basename "$dir")
+            mkdir -p ".next/standalone/prisma/migrations/$name"
+            cp "$dir/migration.sql" ".next/standalone/prisma/migrations/$name/migration.sql"
+          done
+          cat prisma/migrations/*/migration.sql > .next/standalone/migration.sql
 
           cat > .next/standalone/ecosystem.config.js << 'ECOSYSTEM'
           module.exports = {
@@ -119,9 +125,11 @@ jobs:
             rm ~/deploy.tar.gz
 
             echo "Running MySQL migrations"
-            mysql -u mcx2g7feix -p'${{ secrets.DB_PASSWORD }}' mcx2g7feix < /web/migration.sql 2>/dev/null \
-              && echo "Migrations applied" \
-              || echo "Migrations already applied (OK)"
+            for f in /web/prisma/migrations/*/migration.sql; do
+              mysql -u mcx2g7feix -p'${{ secrets.DB_PASSWORD }}' mcx2g7feix < "$f" 2>/dev/null \
+                && echo "Applied: $(basename $(dirname $f))" \
+                || echo "Already applied: $(basename $(dirname $f))"
+            done
 
             echo "Starting/reloading PM2"
             if pm2 describe padeliotrenere &>/dev/null; then

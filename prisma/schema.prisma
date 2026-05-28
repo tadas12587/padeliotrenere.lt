@@ -113,7 +113,7 @@ model TimeSlot {
 model Booking {
   id          String        @id @default(cuid())
   userId      String
-  slotId      String
+  slotId      String?
   status      BookingStatus @default(PENDING)
   clientNotes String?
   createdAt   DateTime      @default(now())
@@ -125,7 +125,7 @@ model Booking {
   availabilitySlotId String?
 
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slot             TimeSlot          @relation(fields: [slotId], references: [id])
+  slot             TimeSlot?         @relation(fields: [slotId], references: [id])
   sessionNote      SessionNote?
   trainerProfile   TrainerProfile?   @relation(fields: [trainerId], references: [id], onDelete: SetNull)
   arena            Arena?            @relation(fields: [arenaId], references: [id], onDelete: SetNull)

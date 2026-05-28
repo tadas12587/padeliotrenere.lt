@@ -66,7 +66,7 @@ export async function PATCH(
     include: { slot: true, user: true },
   });
 
-  if (parsed.data.status === "CANCELLED" && updated.user.email) {
+  if (parsed.data.status === "CANCELLED" && updated.user.email && updated.slot) {
     sendBookingCancellation({
       to: updated.user.email,
       name: updated.user.name || "Klientas",

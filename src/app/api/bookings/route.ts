@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/bookings – auth required
 const createBookingSchema = z.object({
-  slotId: z.string().cuid(),
+  slotId: z.string().cuid().optional(),
   clientNotes: z.string().max(500).optional(),
   availabilitySlotId: z.string().cuid().optional(),
   trainerId: z.string().cuid().optional(),
@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
   if (availabilitySlotId) {
     const availSlot = await prisma.availabilitySlot.findUnique({
       where: { id: availabilitySlotId },
+      include: { arena: true, trainer: { include: { user: true } } },
     });
 
     if (!availSlot) {
@@ -79,7 +80,6 @@ export async function POST(req: NextRequest) {
       const newBooking = await tx.booking.create({
         data: {
           userId: user.id,
-          slotId,
           clientNotes,
           status: "CONFIRMED",
           trainerId: availSlot.trainerId,
@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
           serviceId: serviceId ?? null,
         },
         include: {
-          slot: true,
           user: true,
         },
       });
@@ -100,21 +99,14 @@ export async function POST(req: NextRequest) {
       return newBooking;
     });
 
-    if (booking.user.email) {
-      sendBookingConfirmation({
-        to: booking.user.email,
-        name: booking.user.name || "Klientas",
-        date: formatDateLT(booking.slot.date),
-        startTime: booking.slot.startTime,
-        endTime: booking.slot.endTime,
-        bookingId: booking.id,
-      }).catch(console.error);
-    }
-
     return NextResponse.json(booking, { status: 201 });
   }
 
   // ── Legacy TimeSlot flow ───────────────────────────────────────────────────
+  if (!slotId) {
+    return NextResponse.json({ error: "slotId or availabilitySlotId required" }, { status: 400 });
+  }
+
   // Check slot availability
   const slot = await prisma.timeSlot.findUnique({
     where: { id: slotId },
@@ -167,7 +159,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Send confirmation email (async, non-blocking)
-  if (booking.user.email) {
+  if (booking.user.email && booking.slot) {
     sendBookingConfirmation({
       to: booking.user.email,
       name: booking.user.name || "Klientas",
