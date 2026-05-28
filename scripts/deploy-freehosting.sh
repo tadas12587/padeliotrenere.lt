@@ -20,7 +20,8 @@ PACKAGE="deploy-$(date +%Y%m%d-%H%M%S).tar.gz"
 # ── 1. Aplinkos kintamieji ────────────────────────────────────────────────────
 step "1/6 – Kraunami aplinkos kintamieji"
 [ -f ".env.production" ] || die ".env.production nerastas projekto šaknyje."
-set -a; source .env.production; set +a
+# Pašaliname Windows eilučių pabaigų simbolius (\r) prieš source
+set -a; source <(sed 's/\r//' .env.production); set +a
 
 # Ištraukiame MySQL kredencialus iš DATABASE_URL
 # Formatas: mysql://user:password@host:port/dbname
