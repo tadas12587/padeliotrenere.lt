@@ -1,79 +1,133 @@
 #!/usr/bin/env bash
 # =============================================================================
-# deploy-freehosting.sh – Diegimas į freehosting.lt (shared hosting)
+# deploy-freehosting.sh – Diegimas į freehosting.lt
 #
 # Paleidžiamas iš projekto šaknies:
 #   bash scripts/deploy-freehosting.sh
-#
-# Reikalavimai:
-#   - npm run build (arba skriptas tai padaro automatiškai)
-#   - SSH prieiga į serverį
-#   - .env sukurtas serveryje (~/.env)
 # =============================================================================
 set -euo pipefail
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${GREEN}▶  $1${NC}"; }
-warn() { echo -e "${YELLOW}⚠  $1${NC}"; }
 die()  { echo -e "${RED}✗  $1${NC}" >&2; exit 1; }
 
-# ── Konfigūracija ────────────────────────────────────────────────────────────
 SSH_USER="l01s9uzjmz"
 SSH_HOST="web4.freehosting.lt"
 SSH_PORT="2231"
-REMOTE_DIR="~/padeliotrenere"   # kur išpakuosime serveryje
 PACKAGE="deploy-$(date +%Y%m%d-%H%M%S).tar.gz"
 
-# =============================================================================
-step "1/5 – Build"
+# ── 1. Aplinkos kintamieji ────────────────────────────────────────────────────
+step "1/6 – Kraunami aplinkos kintamieji"
+[ -f ".env.production" ] || die ".env.production nerastas projekto šaknyje."
+set -a; source .env.production; set +a
+
+# Ištraukiame MySQL kredencialus iš DATABASE_URL
+# Formatas: mysql://user:password@host:port/dbname
+DB_USER=$(echo "$DATABASE_URL" | sed -n 's|mysql://\([^:]*\):.*|\1|p')
+DB_PASS=$(echo "$DATABASE_URL" | sed -n 's|mysql://[^:]*:\([^@]*\)@.*|\1|p')
+DB_NAME=$(echo "$DATABASE_URL" | sed -n 's|.*/\([^/?]*\).*|\1|p')
+echo "  DB: ${DB_USER}@localhost/${DB_NAME}"
+
+# ── 2. Build ──────────────────────────────────────────────────────────────────
+step "2/6 – Next.js build"
 npm run build
 
-step "2/5 – Kopijuojami static failai į standalone"
-cp -r .next/static .next/standalone/.next/static
-cp -r public .next/standalone/public
+# ── 3. Standalone paruošimas ──────────────────────────────────────────────────
+step "3/6 – Paruošiamas standalone paketas"
+cp -r .next/static     .next/standalone/.next/static
+cp -r public           .next/standalone/public
 
-step "3/5 – Paketuojama"
-tar -czf "$PACKAGE" \
-  .next/standalone/ \
-  app.js \
-  prisma/migrations/ \
-  prisma/schema.prisma \
-  prisma.config.ts \
-  package.json
+# Generuojamas ecosystem.config.js su tikrais env kintamaisiais (neįtraukiamas į git)
+cat > .next/standalone/ecosystem.config.js << ECOSYSTEM
+module.exports = {
+  apps: [{
+    name: "padeliotrenere",
+    script: "./server.js",
+    interpreter: "node24",
+    cwd: "/web",
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: "256M",
+    env: {
+      NODE_ENV: "production",
+      PORT: 3000,
+      DATABASE_URL: "${DATABASE_URL}",
+      NEXTAUTH_URL: "${NEXTAUTH_URL}",
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}",
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}",
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}",
+      RESEND_API_KEY: "${RESEND_API_KEY}",
+      EMAIL_FROM: "${EMAIL_FROM}",
+      EMAIL_SERVER_HOST: "${EMAIL_SERVER_HOST}",
+      EMAIL_SERVER_PORT: "${EMAIL_SERVER_PORT}",
+      EMAIL_SERVER_USER: "${EMAIL_SERVER_USER}",
+      EMAIL_SERVER_PASSWORD: "${EMAIL_SERVER_PASSWORD}",
+      TRAINER_EMAIL: "${TRAINER_EMAIL}",
+      VAPID_PUBLIC_KEY: "${VAPID_PUBLIC_KEY}",
+      VAPID_PRIVATE_KEY: "${VAPID_PRIVATE_KEY}",
+      VAPID_SUBJECT: "${VAPID_SUBJECT}",
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: "${NEXT_PUBLIC_VAPID_PUBLIC_KEY}",
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL}",
+      ADMIN_EMAIL: "${ADMIN_EMAIL}",
+    }
+  }]
+};
+ECOSYSTEM
 
+# Migracijos SQL
+cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/migration.sql
+
+# ── 4. Pakavimas ──────────────────────────────────────────────────────────────
+step "4/6 – Pakavama"
+tar -czf "$PACKAGE" -C .next/standalone .
 echo "  Paketo dydis: $(du -sh "$PACKAGE" | cut -f1)"
 
-step "4/5 – Įkeliama į serverį"
+# ── 5. Įkėlimas ───────────────────────────────────────────────────────────────
+step "5/6 – Įkeliama į serverį"
 scp -P "$SSH_PORT" "$PACKAGE" "${SSH_USER}@${SSH_HOST}:~/"
+rm "$PACKAGE"
 
-step "5/5 – Išpakuojama serveryje"
-ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" bash <<EOF
+# ── 6. Diegimas serveryje ─────────────────────────────────────────────────────
+step "6/6 – Diegimas serveryje"
+# Kintamieji čia bus išplėsti lokaliai prieš siunčiant SSH komandą
+ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" bash << ENDSSH
   set -e
-  mkdir -p "$REMOTE_DIR"
-  cd "$REMOTE_DIR"
-  tar -xzf ~/"$PACKAGE"
-  rm ~/"$PACKAGE"
 
-  # Migracijos (jei yra duomenų bazė)
-  if [ -f ~/.env ]; then
-    export \$(grep -v '^#' ~/.env | xargs)
-    node -e "
-      const { execSync } = require('child_process');
-      execSync('npx prisma migrate deploy', { stdio: 'inherit', env: process.env });
-    " 2>/dev/null || echo 'Migracijos praleistos (patikrinkite rankiniu būdu)'
+  echo "▶ Atsarginė kopija (jei /web nėra tuščias)"
+  if [ -f /web/server.js ]; then
+    cp /web/ecosystem.config.js /web/ecosystem.config.js.bak 2>/dev/null || true
   fi
 
-  echo "Išpakuota į $REMOTE_DIR"
-EOF
+  echo "▶ Išpakuojama į /web/"
+  cd /web
+  tar -xzf ~/$PACKAGE
+  rm ~/$PACKAGE
 
-# Išvalome lokalų paketą
-rm "$PACKAGE"
+  echo "▶ Prisma migracijos (MySQL)"
+  mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < /web/migration.sql 2>/dev/null \
+    && echo "  ✓ Migracijos įvykdytos" \
+    || echo "  ℹ Migracijos jau buvo įvykdytos anksčiau"
+
+  echo "▶ PM2 paleidimas"
+  if pm2 describe padeliotrenere &>/dev/null; then
+    pm2 reload ecosystem.config.js --update-env
+    echo "  ✓ Perkrauta"
+  else
+    pm2 start ecosystem.config.js
+    echo "  ✓ Paleista"
+  fi
+  pm2 save
+
+  echo ""
+  pm2 list
+ENDSSH
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║  ✅  Deploy baigtas!                                     ║${NC}"
+echo -e "${GREEN}║  🌐  https://padeliotrenere.lt                           ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "${YELLOW}Kitas žingsnis: Hostingo panelėje perkraukite Node.js aplikaciją${NC}"
-echo "  Startup file: app.js"
-echo "  Working dir:  $REMOTE_DIR"
+echo "Žurnalai:"
+echo "  ssh -p 2231 ${SSH_USER}@${SSH_HOST} 'pm2 logs padeliotrenere --lines 50'"
