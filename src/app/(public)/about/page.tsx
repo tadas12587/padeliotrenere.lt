@@ -59,11 +59,11 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="bg-[#16213e] text-white py-20">
+      <section className="bg-[#0B5C71] text-white py-20">
         <div className="container-tight">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+              <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
                 Apie mane
               </span>
               <h1 className="text-4xl lg:text-5xl font-900 mt-3 mb-5">
@@ -83,7 +83,7 @@ export default function AboutPage() {
 
             {/* Photo placeholder */}
             <div className="relative">
-              <div className="aspect-[3/4] bg-gradient-to-br from-[#0f3460] to-[#e94560]/20 rounded-3xl flex items-center justify-center text-9xl border border-white/10">
+              <div className="aspect-[3/4] bg-gradient-to-br from-[#083d4e] to-[#FF5733]/20 rounded-3xl flex items-center justify-center text-9xl border border-white/10">
                 👤
               </div>
             </div>
@@ -97,10 +97,10 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {achievements.map(({ icon: Icon, label, value }) => (
               <div key={label} className="text-center p-6 card">
-                <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center mx-auto mb-3">
-                  <Icon size={22} className="text-[#e94560]" />
+                <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center mx-auto mb-3">
+                  <Icon size={22} className="text-[#FF5733]" />
                 </div>
-                <p className="font-900 text-2xl text-[#16213e]">{value}</p>
+                <p className="font-900 text-2xl text-[#0B5C71]">{value}</p>
                 <p className="text-gray-500 text-sm mt-1">{label}</p>
               </div>
             ))}
@@ -109,14 +109,14 @@ export default function AboutPage() {
       </section>
 
       {/* Story */}
-      <section className="py-20 bg-[#f8f9fa]">
+      <section className="py-20 bg-[#F4F4F4]">
         <div className="container-tight">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
             <div>
-              <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+              <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
                 Mano istorija
               </span>
-              <h2 className="text-3xl font-900 mt-2 mb-5 text-[#16213e]">
+              <h2 className="text-3xl font-900 mt-2 mb-5 text-[#0B5C71]">
                 Kaip viskas prasidėjo
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
@@ -142,22 +142,22 @@ export default function AboutPage() {
 
             {/* Skills */}
             <div>
-              <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+              <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
                 Kompetencijos
               </span>
-              <h2 className="text-3xl font-900 mt-2 mb-6 text-[#16213e]">
+              <h2 className="text-3xl font-900 mt-2 mb-6 text-[#0B5C71]">
                 Ko aš moku geriausiai
               </h2>
               <div className="space-y-5">
                 {skills.map(({ label, pct }) => (
                   <div key={label}>
                     <div className="flex justify-between mb-2">
-                      <span className="font-600 text-sm text-[#16213e]">{label}</span>
-                      <span className="text-sm text-[#e94560] font-700">{pct}%</span>
+                      <span className="font-600 text-sm text-[#0B5C71]">{label}</span>
+                      <span className="text-sm text-[#FF5733] font-700">{pct}%</span>
                     </div>
                     <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#e94560] to-[#c73352] rounded-full transition-all duration-1000"
+                        className="h-full bg-gradient-to-r from-[#FF5733] to-[#E04520] rounded-full transition-all duration-1000"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -173,10 +173,10 @@ export default function AboutPage() {
       <section className="py-20 bg-white">
         <div className="container-tight">
           <div className="text-center mb-12">
-            <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+            <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
               Kelias
             </span>
-            <h2 className="text-3xl font-900 mt-2 text-[#16213e]">
+            <h2 className="text-3xl font-900 mt-2 text-[#0B5C71]">
               Mano kelionė
             </h2>
           </div>
@@ -194,7 +194,7 @@ export default function AboutPage() {
                   } pl-12 lg:pl-0`}
                 >
                   {/* Dot */}
-                  <div className="absolute left-0 lg:left-1/2 w-8 h-8 rounded-full bg-[#e94560] flex items-center justify-center -translate-x-0 lg:-translate-x-4 shrink-0 mt-1 z-10">
+                  <div className="absolute left-0 lg:left-1/2 w-8 h-8 rounded-full bg-[#FF5733] flex items-center justify-center -translate-x-0 lg:-translate-x-4 shrink-0 mt-1 z-10">
                     <div className="w-3 h-3 rounded-full bg-white" />
                   </div>
 
@@ -205,8 +205,8 @@ export default function AboutPage() {
                     }`}
                   >
                     <div className="card p-5">
-                      <span className="text-[#e94560] font-900 text-lg">{year}</span>
-                      <h3 className="font-800 text-[#16213e] mt-1">{title}</h3>
+                      <span className="text-[#FF5733] font-900 text-lg">{year}</span>
+                      <h3 className="font-800 text-[#0B5C71] mt-1">{title}</h3>
                       <p className="text-gray-500 text-sm mt-1">{desc}</p>
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-[#e94560]">
+      <section className="py-16 bg-[#FF5733]">
         <div className="container-tight text-center text-white">
           <h2 className="text-3xl font-900 mb-3">
             Pasiruošęs pradėti?
@@ -231,7 +231,7 @@ export default function AboutPage() {
           </p>
           <Link
             href="/booking"
-            className="inline-flex items-center gap-2 bg-white text-[#e94560] font-800 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+            className="inline-flex items-center gap-2 bg-white text-[#FF5733] font-800 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
           >
             🎾 Rezervuoti treniruotę
           </Link>

@@ -141,7 +141,7 @@ export default function TrainerCalendarPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Kalendorius</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Kalendorius</h1>
         <p className="text-gray-500 text-sm mt-1">
           Valdykite savo prieinamumo laiko tarpus
         </p>
@@ -161,7 +161,7 @@ export default function TrainerCalendarPage() {
 
       {/* Add form */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#16213e] mb-4 flex items-center gap-2">
+        <h2 className="font-800 text-[#0B5C71] mb-4 flex items-center gap-2">
           <Plus size={18} />
           Pridėti laiko tarpą
         </h2>
@@ -178,13 +178,13 @@ export default function TrainerCalendarPage() {
           <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Arena <span className="text-[#e94560]">*</span>
+                Arena <span className="text-[#FF5733]">*</span>
               </label>
               <select
                 value={arenaId}
                 onChange={(e) => setArenaId(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               >
                 <option value="">Pasirinkite areną</option>
                 {trainerArenas.map((ta) => (
@@ -197,7 +197,7 @@ export default function TrainerCalendarPage() {
 
             <div>
               <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Data <span className="text-[#e94560]">*</span>
+                Data <span className="text-[#FF5733]">*</span>
               </label>
               <input
                 type="date"
@@ -205,33 +205,33 @@ export default function TrainerCalendarPage() {
                 onChange={(e) => setDate(e.target.value)}
                 required
                 min={new Date().toISOString().split("T")[0]}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               />
             </div>
 
             <div>
               <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Pradžia <span className="text-[#e94560]">*</span>
+                Pradžia <span className="text-[#FF5733]">*</span>
               </label>
               <input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               />
             </div>
 
             <div>
               <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Pabaiga <span className="text-[#e94560]">*</span>
+                Pabaiga <span className="text-[#FF5733]">*</span>
               </label>
               <input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               />
             </div>
 
@@ -251,7 +251,7 @@ export default function TrainerCalendarPage() {
 
       {/* Slots list */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#16213e] mb-4">Artėjantys laiko tarpai</h2>
+        <h2 className="font-800 text-[#0B5C71] mb-4">Artėjantys laiko tarpai</h2>
 
         {loading ? (
           <p className="text-sm text-gray-400">Kraunama...</p>
@@ -273,7 +273,7 @@ export default function TrainerCalendarPage() {
                     <Clock size={18} className="text-green-500" />
                   </div>
                   <div>
-                    <p className="font-700 text-[#16213e] text-sm">
+                    <p className="font-700 text-[#0B5C71] text-sm">
                       {formatDateTime(slot.startTime)}{" "}
                       <span className="text-gray-400">–</span>{" "}
                       {new Date(slot.endTime).toLocaleTimeString("lt-LT", {
@@ -300,7 +300,7 @@ export default function TrainerCalendarPage() {
                   {slot.status === "AVAILABLE" && (
                     <button
                       onClick={() => handleDelete(slot.id)}
-                      className="p-2 text-gray-400 hover:text-[#e94560] hover:bg-[#e94560]/10 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-[#FF5733] hover:bg-[#FF5733]/10 rounded-lg transition-colors"
                       title="Ištrinti"
                     >
                       <Trash2 size={16} />

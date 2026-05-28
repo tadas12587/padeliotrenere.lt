@@ -76,12 +76,12 @@ export default function ClientProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-black text-[#16213e]">Profilis</h1>
+      <h1 className="text-2xl font-black text-[#0B5C71]">Profilis</h1>
 
       {/* Profile form */}
       <div className="card p-6">
-        <h2 className="font-bold text-[#16213e] mb-5 flex items-center gap-2">
-          <User size={18} className="text-[#e94560]" />
+        <h2 className="font-bold text-[#0B5C71] mb-5 flex items-center gap-2">
+          <User size={18} className="text-[#FF5733]" />
           Asmeniniai duomenys
         </h2>
 
@@ -95,7 +95,7 @@ export default function ClientProfilePage() {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="Jūsų vardas"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             />
           </div>
           <div>
@@ -119,7 +119,7 @@ export default function ClientProfilePage() {
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="+370 600 00000"
-                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
           </div>
@@ -145,8 +145,8 @@ export default function ClientProfilePage() {
 
       {/* Push notifications */}
       <div className="card p-6">
-        <h2 className="font-bold text-[#16213e] mb-2 flex items-center gap-2">
-          <Bell size={18} className="text-[#e94560]" />
+        <h2 className="font-bold text-[#0B5C71] mb-2 flex items-center gap-2">
+          <Bell size={18} className="text-[#FF5733]" />
           Push pranešimai
         </h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -158,7 +158,7 @@ export default function ClientProfilePage() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
             pushEnabled
               ? "border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-500"
-              : "border-[#e94560] bg-[#e94560] text-white hover:bg-[#c73352]"
+              : "border-[#FF5733] bg-[#FF5733] text-white hover:bg-[#E04520]"
           }`}
         >
           {pushLoading ? (

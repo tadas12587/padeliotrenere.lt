@@ -85,7 +85,7 @@ export default function AdminCalendarPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black text-[#16213e]">Kalendorius</h1>
+        <h1 className="text-2xl font-black text-[#0B5C71]">Kalendorius</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentDate((d) => subMonths(d, 1))}
@@ -93,7 +93,7 @@ export default function AdminCalendarPage() {
           >
             <ChevronLeft size={18} />
           </button>
-          <h2 className="font-black text-[#16213e] min-w-[160px] text-center">
+          <h2 className="font-black text-[#0B5C71] min-w-[160px] text-center">
             {format(currentDate, "LLLL yyyy", { locale: lt })}
           </h2>
           <button
@@ -140,9 +140,9 @@ export default function AdminCalendarPage() {
                     "relative aspect-square rounded-xl flex flex-col items-center justify-start pt-2 text-sm transition-all",
                     !isCurrentMonth && "opacity-30",
                     isSelected
-                      ? "bg-[#e94560] text-white"
+                      ? "bg-[#FF5733] text-white"
                       : isToday(day)
-                      ? "bg-[#e94560]/10 text-[#e94560] font-bold"
+                      ? "bg-[#FF5733]/10 text-[#FF5733] font-bold"
                       : "hover:bg-gray-50"
                   )}
                 >
@@ -154,7 +154,7 @@ export default function AdminCalendarPage() {
                           key={i}
                           className={cn(
                             "w-1.5 h-1.5 rounded-full",
-                            isSelected ? "bg-white/70" : hasBookings ? "bg-[#e94560]" : "bg-gray-300"
+                            isSelected ? "bg-white/70" : hasBookings ? "bg-[#FF5733]" : "bg-gray-300"
                           )}
                         />
                       ))}
@@ -170,7 +170,7 @@ export default function AdminCalendarPage() {
         <div className="card p-5">
           {selectedDay ? (
             <>
-              <h3 className="font-black text-[#16213e] mb-4">
+              <h3 className="font-black text-[#0B5C71] mb-4">
                 {format(selectedDay, "d MMMM", { locale: lt })}
               </h3>
               {selectedDaySlots.length === 0 ? (
@@ -185,11 +185,11 @@ export default function AdminCalendarPage() {
                       className={cn(
                         "p-3 rounded-xl border",
                         slot.bookings?.length > 0
-                          ? "border-[#e94560]/30 bg-[#e94560]/5"
+                          ? "border-[#FF5733]/30 bg-[#FF5733]/5"
                           : "border-gray-100 bg-gray-50"
                       )}
                     >
-                      <p className="font-bold text-sm text-[#16213e]">
+                      <p className="font-bold text-sm text-[#0B5C71]">
                         {slot.startTime} – {slot.endTime}
                       </p>
                       {slot.bookings?.length === 0 ? (

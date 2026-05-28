@@ -1,89 +1,63 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
-import { Search } from "lucide-react";
+import { useTransition } from "react";
+import { X } from "lucide-react";
 
 interface ArenaFiltersProps {
   initialCity: string;
+  availableCities: string[];
 }
 
-export function ArenaFilters({ initialCity }: ArenaFiltersProps) {
+export function ArenaFilters({ initialCity, availableCities }: ArenaFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [city, setCity] = useState(initialCity);
 
-  function applyFilters(newCity: string) {
+  function navigate(newCity: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (newCity) {
-      params.set("city", newCity);
-    } else {
-      params.delete("city");
-    }
-    startTransition(() => {
-      router.push(`/arenas?${params.toString()}`);
-    });
+    if (newCity) params.set("city", newCity); else params.delete("city");
+    startTransition(() => router.push(`/arenas?${params.toString()}`));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    applyFilters(city);
-  }
-
-  function handleClear() {
-    setCity("");
-    startTransition(() => {
-      router.push("/arenas");
-    });
+  function toggleCity(c: string) {
+    navigate(initialCity === c ? "" : c);
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row gap-3 items-end"
-    >
-      <div className="flex-1 max-w-sm">
-        <label
-          htmlFor="arena-city-filter"
-          className="block text-xs font-700 text-gray-500 uppercase tracking-wider mb-1"
-        >
-          Miestas
-        </label>
-        <div className="relative">
-          <Search
-            size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            id="arena-city-filter"
-            type="text"
-            placeholder="pvz. Vilnius"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#e94560] focus:ring-1 focus:ring-[#e94560]/30 transition-all"
-          />
+    <div className={`flex flex-col gap-3 ${isPending ? "opacity-60 pointer-events-none" : ""}`}>
+      {availableCities.length > 0 && (
+        <div>
+          <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Miestas</p>
+          <div className="flex flex-wrap gap-2">
+            {availableCities.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleCity(c)}
+                className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
+                  initialCity === c
+                    ? "bg-[#0B5C71] text-white border-[#0B5C71]"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex gap-2 shrink-0">
+      {initialCity && (
         <button
-          type="submit"
-          disabled={isPending}
-          className="btn-primary py-2.5 px-5 text-sm"
+          type="button"
+          onClick={() => navigate("")}
+          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors w-fit"
         >
-          {isPending ? "Ieškoma..." : "Ieškoti"}
+          <X size={14} />
+          Išvalyti filtrus
         </button>
-        {city && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="btn-secondary py-2.5 px-4 text-sm"
-          >
-            Išvalyti
-          </button>
-        )}
-      </div>
-    </form>
+      )}
+    </div>
   );
 }

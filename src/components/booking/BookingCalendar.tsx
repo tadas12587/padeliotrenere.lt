@@ -74,7 +74,7 @@ export default function BookingCalendar() {
     return (
       <div className="max-w-lg mx-auto text-center py-16">
         <div className="text-7xl mb-6">🎾</div>
-        <h2 className="text-3xl font-900 text-[#16213e] mb-3">
+        <h2 className="text-3xl font-900 text-[#0B5C71] mb-3">
           Rezervacija patvirtinta!
         </h2>
         <p className="text-gray-500 mb-2">
@@ -109,13 +109,13 @@ export default function BookingCalendar() {
     <div className="max-w-2xl mx-auto">
       {/* Step indicator */}
       <div className="flex items-center gap-4 mb-8">
-        <div className={cn("flex items-center gap-2 text-sm font-700", selectedDate ? "text-[#e94560]" : "text-gray-400")}>
-          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", selectedDate ? "bg-[#e94560] text-white" : "bg-gray-200 text-gray-500")}>1</span>
+        <div className={cn("flex items-center gap-2 text-sm font-700", selectedDate ? "text-[#FF5733]" : "text-gray-400")}>
+          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", selectedDate ? "bg-[#FF5733] text-white" : "bg-gray-200 text-gray-500")}>1</span>
           Pasirink dieną
         </div>
         <div className="flex-1 h-0.5 bg-gray-200" />
-        <div className={cn("flex items-center gap-2 text-sm font-700", selectedSlot ? "text-[#e94560]" : "text-gray-400")}>
-          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", selectedSlot ? "bg-[#e94560] text-white" : "bg-gray-200 text-gray-500")}>2</span>
+        <div className={cn("flex items-center gap-2 text-sm font-700", selectedSlot ? "text-[#FF5733]" : "text-gray-400")}>
+          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", selectedSlot ? "bg-[#FF5733] text-white" : "bg-gray-200 text-gray-500")}>2</span>
           Pasirink laiką
         </div>
         <div className="flex-1 h-0.5 bg-gray-200" />
@@ -135,7 +135,7 @@ export default function BookingCalendar() {
           >
             <ChevronLeft size={18} />
           </button>
-          <h3 className="font-800 text-[#16213e]">
+          <h3 className="font-800 text-[#0B5C71]">
             {format(weekStart, "MMMM yyyy", { locale: lt })}
           </h3>
           <button
@@ -162,10 +162,10 @@ export default function BookingCalendar() {
                   past
                     ? "opacity-30 cursor-not-allowed border-transparent"
                     : selected
-                    ? "border-[#e94560] bg-[#e94560] text-white"
+                    ? "border-[#FF5733] bg-[#FF5733] text-white"
                     : isToday(day)
-                    ? "border-[#e94560]/40 bg-[#e94560]/5 text-[#e94560] hover:border-[#e94560]"
-                    : "border-gray-100 hover:border-[#e94560]/50 hover:bg-gray-50"
+                    ? "border-[#FF5733]/40 bg-[#FF5733]/5 text-[#FF5733] hover:border-[#FF5733]"
+                    : "border-gray-100 hover:border-[#FF5733]/50 hover:bg-gray-50"
                 )}
               >
                 <span className="text-xs font-600 uppercase opacity-70">
@@ -181,9 +181,9 @@ export default function BookingCalendar() {
       {/* Slots */}
       {selectedDate && (
         <div className="card p-6 mb-6">
-          <h3 className="font-800 text-[#16213e] mb-4">
+          <h3 className="font-800 text-[#0B5C71] mb-4">
             Laisvi laikai:{" "}
-            <span className="text-[#e94560]">
+            <span className="text-[#FF5733]">
               {format(selectedDate, "d MMMM", { locale: lt })}
             </span>
           </h3>
@@ -215,12 +215,12 @@ export default function BookingCalendar() {
                       isFull
                         ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
                         : isSelected
-                        ? "border-[#e94560] bg-[#e94560] text-white"
-                        : "border-gray-200 hover:border-[#e94560]/50 hover:bg-gray-50"
+                        ? "border-[#FF5733] bg-[#FF5733] text-white"
+                        : "border-gray-200 hover:border-[#FF5733]/50 hover:bg-gray-50"
                     )}
                   >
                     <div className="flex items-center gap-1.5 font-800 text-lg">
-                      <Clock size={16} className={isSelected ? "opacity-80" : "text-[#e94560]"} />
+                      <Clock size={16} className={isSelected ? "opacity-80" : "text-[#FF5733]"} />
                       {slot.startTime}
                     </div>
                     <p className={cn("text-xs mt-1", isSelected ? "opacity-80" : "text-gray-400")}>
@@ -240,13 +240,13 @@ export default function BookingCalendar() {
       {/* Book button */}
       {selectedSlot && (
         <div className="card p-6">
-          <h3 className="font-800 text-[#16213e] mb-3">Patvirtinkite rezervaciją</h3>
+          <h3 className="font-800 text-[#0B5C71] mb-3">Patvirtinkite rezervaciją</h3>
           <div className="bg-gray-50 rounded-xl p-4 mb-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0">
               <span className="text-2xl">🎾</span>
             </div>
             <div>
-              <p className="font-700 text-[#16213e]">
+              <p className="font-700 text-[#0B5C71]">
                 {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })}
               </p>
               <p className="text-gray-500 text-sm">

@@ -29,7 +29,7 @@ function InitialsAvatar({ name }: { name: string }) {
     .slice(0, 2)
     .toUpperCase();
   return (
-    <div className="w-12 h-12 rounded-full bg-[#e94560]/20 border-2 border-[#e94560]/40 flex items-center justify-center font-900 text-white text-sm shrink-0">
+    <div className="w-12 h-12 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-white text-sm shrink-0">
       {initials}
     </div>
   );
@@ -66,13 +66,13 @@ export default async function ArenaDetailPage({
   );
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-[#F4F4F4]">
       {/* Header */}
-      <section className="bg-[#16213e] text-white py-12">
+      <section className="bg-[#0B5C71] text-white py-12">
         <div className="container-tight">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
             {/* Photo / Placeholder */}
-            <div className="shrink-0 w-full lg:w-48 h-40 lg:h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-[#0f3460] to-[#16213e] flex items-center justify-center">
+            <div className="shrink-0 w-full lg:w-48 h-40 lg:h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-[#083d4e] to-[#0B5C71] flex items-center justify-center">
               {arena.photoUrl ? (
                 <img
                   src={arena.photoUrl}
@@ -90,7 +90,7 @@ export default async function ArenaDetailPage({
                 {arena.name}
               </h1>
               <div className="flex items-center gap-1.5 text-gray-400 text-sm mb-3">
-                <MapPin size={15} className="text-[#e94560]" />
+                <MapPin size={15} className="text-[#FF5733]" />
                 <span>
                   {arena.city}
                   {arena.address ? `, ${arena.address}` : ""}
@@ -120,7 +120,7 @@ export default async function ArenaDetailPage({
           {/* Description */}
           {arena.description && (
             <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#16213e] mb-4">
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
                 Apie areną
               </h2>
               <p className="text-gray-600 leading-relaxed">
@@ -131,7 +131,7 @@ export default async function ArenaDetailPage({
 
           {/* Trainers */}
           <div className="card p-7">
-            <h2 className="text-xl font-800 text-[#16213e] mb-4">
+            <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
               Treneriai šioje arenoje
               {approvedTrainers.length > 0 && (
                 <span className="text-gray-400 font-600 text-base ml-2">
@@ -151,21 +151,21 @@ export default async function ArenaDetailPage({
                     <Link
                       key={trainer.id}
                       href={`/trainers/${trainer.id}`}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-[#e94560]/30 hover:bg-[#e94560]/5 transition-all group"
+                      className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-[#FF5733]/30 hover:bg-[#FF5733]/5 transition-all group"
                     >
                       {/* Photo / Avatar */}
                       {trainer.photoUrl ? (
                         <img
                           src={trainer.photoUrl}
                           alt={trainer.displayName}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-[#e94560]/30 shrink-0"
+                          className="w-12 h-12 rounded-full object-cover border-2 border-[#FF5733]/30 shrink-0"
                         />
                       ) : (
                         <InitialsAvatar name={trainer.displayName} />
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-700 text-[#16213e] group-hover:text-[#e94560] transition-colors">
+                        <p className="font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
                           {trainer.displayName}
                         </p>
                         <div className="flex items-center gap-1 text-gray-400 text-sm mt-0.5">
@@ -174,7 +174,7 @@ export default async function ArenaDetailPage({
                         </div>
                       </div>
 
-                      <span className="text-[#e94560] text-sm font-700 shrink-0 group-hover:underline">
+                      <span className="text-[#FF5733] text-sm font-700 shrink-0 group-hover:underline">
                         Žiūrėti profilį →
                       </span>
                     </Link>
@@ -189,14 +189,14 @@ export default async function ArenaDetailPage({
         <div className="flex flex-col gap-6">
           {/* Location card */}
           <div className="card p-6">
-            <h2 className="text-lg font-800 text-[#16213e] mb-4">
+            <h2 className="text-lg font-800 text-[#0B5C71] mb-4">
               Vieta
             </h2>
             <div className="flex flex-col gap-2 text-sm text-gray-600">
               <div className="flex items-start gap-2">
-                <MapPin size={15} className="text-[#e94560] shrink-0 mt-0.5" />
+                <MapPin size={15} className="text-[#FF5733] shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-700 text-[#16213e]">{arena.name}</p>
+                  <p className="font-700 text-[#0B5C71]">{arena.name}</p>
                   {arena.address && <p>{arena.address}</p>}
                   <p>{arena.city}</p>
                 </div>
@@ -205,7 +205,7 @@ export default async function ArenaDetailPage({
           </div>
 
           {/* Booking CTA card */}
-          <div className="card p-6 bg-gradient-to-br from-[#16213e] to-[#0f3460] text-white">
+          <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
             <h2 className="text-lg font-800 mb-2">Rezervuokite kortą</h2>
             <p className="text-gray-400 text-sm mb-5 leading-relaxed">
               Pasirinkite trenerį ir rezervuokite laiką šioje arenoje.

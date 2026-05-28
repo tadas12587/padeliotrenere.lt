@@ -14,10 +14,10 @@ interface Props {
 export default async function BookingPage({ searchParams }: Props) {
   const { trainerId, arenaId } = await searchParams;
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
-      <div className="bg-[#16213e] text-white py-14">
+    <div className="min-h-screen bg-[#F4F4F4]">
+      <div className="bg-[#0B5C71] text-white py-14">
         <div className="container-tight text-center">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Rezervacija
           </span>
           <h1 className="text-4xl font-900 mt-2 mb-3">Rezervuokite treniruotę</h1>

@@ -21,20 +21,33 @@ export default async function TrainersPage({
   const serviceTypeFilter =
     typeof serviceType === "string" ? serviceType.trim() : "";
 
-  const trainers = await prisma.trainerProfile.findMany({
-    where: {
-      status: "APPROVED",
-      ...(cityFilter
-        ? { city: { contains: cityFilter } }
-        : {}),
-    },
-    include: {
-      user: true,
-      services: true,
-      reviews: true,
-    },
-    orderBy: { isFeatured: "desc" },
-  });
+  const [trainers, rawCities, rawServices] = await Promise.all([
+    prisma.trainerProfile.findMany({
+      where: {
+        status: "APPROVED",
+        ...(cityFilter ? { city: { contains: cityFilter } } : {}),
+      },
+      include: { user: true, services: true, reviews: true },
+      orderBy: { isFeatured: "desc" },
+    }),
+    prisma.trainerProfile.findMany({
+      where: { status: "APPROVED", city: { not: "" } },
+      select: { city: true },
+      distinct: ["city"],
+      orderBy: { city: "asc" },
+    }),
+    prisma.service.findMany({
+      where: { trainer: { status: "APPROVED" } },
+      select: { name: true },
+      distinct: ["name"],
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const availableCities = rawCities
+    .map((t) => t.city)
+    .filter((c): c is string => !!c);
+  const availableServiceTypes = rawServices.map((s) => s.name);
 
   const filtered = serviceTypeFilter
     ? trainers.filter((t) =>
@@ -47,9 +60,9 @@ export default async function TrainersPage({
   return (
     <div className="min-h-screen">
       {/* Page Header */}
-      <section className="bg-[#16213e] text-white py-16">
+      <section className="bg-[#0B5C71] text-white py-16">
         <div className="container-tight">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Platforma
           </span>
           <h1 className="text-4xl lg:text-5xl font-900 mt-3 mb-4">
@@ -65,17 +78,22 @@ export default async function TrainersPage({
       {/* Filters */}
       <section className="bg-white border-b border-gray-100 py-6 sticky top-0 z-10 shadow-sm">
         <div className="container-tight">
-          <TrainerFilters initialCity={cityFilter} initialServiceType={serviceTypeFilter} />
+          <TrainerFilters
+            initialCity={cityFilter}
+            initialServiceType={serviceTypeFilter}
+            availableCities={availableCities}
+            availableServiceTypes={availableServiceTypes}
+          />
         </div>
       </section>
 
       {/* Trainer Grid */}
-      <section className="py-12 bg-[#f8f9fa]">
+      <section className="py-12 bg-[#F4F4F4]">
         <div className="container-wide">
           {filtered.length === 0 ? (
             <div className="text-center py-24">
               <div className="text-6xl mb-4">🎾</div>
-              <h2 className="text-2xl font-800 text-[#16213e] mb-2">
+              <h2 className="text-2xl font-800 text-[#0B5C71] mb-2">
                 Trenerių nerasta
               </h2>
               <p className="text-gray-500">
@@ -101,7 +119,7 @@ export default async function TrainersPage({
                 return (
                   <div key={trainer.id} className="card p-0 overflow-hidden flex flex-col">
                     {/* Photo / Avatar */}
-                    <div className="relative h-48 bg-gradient-to-br from-[#16213e] to-[#0f3460] flex items-center justify-center">
+                    <div className="relative h-48 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
                       {trainer.photoUrl ? (
                         <img
                           src={trainer.photoUrl}
@@ -109,14 +127,14 @@ export default async function TrainersPage({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-[#e94560]/20 border-2 border-[#e94560]/40 flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center">
                           <span className="text-3xl font-900 text-white">
                             {initials}
                           </span>
                         </div>
                       )}
                       {trainer.isFeatured && (
-                        <div className="absolute top-3 right-3 bg-[#e94560] text-white text-xs font-700 px-2 py-1 rounded-full">
+                        <div className="absolute top-3 right-3 bg-[#FF5733] text-white text-xs font-700 px-2 py-1 rounded-full">
                           Rekomenduojamas
                         </div>
                       )}
@@ -125,7 +143,7 @@ export default async function TrainersPage({
                     {/* Info */}
                     <div className="p-5 flex flex-col gap-3 flex-1">
                       <div>
-                        <h2 className="font-800 text-lg text-[#16213e] leading-tight">
+                        <h2 className="font-800 text-lg text-[#0B5C71] leading-tight">
                           {trainer.displayName}
                         </h2>
                         <p className="text-gray-500 text-sm mt-0.5">
@@ -135,7 +153,7 @@ export default async function TrainersPage({
 
                       <div className="flex items-center gap-4 text-sm">
                         {avgRating !== null ? (
-                          <div className="flex items-center gap-1 text-[#e94560]">
+                          <div className="flex items-center gap-1 text-[#FF5733]">
                             <span className="font-800">{avgRating.toFixed(1)}</span>
                             <span className="text-yellow-400">★</span>
                             <span className="text-gray-400">

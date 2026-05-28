@@ -43,13 +43,13 @@ function LoginContent() {
     return (
       <div className="card p-10">
         <div className="text-6xl mb-5">📧</div>
-        <h1 className="text-2xl font-900 text-[#16213e] mb-3">
+        <h1 className="text-2xl font-900 text-[#0B5C71] mb-3">
           Patikrinkite el. paštą
         </h1>
         <p className="text-gray-500 mb-2">
           Prisijungimo nuoroda išsiųsta į:
         </p>
-        <p className="font-700 text-[#16213e] bg-gray-100 rounded-lg px-4 py-2 inline-block">
+        <p className="font-700 text-[#0B5C71] bg-gray-100 rounded-lg px-4 py-2 inline-block">
           {email}
         </p>
         <p className="text-gray-400 text-sm mt-4">
@@ -62,7 +62,7 @@ function LoginContent() {
 
   return (
     <div className="card p-8">
-      <h1 className="text-2xl font-900 text-[#16213e] mb-1">Prisijungti</h1>
+      <h1 className="text-2xl font-900 text-[#0B5C71] mb-1">Prisijungti</h1>
       <p className="text-gray-500 text-sm mb-6">
         Prisijunkite prie savo paskyros
       </p>
@@ -125,7 +125,7 @@ function LoginContent() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="jusu@pastas.lt"
               required
-              className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+              className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -166,11 +166,11 @@ export default function LoginPage() {
             href="/"
             className="inline-flex items-center gap-2 font-black text-xl"
           >
-            <span className="w-10 h-10 rounded-xl bg-[#e94560] flex items-center justify-center">
+            <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={22} className="text-white" />
             </span>
-            <span className="text-[#16213e]">
-              Padelio<span className="text-[#e94560]">Treneris</span>
+            <span className="text-[#0B5C71]">
+              Padelio<span className="text-[#FF5733]">Treneris</span>
             </span>
           </Link>
         </div>
@@ -178,7 +178,7 @@ export default function LoginPage() {
         <Suspense
           fallback={
             <div className="card p-8 flex items-center justify-center min-h-[200px]">
-              <Loader2 size={24} className="animate-spin text-[#e94560]" />
+              <Loader2 size={24} className="animate-spin text-[#FF5733]" />
             </div>
           }
         >
@@ -186,7 +186,7 @@ export default function LoginPage() {
         </Suspense>
 
         <p className="text-center text-sm text-gray-400 mt-5">
-          <Link href="/" className="hover:text-[#e94560] transition-colors">
+          <Link href="/" className="hover:text-[#FF5733] transition-colors">
             ← Grįžti į svetainę
           </Link>
         </p>

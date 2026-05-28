@@ -75,7 +75,7 @@ export default function AdminBookingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-900 text-[#16213e]">Rezervacijos</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Rezervacijos</h1>
         <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
           {statusOptions.map(({ value, label }) => (
             <button
@@ -84,7 +84,7 @@ export default function AdminBookingsPage() {
               className={cn(
                 "px-3 py-1.5 rounded-lg text-xs font-600 transition-all",
                 filterStatus === value
-                  ? "bg-white text-[#16213e] shadow-sm"
+                  ? "bg-white text-[#0B5C71] shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               )}
             >
@@ -109,11 +109,11 @@ export default function AdminBookingsPage() {
             <div key={booking.id} className="card p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-[#16213e] flex items-center justify-center text-white font-900 shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0B5C71] flex items-center justify-center text-white font-900 shrink-0">
                     {(booking.user.name || booking.user.email || "?")[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-700 text-[#16213e]">
+                    <p className="font-700 text-[#0B5C71]">
                       {booking.user.name || "—"}
                     </p>
                     <p className="text-sm text-gray-400">{booking.user.email}</p>
@@ -144,15 +144,15 @@ export default function AdminBookingsPage() {
 
               {/* Trainer note */}
               {booking.sessionNote?.trainerNote && (
-                <div className="mb-3 p-3 bg-[#e94560]/5 border border-[#e94560]/20 rounded-xl">
-                  <p className="text-xs font-700 text-[#e94560] mb-1">💬 Trenerio komentaras:</p>
+                <div className="mb-3 p-3 bg-[#FF5733]/5 border border-[#FF5733]/20 rounded-xl">
+                  <p className="text-xs font-700 text-[#FF5733] mb-1">💬 Trenerio komentaras:</p>
                   <p className="text-sm text-gray-600">{booking.sessionNote.trainerNote}</p>
                   <button
                     onClick={() => {
                       setNoteId(booking.id);
                       setNoteText(booking.sessionNote?.trainerNote || "");
                     }}
-                    className="text-xs text-[#e94560] font-600 mt-1 hover:underline"
+                    className="text-xs text-[#FF5733] font-600 mt-1 hover:underline"
                   >
                     Redaguoti
                   </button>
@@ -167,7 +167,7 @@ export default function AdminBookingsPage() {
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Trenerio komentaras apie treniruotę..."
                     rows={3}
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-[#e94560]"
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-[#FF5733]"
                   />
                   <div className="flex gap-2">
                     <button

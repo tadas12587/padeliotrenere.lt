@@ -70,12 +70,12 @@ export async function POST(req: NextRequest) {
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
           <div style="background:#1a1a2e;padding:24px;border-radius:8px 8px 0 0;">
-            <h2 style="color:#e94560;margin:0;font-size:20px;">📬 Nauja kontaktinė žinutė</h2>
+            <h2 style="color:#FF5733;margin:0;font-size:20px;">📬 Nauja kontaktinė žinutė</h2>
           </div>
           <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
             <table style="width:100%;border-collapse:collapse;">
               <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;width:100px;">Vardas</td><td style="padding:8px 0;font-weight:600;color:#111827;">${name}</td></tr>
-              <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">El. paštas</td><td style="padding:8px 0;"><a href="mailto:${email}" style="color:#e94560;">${email}</a></td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">El. paštas</td><td style="padding:8px 0;"><a href="mailto:${email}" style="color:#FF5733;">${email}</a></td></tr>
               <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Tema</td><td style="padding:8px 0;font-weight:600;color:#111827;">${subject}</td></tr>
             </table>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       html: `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
           <div style="background:#1a1a2e;padding:24px;text-align:center;">
-            <h1 style="color:#e94560;margin:0;font-size:24px;">🎾 Padelio Treneris</h1>
+            <h1 style="color:#FF5733;margin:0;font-size:24px;">🎾 Padelio Treneris</h1>
           </div>
           <div style="padding:28px;background:#fff;">
             <h2 style="color:#1a1a2e;margin-top:0;">Sveiki, ${name}!</h2>
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
               Gavome jūsų žinutę tema <strong>${subject}</strong>.<br/>
               Atsakysime kuo greičiau — paprastai per 24 val. darbo dienomis.
             </p>
-            <div style="background:#f5f5f5;border-left:4px solid #e94560;padding:16px;margin:20px 0;border-radius:4px;">
+            <div style="background:#f5f5f5;border-left:4px solid #FF5733;padding:16px;margin:20px 0;border-radius:4px;">
               <p style="margin:0;color:#555;font-size:14px;white-space:pre-wrap;">${message}</p>
             </div>
             <p style="color:#999;font-size:13px;">Iki pasimatymo korte! 🎾</p>

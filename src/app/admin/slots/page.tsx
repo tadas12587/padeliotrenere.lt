@@ -99,7 +99,7 @@ export default function AdminSlotsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-900 text-[#16213e]">Laiko tarpai</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Laiko tarpai</h1>
         <button
           onClick={() => setShowForm(!showForm)}
           className="btn-primary text-sm py-2 px-4"
@@ -112,7 +112,7 @@ export default function AdminSlotsPage() {
       {/* Create form */}
       {showForm && (
         <div className="card p-6">
-          <h2 className="font-800 text-[#16213e] mb-4">Naujas laiko tarpas</h2>
+          <h2 className="font-800 text-[#0B5C71] mb-4">Naujas laiko tarpas</h2>
           {error && (
             <p className="text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4 text-sm">
               {error}
@@ -127,7 +127,7 @@ export default function AdminSlotsPage() {
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
             <div>
@@ -138,7 +138,7 @@ export default function AdminSlotsPage() {
                 type="time"
                 value={form.startTime}
                 onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
             <div>
@@ -149,7 +149,7 @@ export default function AdminSlotsPage() {
                 type="time"
                 value={form.endTime}
                 onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
             <div>
@@ -162,7 +162,7 @@ export default function AdminSlotsPage() {
                 max={10}
                 value={form.maxClients}
                 onChange={(e) => setForm((f) => ({ ...f, maxClients: Number(e.target.value) }))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function AdminSlotsPage() {
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               placeholder="pvz. Kortas Nr. 2"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             />
           </div>
           <div className="flex gap-3">
@@ -201,18 +201,18 @@ export default function AdminSlotsPage() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setCurrentDate((d) => addDays(d, -7))}
-          className="flex items-center gap-2 text-sm font-600 text-gray-500 hover:text-[#16213e] transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
+          className="flex items-center gap-2 text-sm font-600 text-gray-500 hover:text-[#0B5C71] transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
         >
           <ChevronLeft size={18} />
           Ankstesnė savaitė
         </button>
-        <h2 className="font-800 text-[#16213e]">
+        <h2 className="font-800 text-[#0B5C71]">
           {format(weekStart, "d MMM", { locale: lt })} –{" "}
           {format(weekEnd, "d MMM yyyy", { locale: lt })}
         </h2>
         <button
           onClick={() => setCurrentDate((d) => addDays(d, 7))}
-          className="flex items-center gap-2 text-sm font-600 text-gray-500 hover:text-[#16213e] transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
+          className="flex items-center gap-2 text-sm font-600 text-gray-500 hover:text-[#0B5C71] transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
         >
           Kita savaitė
           <ChevronRight size={18} />
@@ -231,7 +231,7 @@ export default function AdminSlotsPage() {
             const daySlots = slotsByDay(day);
             return (
               <div key={day.toISOString()} className="card overflow-hidden">
-                <div className="bg-[#16213e] text-white px-3 py-2.5 text-center">
+                <div className="bg-[#0B5C71] text-white px-3 py-2.5 text-center">
                   <p className="text-xs uppercase font-700 opacity-60">
                     {format(day, "EEE", { locale: lt })}
                   </p>
@@ -251,7 +251,7 @@ export default function AdminSlotsPage() {
                             : "border-gray-200 bg-gray-50 opacity-60"
                         )}
                       >
-                        <p className="font-800 text-[#16213e]">
+                        <p className="font-800 text-[#0B5C71]">
                           {slot.startTime} – {slot.endTime}
                         </p>
                         <div className="flex items-center justify-between mt-1">

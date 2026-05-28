@@ -83,7 +83,7 @@ export default function AdminArticlesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black text-[#16213e]">Straipsniai</h1>
+        <h1 className="text-2xl font-black text-[#0B5C71]">Straipsniai</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary text-sm py-2 px-4">
           <Plus size={16} />
           Naujas straipsnis
@@ -93,7 +93,7 @@ export default function AdminArticlesPage() {
       {/* New article form */}
       {showForm && (
         <div className="card p-6 space-y-4">
-          <h2 className="font-black text-[#16213e]">Naujas straipsnis</h2>
+          <h2 className="font-black text-[#0B5C71]">Naujas straipsnis</h2>
           {error && (
             <p className="text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm">
               {error}
@@ -106,7 +106,7 @@ export default function AdminArticlesPage() {
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Straipsnio pavadinimas"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733]"
             />
           </div>
           <div>
@@ -116,7 +116,7 @@ export default function AdminArticlesPage() {
               value={form.excerpt}
               onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
               placeholder="Trumpas aprašymas (neprivaloma)"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733]"
             />
           </div>
           <div>
@@ -126,7 +126,7 @@ export default function AdminArticlesPage() {
               value={form.coverImage}
               onChange={(e) => setForm((f) => ({ ...f, coverImage: e.target.value }))}
               placeholder="https://..."
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733]"
             />
           </div>
           <div>
@@ -136,7 +136,7 @@ export default function AdminArticlesPage() {
               onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
               placeholder="Straipsnio turinys..."
               rows={10}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] resize-y font-mono"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] resize-y font-mono"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ export default function AdminArticlesPage() {
                 type="checkbox"
                 checked={form.published}
                 onChange={(e) => setForm((f) => ({ ...f, published: e.target.checked }))}
-                className="w-4 h-4 accent-[#e94560]"
+                className="w-4 h-4 accent-[#FF5733]"
               />
               <span className="text-sm font-semibold text-gray-700">Publikuoti iš karto</span>
             </label>
@@ -190,7 +190,7 @@ export default function AdminArticlesPage() {
                     {article.published ? "Publikuota" : "Juodraštis"}
                   </span>
                 </div>
-                <h3 className="font-bold text-[#16213e] truncate">{article.title}</h3>
+                <h3 className="font-bold text-[#0B5C71] truncate">{article.title}</h3>
                 {article.excerpt && (
                   <p className="text-sm text-gray-400 truncate mt-0.5">{article.excerpt}</p>
                 )}

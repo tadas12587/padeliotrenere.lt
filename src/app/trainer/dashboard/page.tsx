@@ -44,14 +44,14 @@ export default async function TrainerDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="card p-6 bg-gradient-to-br from-[#16213e] to-[#0f3460] text-white">
+      <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
         <h1 className="text-2xl font-900">Sveiki, {name}! 🎾</h1>
         <p className="text-gray-400 mt-1 text-sm">
           Jūsų trenerio valdymo zona
         </p>
         <div className="flex gap-6 mt-5 pt-5 border-t border-white/10">
           <div>
-            <p className="text-2xl font-900 text-[#e94560]">
+            <p className="text-2xl font-900 text-[#FF5733]">
               {upcomingBookings.length}
             </p>
             <p className="text-xs text-gray-400">Artėjančios rezervacijos</p>
@@ -98,12 +98,12 @@ export default async function TrainerDashboardPage() {
               <Icon size={22} className={iconColor} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-700 text-[#16213e] text-sm">{label}</p>
+              <p className="font-700 text-[#0B5C71] text-sm">{label}</p>
               <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
             </div>
             <ArrowRight
               size={16}
-              className="text-gray-300 group-hover:text-[#e94560] transition-colors shrink-0"
+              className="text-gray-300 group-hover:text-[#FF5733] transition-colors shrink-0"
             />
           </Link>
         ))}
@@ -112,7 +112,7 @@ export default async function TrainerDashboardPage() {
       {/* Upcoming bookings */}
       <div className="card p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-800 text-[#16213e]">Artėjančios rezervacijos</h2>
+          <h2 className="font-800 text-[#0B5C71]">Artėjančios rezervacijos</h2>
         </div>
 
         {upcomingBookings.length === 0 ? (
@@ -159,7 +159,7 @@ export default async function TrainerDashboardPage() {
                     className="border-b border-gray-50 hover:bg-gray-50/50"
                   >
                     <td className="py-3 pr-4">
-                      <p className="font-600 text-[#16213e]">
+                      <p className="font-600 text-[#0B5C71]">
                         {b.user.name || "—"}
                       </p>
                       <p className="text-xs text-gray-400">{b.user.email}</p>

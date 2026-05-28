@@ -80,7 +80,7 @@ export default function TrainerCertificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Sertifikatai</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Sertifikatai</h1>
         <p className="text-gray-500 text-sm mt-1">
           Pridėkite savo kvalifikacijos sertifikatus
         </p>
@@ -100,40 +100,40 @@ export default function TrainerCertificationsPage() {
 
       {/* Add form */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#16213e] mb-4 flex items-center gap-2">
+        <h2 className="font-800 text-[#0B5C71] mb-4 flex items-center gap-2">
           <Plus size={18} />
           Pridėti sertifikatą
         </h2>
         <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-700 text-gray-700 mb-1.5">
-              Pavadinimas <span className="text-[#e94560]">*</span>
+              Pavadinimas <span className="text-[#FF5733]">*</span>
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               placeholder="Pvz. Padel Level 1"
             />
           </div>
           <div>
             <label className="block text-sm font-700 text-gray-700 mb-1.5">
-              Išdavė <span className="text-[#e94560]">*</span>
+              Išdavė <span className="text-[#FF5733]">*</span>
             </label>
             <input
               type="text"
               value={issuedBy}
               onChange={(e) => setIssuedBy(e.target.value)}
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               placeholder="Pvz. Padel Federation"
             />
           </div>
           <div>
             <label className="block text-sm font-700 text-gray-700 mb-1.5">
-              Metai <span className="text-[#e94560]">*</span>
+              Metai <span className="text-[#FF5733]">*</span>
             </label>
             <input
               type="number"
@@ -142,7 +142,7 @@ export default function TrainerCertificationsPage() {
               required
               min={1990}
               max={new Date().getFullYear()}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             />
           </div>
           <div className="sm:col-span-3 flex justify-end">
@@ -160,7 +160,7 @@ export default function TrainerCertificationsPage() {
 
       {/* List */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#16213e] mb-4">Mano sertifikatai</h2>
+        <h2 className="font-800 text-[#0B5C71] mb-4">Mano sertifikatai</h2>
 
         {loading ? (
           <p className="text-sm text-gray-400">Kraunama...</p>
@@ -178,11 +178,11 @@ export default function TrainerCertificationsPage() {
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0">
-                    <Award size={18} className="text-[#e94560]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0">
+                    <Award size={18} className="text-[#FF5733]" />
                   </div>
                   <div>
-                    <p className="font-700 text-[#16213e] text-sm">{cert.name}</p>
+                    <p className="font-700 text-[#0B5C71] text-sm">{cert.name}</p>
                     <p className="text-xs text-gray-500">
                       {cert.issuedBy} · {cert.year}
                     </p>
@@ -190,7 +190,7 @@ export default function TrainerCertificationsPage() {
                 </div>
                 <button
                   onClick={() => handleDelete(cert.id)}
-                  className="p-2 text-gray-400 hover:text-[#e94560] hover:bg-[#e94560]/10 rounded-lg transition-colors"
+                  className="p-2 text-gray-400 hover:text-[#FF5733] hover:bg-[#FF5733]/10 rounded-lg transition-colors"
                   title="Ištrinti"
                 >
                   <Trash2 size={16} />

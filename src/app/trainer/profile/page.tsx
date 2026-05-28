@@ -36,7 +36,7 @@ export default async function TrainerProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Mano profilis</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Mano profilis</h1>
         <p className="text-gray-500 text-sm mt-1">
           Redaguokite savo viešą trenerio profilį
         </p>

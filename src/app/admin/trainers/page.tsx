@@ -36,7 +36,7 @@ export default async function AdminTrainersPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Treneriai</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Treneriai</h1>
         <p className="text-gray-500 text-sm mt-1">
           Valdykite trenerių profilius ir jų statusą
         </p>
@@ -55,7 +55,7 @@ export default async function AdminTrainersPage({ searchParams }: Props) {
             href={value ? `/admin/trainers?status=${value}` : "/admin/trainers"}
             className={`px-4 py-2 rounded-xl text-sm font-700 transition-colors ${
               (status ?? "") === value
-                ? "bg-[#e94560] text-white"
+                ? "bg-[#FF5733] text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
             }`}
           >
@@ -100,14 +100,14 @@ export default async function AdminTrainersPage({ searchParams }: Props) {
                             className="w-9 h-9 rounded-full object-cover shrink-0"
                           />
                         ) : (
-                          <div className="w-9 h-9 rounded-full bg-[#e94560]/10 flex items-center justify-center shrink-0">
-                            <span className="text-sm font-700 text-[#e94560]">
+                          <div className="w-9 h-9 rounded-full bg-[#FF5733]/10 flex items-center justify-center shrink-0">
+                            <span className="text-sm font-700 text-[#FF5733]">
                               {trainer.displayName.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         )}
                         <div>
-                          <p className="font-700 text-[#16213e]">{trainer.displayName}</p>
+                          <p className="font-700 text-[#0B5C71]">{trainer.displayName}</p>
                           <p className="text-xs text-gray-400">{trainer.user.name || "—"}</p>
                         </div>
                       </div>

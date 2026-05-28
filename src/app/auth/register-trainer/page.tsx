@@ -45,11 +45,11 @@ export default function RegisterTrainerPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           <div className="card p-10 text-center">
             <div className="text-6xl mb-5">✅</div>
-            <h1 className="text-2xl font-900 text-[#16213e] mb-3">
+            <h1 className="text-2xl font-900 text-[#0B5C71] mb-3">
               Registracija pateikta!
             </h1>
             <p className="text-gray-500 mb-4">
@@ -69,7 +69,7 @@ export default function RegisterTrainerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -77,17 +77,17 @@ export default function RegisterTrainerPage() {
             href="/"
             className="inline-flex items-center gap-2 font-black text-xl"
           >
-            <span className="w-10 h-10 rounded-xl bg-[#e94560] flex items-center justify-center">
+            <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={22} className="text-white" />
             </span>
-            <span className="text-[#16213e]">
-              Padelio<span className="text-[#e94560]">Treneris</span>
+            <span className="text-[#0B5C71]">
+              Padelio<span className="text-[#FF5733]">Treneris</span>
             </span>
           </Link>
         </div>
 
         <div className="card p-8">
-          <h1 className="text-2xl font-900 text-[#16213e] mb-1">Registruotis kaip treneris</h1>
+          <h1 className="text-2xl font-900 text-[#0B5C71] mb-1">Registruotis kaip treneris</h1>
           <p className="text-gray-500 text-sm mb-6">
             Užpildykite formą ir laukite administratoriaus patvirtinimo
           </p>
@@ -110,7 +110,7 @@ export default function RegisterTrainerPage() {
                 onChange={handleChange}
                 placeholder="Jonas Jonaitis"
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
 
@@ -125,7 +125,7 @@ export default function RegisterTrainerPage() {
                 onChange={handleChange}
                 placeholder="Vilnius"
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
 
@@ -139,7 +139,7 @@ export default function RegisterTrainerPage() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="+370 600 00000"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
               />
             </div>
 
@@ -153,7 +153,7 @@ export default function RegisterTrainerPage() {
                 onChange={handleChange}
                 placeholder="Papasakokite apie savo patirtį, sertifikatus, treniravimo stilių..."
                 rows={4}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors resize-none"
               />
             </div>
 

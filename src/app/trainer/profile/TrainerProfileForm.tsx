@@ -98,32 +98,32 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
       )}
 
       <div className="card p-6 space-y-5">
-        <h2 className="font-800 text-[#16213e] text-lg">Pagrindinė informacija</h2>
+        <h2 className="font-800 text-[#0B5C71] text-lg">Pagrindinė informacija</h2>
 
         <div>
           <label className="block text-sm font-700 text-gray-700 mb-1.5">
-            Vardas / Pseudonimas <span className="text-[#e94560]">*</span>
+            Vardas / Pseudonimas <span className="text-[#FF5733]">*</span>
           </label>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             required
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             placeholder="Jūsų vardas arba pseudonimas"
           />
         </div>
 
         <div>
           <label className="block text-sm font-700 text-gray-700 mb-1.5">
-            Miestas <span className="text-[#e94560]">*</span>
+            Miestas <span className="text-[#FF5733]">*</span>
           </label>
           <input
             type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
             required
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             placeholder="Pvz. Vilnius"
           />
         </div>
@@ -136,7 +136,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             placeholder="+370 600 00000"
           />
         </div>
@@ -149,7 +149,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
             type="url"
             value={photoUrl}
             onChange={(e) => setPhotoUrl(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560]"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             placeholder="https://..."
           />
           {photoUrl && (
@@ -172,7 +172,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560] resize-none"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733] resize-none"
             placeholder="Papasakokite apie savo patirtį, treniravimo stilių..."
           />
         </div>
@@ -180,7 +180,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
 
       {/* Arenas */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#16213e] text-lg mb-4">Mano arenos</h2>
+        <h2 className="font-800 text-[#0B5C71] text-lg mb-4">Mano arenos</h2>
         {arenas.length === 0 ? (
           <p className="text-sm text-gray-500">Patvirtintų arenų nėra.</p>
         ) : (
@@ -192,7 +192,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
                   key={arena.id}
                   className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                     checked
-                      ? "border-[#e94560] bg-[#e94560]/5"
+                      ? "border-[#FF5733] bg-[#FF5733]/5"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -200,10 +200,10 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleArena(arena.id)}
-                    className="w-4 h-4 accent-[#e94560]"
+                    className="w-4 h-4 accent-[#FF5733]"
                   />
                   <div>
-                    <p className="text-sm font-700 text-[#16213e]">{arena.name}</p>
+                    <p className="text-sm font-700 text-[#0B5C71]">{arena.name}</p>
                     <p className="text-xs text-gray-500">{arena.city}</p>
                   </div>
                 </label>

@@ -52,7 +52,7 @@ export default async function ArticlePage({ params }: Props) {
       <div className="container-tight py-12 max-w-3xl">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#e94560] transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF5733] transition-colors mb-6"
         >
           <ArrowLeft size={16} />
           Grįžti į blog'ą
@@ -62,12 +62,12 @@ export default async function ArticlePage({ params }: Props) {
           {formatDateLT(article.publishedAt || article.createdAt)}
         </p>
 
-        <h1 className="text-3xl lg:text-4xl font-900 text-[#16213e] mb-6 leading-tight">
+        <h1 className="text-3xl lg:text-4xl font-900 text-[#0B5C71] mb-6 leading-tight">
           {article.title}
         </h1>
 
         {article.excerpt && (
-          <p className="text-lg text-gray-500 leading-relaxed border-l-4 border-[#e94560] pl-5 mb-8">
+          <p className="text-lg text-gray-500 leading-relaxed border-l-4 border-[#FF5733] pl-5 mb-8">
             {article.excerpt}
           </p>
         )}
@@ -75,9 +75,9 @@ export default async function ArticlePage({ params }: Props) {
         {/* Article content */}
         <div
           className="prose prose-lg max-w-none text-gray-700 leading-relaxed
-            prose-headings:font-900 prose-headings:text-[#16213e]
-            prose-a:text-[#e94560] prose-a:no-underline hover:prose-a:underline
-            prose-strong:font-800 prose-strong:text-[#16213e]"
+            prose-headings:font-900 prose-headings:text-[#0B5C71]
+            prose-a:text-[#FF5733] prose-a:no-underline hover:prose-a:underline
+            prose-strong:font-800 prose-strong:text-[#0B5C71]"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
 
@@ -85,7 +85,7 @@ export default async function ArticlePage({ params }: Props) {
         <div className="mt-12 pt-8 border-t border-gray-100">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#e94560] transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#FF5733] transition-colors"
           >
             <ArrowLeft size={16} />
             Visi straipsniai

@@ -34,7 +34,7 @@ export default async function AdminArenasPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Arenos</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Arenos</h1>
         <p className="text-gray-500 text-sm mt-1">
           Valdykite padelo arenas ir jų patvirtinimą
         </p>
@@ -52,7 +52,7 @@ export default async function AdminArenasPage({ searchParams }: Props) {
             href={value ? `/admin/arenas?status=${value}` : "/admin/arenas"}
             className={`px-4 py-2 rounded-xl text-sm font-700 transition-colors ${
               (status ?? "") === value
-                ? "bg-[#e94560] text-white"
+                ? "bg-[#FF5733] text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
             }`}
           >
@@ -98,11 +98,11 @@ export default async function AdminArenasPage({ searchParams }: Props) {
                             className="w-9 h-9 rounded-lg object-cover shrink-0"
                           />
                         ) : (
-                          <div className="w-9 h-9 rounded-lg bg-[#16213e]/10 flex items-center justify-center shrink-0 text-lg">
+                          <div className="w-9 h-9 rounded-lg bg-[#0B5C71]/10 flex items-center justify-center shrink-0 text-lg">
                             🏟️
                           </div>
                         )}
-                        <p className="font-700 text-[#16213e]">{arena.name}</p>
+                        <p className="font-700 text-[#0B5C71]">{arena.name}</p>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-gray-600">{arena.city}</td>
@@ -119,7 +119,7 @@ export default async function AdminArenasPage({ searchParams }: Props) {
                       <p className="text-xs text-gray-400">{arena.createdBy.email}</p>
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <span className="font-700 text-[#16213e]">
+                      <span className="font-700 text-[#0B5C71]">
                         {arena._count.trainers}
                       </span>
                     </td>

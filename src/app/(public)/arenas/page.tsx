@@ -19,29 +19,37 @@ export default async function ArenasPage({
   const { city = "" } = await searchParams;
   const cityFilter = typeof city === "string" ? city.trim() : "";
 
-  const arenas = await prisma.arena.findMany({
-    where: {
-      status: "APPROVED",
-      ...(cityFilter ? { city: { contains: cityFilter } } : {}),
-    },
-    include: {
-      trainers: {
-        include: {
-          trainer: {
-            select: { status: true },
-          },
+  const [arenas, rawCities] = await Promise.all([
+    prisma.arena.findMany({
+      where: {
+        status: "APPROVED",
+        ...(cityFilter ? { city: { contains: cityFilter } } : {}),
+      },
+      include: {
+        trainers: {
+          include: { trainer: { select: { status: true } } },
         },
       },
-    },
-    orderBy: { name: "asc" },
-  });
+      orderBy: { name: "asc" },
+    }),
+    prisma.arena.findMany({
+      where: { status: "APPROVED" },
+      select: { city: true },
+      distinct: ["city"],
+      orderBy: { city: "asc" },
+    }),
+  ]);
+
+  const availableCities = rawCities
+    .map((a) => a.city)
+    .filter((c): c is string => !!c);
 
   return (
     <div className="min-h-screen">
       {/* Page Header */}
-      <section className="bg-[#16213e] text-white py-16">
+      <section className="bg-[#0B5C71] text-white py-16">
         <div className="container-tight">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Platforma
           </span>
           <h1 className="text-4xl lg:text-5xl font-900 mt-3 mb-4">Arenos</h1>
@@ -54,17 +62,17 @@ export default async function ArenasPage({
       {/* Filters */}
       <section className="bg-white border-b border-gray-100 py-6 sticky top-0 z-10 shadow-sm">
         <div className="container-tight">
-          <ArenaFilters initialCity={cityFilter} />
+          <ArenaFilters initialCity={cityFilter} availableCities={availableCities} />
         </div>
       </section>
 
       {/* Arena Grid */}
-      <section className="py-12 bg-[#f8f9fa]">
+      <section className="py-12 bg-[#F4F4F4]">
         <div className="container-wide">
           {arenas.length === 0 ? (
             <div className="text-center py-24">
               <div className="text-6xl mb-4">🏟️</div>
-              <h2 className="text-2xl font-800 text-[#16213e] mb-2">
+              <h2 className="text-2xl font-800 text-[#0B5C71] mb-2">
                 Arenų nerasta
               </h2>
               <p className="text-gray-500">
@@ -84,7 +92,7 @@ export default async function ArenasPage({
                     className="card p-0 overflow-hidden flex flex-col"
                   >
                     {/* Photo / Placeholder */}
-                    <div className="relative h-44 bg-gradient-to-br from-[#16213e] to-[#0f3460] flex items-center justify-center">
+                    <div className="relative h-44 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
                       {arena.photoUrl ? (
                         <img
                           src={arena.photoUrl}
@@ -99,11 +107,11 @@ export default async function ArenasPage({
                     {/* Info */}
                     <div className="p-5 flex flex-col gap-3 flex-1">
                       <div>
-                        <h2 className="font-800 text-lg text-[#16213e] leading-tight">
+                        <h2 className="font-800 text-lg text-[#0B5C71] leading-tight">
                           {arena.name}
                         </h2>
                         <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-1">
-                          <MapPin size={13} className="text-[#e94560]" />
+                          <MapPin size={13} className="text-[#FF5733]" />
                           <span>
                             {arena.city}
                             {arena.address ? `, ${arena.address}` : ""}

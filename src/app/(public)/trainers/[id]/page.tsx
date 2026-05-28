@@ -58,7 +58,7 @@ function InitialsAvatar({
       : "w-10 h-10 text-base rounded-full";
   return (
     <div
-      className={`${cls} bg-[#e94560]/20 border-2 border-[#e94560]/40 flex items-center justify-center font-900 text-white shrink-0`}
+      className={`${cls} bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-white shrink-0`}
     >
       {initials}
     </div>
@@ -143,9 +143,9 @@ export default async function TrainerDetailPage({
   }, {});
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-[#F4F4F4]">
       {/* Header */}
-      <section className="bg-[#16213e] text-white py-12">
+      <section className="bg-[#0B5C71] text-white py-12">
         <div className="container-tight">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Photo / Avatar */}
@@ -154,7 +154,7 @@ export default async function TrainerDetailPage({
                 <img
                   src={trainer.photoUrl}
                   alt={trainer.displayName}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-[#e94560]/40"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-[#FF5733]/40"
                 />
               ) : (
                 <InitialsAvatar name={trainer.displayName} size="lg" />
@@ -171,7 +171,7 @@ export default async function TrainerDetailPage({
                   Patvirtintas
                 </span>
                 {trainer.isFeatured && (
-                  <span className="bg-[#e94560]/20 text-[#e94560] border border-[#e94560]/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="bg-[#FF5733]/20 text-[#FF5733] border border-[#FF5733]/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
                     Rekomenduojamas
                   </span>
                 )}
@@ -185,7 +185,7 @@ export default async function TrainerDetailPage({
               {avgRating !== null && (
                 <div className="flex items-center gap-2">
                   <StarRating rating={avgRating} />
-                  <span className="font-700 text-[#e94560]">
+                  <span className="font-700 text-[#FF5733]">
                     {avgRating.toFixed(1)}
                   </span>
                   <span className="text-gray-400 text-sm">
@@ -214,7 +214,7 @@ export default async function TrainerDetailPage({
           {/* Bio */}
           {trainer.bio && (
             <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#16213e] mb-4">
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
                 Apie trenerį
               </h2>
               <p className="text-gray-600 leading-relaxed">{trainer.bio}</p>
@@ -224,7 +224,7 @@ export default async function TrainerDetailPage({
           {/* Certifications */}
           {trainer.certifications.length > 0 && (
             <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#16213e] mb-4">
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
                 Sertifikatai
               </h2>
               <ul className="flex flex-col gap-3">
@@ -232,10 +232,10 @@ export default async function TrainerDetailPage({
                   <li key={cert.id} className="flex items-start gap-3">
                     <CheckCircle
                       size={18}
-                      className="text-[#e94560] shrink-0 mt-0.5"
+                      className="text-[#FF5733] shrink-0 mt-0.5"
                     />
                     <div>
-                      <p className="font-700 text-[#16213e] text-sm">
+                      <p className="font-700 text-[#0B5C71] text-sm">
                         {cert.name}
                       </p>
                       <p className="text-gray-400 text-xs">
@@ -251,7 +251,7 @@ export default async function TrainerDetailPage({
           {/* Services */}
           {trainer.services.length > 0 && (
             <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#16213e] mb-4">
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
                 Paslaugos
               </h2>
               <div className="flex flex-col gap-4">
@@ -262,7 +262,7 @@ export default async function TrainerDetailPage({
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-700 text-[#16213e]">
+                        <h3 className="font-700 text-[#0B5C71]">
                           {service.name}
                         </h3>
                         {service.description && (
@@ -272,7 +272,7 @@ export default async function TrainerDetailPage({
                         )}
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-800 text-[#e94560]">
+                        <p className="font-800 text-[#FF5733]">
                           {service.price
                             ? `${service.price.toString()} €`
                             : "Nemokama"}
@@ -291,7 +291,7 @@ export default async function TrainerDetailPage({
 
           {/* Reviews */}
           <div className="card p-7">
-            <h2 className="text-xl font-800 text-[#16213e] mb-4">
+            <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
               Atsiliepimai
               {trainer.reviews.length > 0 && (
                 <span className="text-gray-400 font-600 text-base ml-2">
@@ -311,10 +311,10 @@ export default async function TrainerDetailPage({
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#e94560]/10 flex items-center justify-center font-800 text-[#e94560] text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[#FF5733]/10 flex items-center justify-center font-800 text-[#FF5733] text-xs shrink-0">
                           {(review.author.name ?? review.author.email)[0].toUpperCase()}
                         </div>
-                        <span className="font-700 text-sm text-[#16213e]">
+                        <span className="font-700 text-sm text-[#0B5C71]">
                           {review.author.name ?? review.author.email}
                         </span>
                       </div>
@@ -340,7 +340,7 @@ export default async function TrainerDetailPage({
           {/* Arenas */}
           {trainer.arenas.length > 0 && (
             <div className="card p-6">
-              <h2 className="text-lg font-800 text-[#16213e] mb-4">
+              <h2 className="text-lg font-800 text-[#0B5C71] mb-4">
                 Arenos
               </h2>
               <ul className="flex flex-col gap-3">
@@ -348,14 +348,14 @@ export default async function TrainerDetailPage({
                   <li key={arena.id}>
                     <Link
                       href={`/arenas/${arena.id}`}
-                      className="flex items-start gap-2 text-sm group hover:text-[#e94560] transition-colors"
+                      className="flex items-start gap-2 text-sm group hover:text-[#FF5733] transition-colors"
                     >
                       <MapPin
                         size={14}
-                        className="text-[#e94560] shrink-0 mt-0.5"
+                        className="text-[#FF5733] shrink-0 mt-0.5"
                       />
                       <div>
-                        <p className="font-700 text-[#16213e] group-hover:text-[#e94560] transition-colors">
+                        <p className="font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
                           {arena.name}
                         </p>
                         <p className="text-gray-400 text-xs">{arena.city}</p>
@@ -369,8 +369,8 @@ export default async function TrainerDetailPage({
 
           {/* Availability */}
           <div className="card p-6">
-            <h2 className="text-lg font-800 text-[#16213e] mb-4 flex items-center gap-2">
-              <Calendar size={18} className="text-[#e94560]" />
+            <h2 className="text-lg font-800 text-[#0B5C71] mb-4 flex items-center gap-2">
+              <Calendar size={18} className="text-[#FF5733]" />
               Laisvi laikai
             </h2>
 
@@ -389,9 +389,9 @@ export default async function TrainerDetailPage({
                       {slots.map((slot) => (
                         <div
                           key={slot.id}
-                          className="flex items-center justify-between bg-[#f8f9fa] rounded-lg px-3 py-2 text-sm"
+                          className="flex items-center justify-between bg-[#F4F4F4] rounded-lg px-3 py-2 text-sm"
                         >
-                          <span className="font-700 text-[#16213e]">
+                          <span className="font-700 text-[#0B5C71]">
                             {formatTime(slot.startTime)} –{" "}
                             {formatTime(slot.endTime)}
                           </span>

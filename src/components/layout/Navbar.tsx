@@ -45,11 +45,12 @@ export default function Navbar() {
           className="flex items-center gap-2 font-black text-xl tracking-tight hover:opacity-90 transition-opacity"
           onClick={() => setOpen(false)}
         >
-          <span className="w-9 h-9 rounded-lg bg-[#e94560] flex items-center justify-center">
+          <span className="w-9 h-9 rounded-lg bg-[#FF5733] flex items-center justify-center">
             <Dumbbell size={20} className="text-white" />
           </span>
-          <span className="text-[#16213e]">
-            Padelio<span className="text-[#e94560]">Treneris</span>
+          <span className="font-heading text-[#0B5C71]">
+            Mano<span className="text-[#FF5733]">Treniruote</span>
+            <span className="text-[#0B5C71] text-sm font-600">.lt</span>
           </span>
         </Link>
 
@@ -62,8 +63,8 @@ export default function Navbar() {
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-600 transition-all",
                   pathname === href
-                    ? "bg-[#e94560] text-white font-700"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-[#e94560]"
+                    ? "bg-[#FF5733] text-white font-700"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-[#FF5733]"
                 )}
               >
                 {label}
@@ -80,7 +81,7 @@ export default function Navbar() {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-600 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                <div className="w-7 h-7 rounded-full bg-[#e94560]/15 flex items-center justify-center text-[#e94560] font-800 text-xs">
+                <div className="w-7 h-7 rounded-full bg-[#FF5733]/15 flex items-center justify-center text-[#FF5733] font-800 text-xs">
                   {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U"}
                 </div>
                 <span className="max-w-[120px] truncate">{user?.name ?? user?.email}</span>
@@ -92,7 +93,7 @@ export default function Navbar() {
                     <Link
                       href={dashboard.href}
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-colors"
                     >
                       <LayoutDashboard size={15} />
                       {dashboard.label}
@@ -101,7 +102,7 @@ export default function Navbar() {
                   <Link
                     href="/client/profile"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-colors"
                   >
                     <User size={15} />
                     Profilis
@@ -109,7 +110,7 @@ export default function Navbar() {
                   <hr className="my-1 border-gray-100" />
                   <button
                     onClick={() => { signOut({ callbackUrl: "/" }); setUserMenuOpen(false); }}
-                    className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-colors"
                   >
                     <LogOut size={15} />
                     Atsijungti
@@ -121,7 +122,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth/login"
-                className="text-sm font-600 text-gray-700 hover:text-[#e94560] transition-colors px-3 py-2"
+                className="text-sm font-600 text-gray-700 hover:text-[#FF5733] transition-colors px-3 py-2"
               >
                 Prisijungti
               </Link>
@@ -154,7 +155,7 @@ export default function Navbar() {
                   className={cn(
                     "block px-4 py-3 rounded-lg text-sm font-600 transition-all",
                     pathname === href
-                      ? "bg-[#e94560] text-white"
+                      ? "bg-[#FF5733] text-white"
                       : "text-gray-700 hover:bg-gray-100"
                   )}
                 >
@@ -169,14 +170,14 @@ export default function Navbar() {
                     <Link
                       href={dashboard.href}
                       onClick={() => setOpen(false)}
-                      className="block px-4 py-3 rounded-lg text-sm font-600 text-center bg-[#16213e] text-white transition-all"
+                      className="block px-4 py-3 rounded-lg text-sm font-600 text-center bg-[#0B5C71] text-white transition-all"
                     >
                       {dashboard.label}
                     </Link>
                   )}
                   <button
                     onClick={() => { signOut({ callbackUrl: "/" }); setOpen(false); }}
-                    className="block w-full px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                    className="block w-full px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#FF5733] hover:text-[#FF5733] transition-all"
                   >
                     Atsijungti
                   </button>
@@ -186,7 +187,7 @@ export default function Navbar() {
                   <Link
                     href="/auth/login"
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                    className="block px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#FF5733] hover:text-[#FF5733] transition-all"
                   >
                     Prisijungti
                   </Link>

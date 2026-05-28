@@ -91,7 +91,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-900 text-[#16213e]">Dashboard</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">
           {new Date().toLocaleDateString("lt-LT", {
             weekday: "long",
@@ -109,7 +109,7 @@ export default async function AdminDashboardPage() {
             <div className={`w-11 h-11 rounded-xl ${bg} flex items-center justify-center mb-3`}>
               <Icon size={22} className={color} />
             </div>
-            <p className="text-3xl font-900 text-[#16213e]">{value}</p>
+            <p className="text-3xl font-900 text-[#0B5C71]">{value}</p>
             <p className="text-sm font-700 text-gray-600 mt-0.5">{label}</p>
             <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
           </div>
@@ -130,10 +130,10 @@ export default async function AdminDashboardPage() {
             className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow group"
           >
             <span className="text-2xl">{emoji}</span>
-            <span className="text-sm font-700 text-[#16213e] group-hover:text-[#e94560] transition-colors">
+            <span className="text-sm font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
               {label}
             </span>
-            <ArrowRight size={14} className="ml-auto text-gray-300 group-hover:text-[#e94560] transition-colors" />
+            <ArrowRight size={14} className="ml-auto text-gray-300 group-hover:text-[#FF5733] transition-colors" />
           </Link>
         ))}
       </div>
@@ -141,10 +141,10 @@ export default async function AdminDashboardPage() {
       {/* Recent bookings */}
       <div className="card p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-800 text-[#16213e]">Paskutinės rezervacijos</h2>
+          <h2 className="font-800 text-[#0B5C71]">Paskutinės rezervacijos</h2>
           <Link
             href="/admin/bookings"
-            className="text-sm text-[#e94560] font-600 flex items-center gap-1"
+            className="text-sm text-[#FF5733] font-600 flex items-center gap-1"
           >
             Visos <ArrowRight size={14} />
           </Link>
@@ -164,7 +164,7 @@ export default async function AdminDashboardPage() {
               {recentBookings.map((b) => (
                 <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                   <td className="py-3 pr-4">
-                    <p className="font-600 text-[#16213e]">{b.user.name || "—"}</p>
+                    <p className="font-600 text-[#0B5C71]">{b.user.name || "—"}</p>
                     <p className="text-xs text-gray-400">{b.user.email}</p>
                   </td>
                   <td className="py-3 pr-4 text-gray-600">

@@ -5,20 +5,21 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#16213e] text-white">
+    <footer className="bg-[#0B5C71] text-white">
       <div className="container-wide py-14 grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Brand */}
         <div>
           <Link href="/" className="flex items-center gap-2 font-black text-xl mb-4">
-            <span className="w-9 h-9 rounded-lg bg-[#e94560] flex items-center justify-center">
+            <span className="w-9 h-9 rounded-lg bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={20} className="text-white" />
             </span>
-            <span>
-              Padelio<span className="text-[#e94560]">Treneris</span>
+            <span className="font-heading">
+              Mano<span className="text-[#FF5733]">Treniruote</span>
+              <span className="text-white/70 text-sm font-600">.lt</span>
             </span>
           </Link>
           <p className="text-gray-400 text-sm leading-relaxed mb-5">
-            Profesionalios padelio treniruotės visiems lygiams.
+            Rask geriausią padelio trenerį Lietuvoje.
             Nuo pradedančiųjų iki pažengusių žaidėjų.
           </p>
           <div className="flex gap-3">
@@ -26,7 +27,7 @@ export default function Footer() {
               href="https://instagram.com"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#e94560] transition-colors"
+              className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#FF5733] transition-colors"
               aria-label="Instagram"
             >
               <AtSign size={18} />
@@ -35,7 +36,7 @@ export default function Footer() {
               href="https://facebook.com"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#e94560] transition-colors"
+              className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-[#FF5733] transition-colors"
               aria-label="Facebook"
             >
               <Share2 size={18} />
@@ -51,7 +52,8 @@ export default function Footer() {
           <ul className="flex flex-col gap-2">
             {[
               { href: "/", label: "Pagrindinis" },
-              { href: "/about", label: "Apie mane" },
+              { href: "/trainers", label: "Treneriai" },
+              { href: "/arenas", label: "Arenos" },
               { href: "/booking", label: "Rezervacija" },
               { href: "/blog", label: "Blog'as" },
               { href: "/contact", label: "Kontaktai" },
@@ -59,7 +61,7 @@ export default function Footer() {
               <li key={href}>
                 <Link
                   href={href}
-                  className="text-gray-400 hover:text-[#e94560] transition-colors text-sm"
+                  className="text-gray-400 hover:text-[#FF5733] transition-colors text-sm"
                 >
                   {label}
                 </Link>
@@ -75,15 +77,15 @@ export default function Footer() {
           </h3>
           <ul className="flex flex-col gap-3 text-sm text-gray-400">
             <li className="flex items-center gap-2 hover:text-white transition-colors">
-              <Phone size={16} className="text-[#e94560] shrink-0" />
+              <Phone size={16} className="text-[#FF5733] shrink-0" />
               <a href="tel:+37060000000">+370 600 00000</a>
             </li>
             <li className="flex items-center gap-2 hover:text-white transition-colors">
-              <Mail size={16} className="text-[#e94560] shrink-0" />
+              <Mail size={16} className="text-[#FF5733] shrink-0" />
               <a href="mailto:info@padeliotrenere.lt">info@padeliotrenere.lt</a>
             </li>
             <li className="flex items-start gap-2">
-              <MapPin size={16} className="text-[#e94560] shrink-0 mt-0.5" />
+              <MapPin size={16} className="text-[#FF5733] shrink-0 mt-0.5" />
               <span>Vilnius, Lietuva</span>
             </li>
           </ul>
@@ -98,7 +100,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container-wide py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-          <p>© {year} Padelio Treneris. Visos teisės saugomos.</p>
+          <p>© {year} ManoTreniruote.lt. Visos teisės saugomos.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">
               Privatumo politika

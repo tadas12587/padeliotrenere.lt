@@ -38,9 +38,9 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-[#16213e] text-white py-14">
+      <div className="bg-[#0B5C71] text-white py-14">
         <div className="container-tight text-center">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Kontaktai
           </span>
           <h1 className="text-4xl font-900 mt-2 mb-3">Susisiekite</h1>
@@ -54,7 +54,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact info */}
           <div>
-            <h2 className="text-2xl font-900 text-[#16213e] mb-6">
+            <h2 className="text-2xl font-900 text-[#0B5C71] mb-6">
               Kontaktinė informacija
             </h2>
 
@@ -64,8 +64,8 @@ export default function ContactPage() {
                   key={label}
                   className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0">
-                    <Icon size={22} className="text-[#e94560]" />
+                  <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0">
+                    <Icon size={22} className="text-[#FF5733]" />
                   </div>
                   <div>
                     <p className="text-xs font-700 text-gray-400 uppercase tracking-wide">
@@ -74,12 +74,12 @@ export default function ContactPage() {
                     {href ? (
                       <a
                         href={href}
-                        className="font-700 text-[#16213e] hover:text-[#e94560] transition-colors"
+                        className="font-700 text-[#0B5C71] hover:text-[#FF5733] transition-colors"
                       >
                         {value}
                       </a>
                     ) : (
-                      <p className="font-700 text-[#16213e]">{value}</p>
+                      <p className="font-700 text-[#0B5C71]">{value}</p>
                     )}
                   </div>
                 </div>
@@ -88,13 +88,13 @@ export default function ContactPage() {
 
             {/* Social */}
             <div>
-              <p className="font-700 text-[#16213e] mb-3">Socialiniai tinklai</p>
+              <p className="font-700 text-[#0B5C71] mb-3">Socialiniai tinklai</p>
               <div className="flex gap-3">
                 <a
                   href="https://instagram.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-600 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-600 text-gray-700 hover:border-[#FF5733] hover:text-[#FF5733] transition-all"
                 >
                   <AtSign size={18} />
                   Instagram
@@ -103,7 +103,7 @@ export default function ContactPage() {
                   href="https://facebook.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-600 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-sm font-600 text-gray-700 hover:border-[#FF5733] hover:text-[#FF5733] transition-all"
                 >
                   <Share2 size={18} />
                   Facebook

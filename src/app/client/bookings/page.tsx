@@ -82,7 +82,7 @@ export default function ClientBookingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-900 text-[#16213e]">Mano rezervacijos</h1>
+        <h1 className="text-2xl font-900 text-[#0B5C71]">Mano rezervacijos</h1>
         <Link href="/booking" className="btn-primary text-sm py-2 px-4">
           + Nauja rezervacija
         </Link>
@@ -97,7 +97,7 @@ export default function ClientBookingsPage() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-600 transition-all",
               tab === key
-                ? "bg-white text-[#16213e] shadow-sm"
+                ? "bg-white text-[#0B5C71] shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -125,11 +125,11 @@ export default function ClientBookingsPage() {
             <div key={booking.id} className="card p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0 text-2xl">
+                  <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0 text-2xl">
                     🎾
                   </div>
                   <div>
-                    <p className="font-700 text-[#16213e]">
+                    <p className="font-700 text-[#0B5C71]">
                       {formatDateLT(booking.slot.date)}
                     </p>
                     <p className="text-gray-500 text-sm flex items-center gap-1 mt-0.5">
@@ -161,8 +161,8 @@ export default function ClientBookingsPage() {
 
               {/* Trainer note */}
               {booking.sessionNote?.trainerNote && (
-                <div className="mt-4 p-3 bg-[#e94560]/5 border border-[#e94560]/20 rounded-xl">
-                  <p className="text-xs font-700 text-[#e94560] mb-1">
+                <div className="mt-4 p-3 bg-[#FF5733]/5 border border-[#FF5733]/20 rounded-xl">
+                  <p className="text-xs font-700 text-[#FF5733] mb-1">
                     💬 Trenerio komentaras:
                   </p>
                   <p className="text-sm text-gray-700">{booking.sessionNote.trainerNote}</p>
@@ -192,7 +192,7 @@ export default function ClientBookingsPage() {
                     setNoteBookingId(booking.id);
                     setNoteText("");
                   }}
-                  className="mt-3 flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#e94560] transition-colors"
+                  className="mt-3 flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors"
                 >
                   <MessageSquare size={14} />
                   Pridėti pastabą apie treniruotę
@@ -207,7 +207,7 @@ export default function ClientBookingsPage() {
                     onChange={(e) => setNoteText(e.target.value)}
                     placeholder="Jūsų pastabos apie treniruotę..."
                     rows={3}
-                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-[#e94560] transition-colors"
+                    className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-[#FF5733] transition-colors"
                   />
                   <div className="flex gap-2">
                     <button

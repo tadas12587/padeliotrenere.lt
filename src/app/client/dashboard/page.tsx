@@ -43,7 +43,7 @@ export default async function ClientDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div className="card p-6 bg-gradient-to-br from-[#16213e] to-[#0f3460] text-white">
+      <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
         <h1 className="text-2xl font-900">
           Sveiki, {user.name?.split(" ")[0] || "sportininke"}! 🎾
         </h1>
@@ -52,11 +52,11 @@ export default async function ClientDashboardPage() {
         </p>
         <div className="flex gap-6 mt-5 pt-5 border-t border-white/10">
           <div>
-            <p className="text-2xl font-900 text-[#e94560]">{totalBookings}</p>
+            <p className="text-2xl font-900 text-[#FF5733]">{totalBookings}</p>
             <p className="text-xs text-gray-400">Iš viso rezervacijų</p>
           </div>
           <div>
-            <p className="text-2xl font-900 text-[#e94560]">{completedCount}</p>
+            <p className="text-2xl font-900 text-[#FF5733]">{completedCount}</p>
             <p className="text-xs text-gray-400">Treniruočių įvykdyta</p>
           </div>
         </div>
@@ -65,10 +65,10 @@ export default async function ClientDashboardPage() {
       {/* Upcoming */}
       <div className="card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-800 text-[#16213e]">Artėjančios treniruotės</h2>
+          <h2 className="font-800 text-[#0B5C71]">Artėjančios treniruotės</h2>
           <Link
             href="/client/bookings"
-            className="text-sm text-[#e94560] font-600 flex items-center gap-1 hover:underline"
+            className="text-sm text-[#FF5733] font-600 flex items-center gap-1 hover:underline"
           >
             Visos <ArrowRight size={14} />
           </Link>
@@ -90,11 +90,11 @@ export default async function ClientDashboardPage() {
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0">
                     <span className="text-2xl">🎾</span>
                   </div>
                   <div>
-                    <p className="font-700 text-[#16213e] text-sm">
+                    <p className="font-700 text-[#0B5C71] text-sm">
                       {b.slot ? formatDateLT(b.slot.date) : "—"}
                     </p>
                     <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
@@ -116,10 +116,10 @@ export default async function ClientDashboardPage() {
       {past.length > 0 && (
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-800 text-[#16213e]">Praėjusios treniruotės</h2>
+            <h2 className="font-800 text-[#0B5C71]">Praėjusios treniruotės</h2>
             <Link
               href="/client/bookings?tab=past"
-              className="text-sm text-[#e94560] font-600 flex items-center gap-1 hover:underline"
+              className="text-sm text-[#FF5733] font-600 flex items-center gap-1 hover:underline"
             >
               Visos <ArrowRight size={14} />
             </Link>
@@ -129,7 +129,7 @@ export default async function ClientDashboardPage() {
             {past.map((b) => (
               <div key={b.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-700 text-sm text-[#16213e]">
+                  <p className="font-700 text-sm text-[#0B5C71]">
                     {b.slot ? `${formatDateLT(b.slot.date)} · ${b.slot.startTime}` : "—"}
                   </p>
                   <span className={`badge ${bookingStatusColor(b.status)}`}>
@@ -138,7 +138,7 @@ export default async function ClientDashboardPage() {
                 </div>
                 {b.sessionNote?.trainerNote && (
                   <div className="mt-2 p-3 bg-white rounded-lg border border-gray-100">
-                    <p className="text-xs font-700 text-[#e94560] mb-1">
+                    <p className="text-xs font-700 text-[#FF5733] mb-1">
                       💬 Trenerio komentaras:
                     </p>
                     <p className="text-sm text-gray-600">{b.sessionNote.trainerNote}</p>
@@ -153,14 +153,14 @@ export default async function ClientDashboardPage() {
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link href="/booking" className="card p-5 flex items-center gap-4 hover:shadow-lg transition-shadow group">
-          <div className="w-12 h-12 rounded-xl bg-[#e94560]/10 flex items-center justify-center shrink-0 group-hover:bg-[#e94560] transition-colors">
-            <Calendar size={22} className="text-[#e94560] group-hover:text-white transition-colors" />
+          <div className="w-12 h-12 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0 group-hover:bg-[#FF5733] transition-colors">
+            <Calendar size={22} className="text-[#FF5733] group-hover:text-white transition-colors" />
           </div>
           <div>
-            <p className="font-700 text-[#16213e]">Nauja rezervacija</p>
+            <p className="font-700 text-[#0B5C71]">Nauja rezervacija</p>
             <p className="text-sm text-gray-500">Rezervuokite naują treniruotę</p>
           </div>
-          <ArrowRight size={18} className="ml-auto text-gray-300 group-hover:text-[#e94560] transition-colors" />
+          <ArrowRight size={18} className="ml-auto text-gray-300 group-hover:text-[#FF5733] transition-colors" />
         </Link>
 
         <Link href="/client/bookings" className="card p-5 flex items-center gap-4 hover:shadow-lg transition-shadow group">
@@ -168,7 +168,7 @@ export default async function ClientDashboardPage() {
             <CheckCircle size={22} className="text-blue-500 group-hover:text-white transition-colors" />
           </div>
           <div>
-            <p className="font-700 text-[#16213e]">Mano rezervacijos</p>
+            <p className="font-700 text-[#0B5C71]">Mano rezervacijos</p>
             <p className="text-sm text-gray-500">Peržiūrėti visas rezervacijas</p>
           </div>
           <ArrowRight size={18} className="ml-auto text-gray-300 group-hover:text-blue-500 transition-colors" />

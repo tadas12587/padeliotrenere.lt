@@ -135,11 +135,11 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
         <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
           <CheckCircle size={40} className="text-green-600" />
         </div>
-        <h2 className="text-3xl font-900 text-[#16213e] mb-3">Rezervacija patvirtinta!</h2>
+        <h2 className="text-3xl font-900 text-[#0B5C71] mb-3">Rezervacija patvirtinta!</h2>
         <p className="text-gray-500 mb-2">Patvirtinimas išsiųstas el. paštu.</p>
         {selectedSlot && (
           <div className="mt-4 bg-gray-50 rounded-2xl p-5 text-left">
-            <p className="font-700 text-[#16213e]">{selectedSlot.trainer.displayName}</p>
+            <p className="font-700 text-[#0B5C71]">{selectedSlot.trainer.displayName}</p>
             <p className="text-sm text-gray-500 mt-1">
               {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })},{" "}
               {formatTime(selectedSlot.startTime)} – {formatTime(selectedSlot.endTime)}
@@ -175,8 +175,8 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
           { n: 4, label: "Patvirtinimas", done: false },
         ].map(({ n, label, done }, i, arr) => (
           <div key={n} className="flex items-center gap-3 shrink-0">
-            <div className={cn("flex items-center gap-2 text-sm font-700 whitespace-nowrap", done ? "text-[#e94560]" : "text-gray-400")}>
-              <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", done ? "bg-[#e94560] text-white" : "bg-gray-200 text-gray-500")}>
+            <div className={cn("flex items-center gap-2 text-sm font-700 whitespace-nowrap", done ? "text-[#FF5733]" : "text-gray-400")}>
+              <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", done ? "bg-[#FF5733] text-white" : "bg-gray-200 text-gray-500")}>
                 {n}
               </span>
               {label}
@@ -188,7 +188,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
 
       {/* City filter */}
       <div className="card p-5 mb-5">
-        <label className="block text-sm font-700 text-[#16213e] mb-2">
+        <label className="block text-sm font-700 text-[#0B5C71] mb-2">
           Miestas (nebūtinas – rodo visų miestų laikus)
         </label>
         <input
@@ -196,7 +196,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
           value={city}
           onChange={(e) => { setCity(e.target.value); if (selectedDate) setSelectedDate(null); }}
           placeholder="pvz. Vilnius, Kaunas..."
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#e94560]/30 focus:border-[#e94560]"
+          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/30 focus:border-[#FF5733]"
         />
       </div>
 
@@ -209,7 +209,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
           >
             <ChevronLeft size={18} />
           </button>
-          <h3 className="font-800 text-[#16213e]">
+          <h3 className="font-800 text-[#0B5C71]">
             {format(weekStart, "MMMM yyyy", { locale: lt })}
           </h3>
           <button
@@ -234,10 +234,10 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                   past
                     ? "opacity-30 cursor-not-allowed border-transparent"
                     : selected
-                    ? "border-[#e94560] bg-[#e94560] text-white"
+                    ? "border-[#FF5733] bg-[#FF5733] text-white"
                     : isToday(day)
-                    ? "border-[#e94560]/40 bg-[#e94560]/5 text-[#e94560] hover:border-[#e94560]"
-                    : "border-gray-100 hover:border-[#e94560]/50 hover:bg-gray-50"
+                    ? "border-[#FF5733]/40 bg-[#FF5733]/5 text-[#FF5733] hover:border-[#FF5733]"
+                    : "border-gray-100 hover:border-[#FF5733]/50 hover:bg-gray-50"
                 )}
               >
                 <span className="text-xs font-600 uppercase opacity-70">
@@ -253,9 +253,9 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
       {/* Slots */}
       {selectedDate && (
         <div className="card p-6 mb-5">
-          <h3 className="font-800 text-[#16213e] mb-4">
+          <h3 className="font-800 text-[#0B5C71] mb-4">
             Laisvi laikai:{" "}
-            <span className="text-[#e94560]">
+            <span className="text-[#FF5733]">
               {format(selectedDate, "d MMMM", { locale: lt })}
             </span>
           </h3>
@@ -282,14 +282,14 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                     className={cn(
                       "w-full text-left p-4 rounded-xl border-2 transition-all",
                       isSelected
-                        ? "border-[#e94560] bg-[#e94560]/5"
-                        : "border-gray-200 hover:border-[#e94560]/50 hover:bg-gray-50"
+                        ? "border-[#FF5733] bg-[#FF5733]/5"
+                        : "border-gray-200 hover:border-[#FF5733]/50 hover:bg-gray-50"
                     )}
                   >
                     <div className="flex items-start gap-4">
                       {/* Time */}
                       <div className="shrink-0 text-center min-w-[60px]">
-                        <p className="font-800 text-lg text-[#16213e]">
+                        <p className="font-800 text-lg text-[#0B5C71]">
                           {formatTime(slot.startTime)}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -308,11 +308,11 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                               className="w-7 h-7 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-7 h-7 rounded-full bg-[#e94560]/10 flex items-center justify-center text-xs font-800 text-[#e94560]">
+                            <div className="w-7 h-7 rounded-full bg-[#FF5733]/10 flex items-center justify-center text-xs font-800 text-[#FF5733]">
                               {slot.trainer.displayName[0]}
                             </div>
                           )}
-                          <span className="font-700 text-sm text-[#16213e]">
+                          <span className="font-700 text-sm text-[#0B5C71]">
                             {slot.trainer.displayName}
                           </span>
                         </div>
@@ -323,7 +323,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                       </div>
 
                       {isSelected && (
-                        <CheckCircle size={20} className="text-[#e94560] shrink-0" />
+                        <CheckCircle size={20} className="text-[#FF5733] shrink-0" />
                       )}
                     </div>
                   </button>
@@ -337,7 +337,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
       {/* Service selection + confirm */}
       {selectedSlot && (
         <div className="card p-6">
-          <h3 className="font-800 text-[#16213e] mb-4">Pasirinkite paslaugą (nebūtina)</h3>
+          <h3 className="font-800 text-[#0B5C71] mb-4">Pasirinkite paslaugą (nebūtina)</h3>
 
           {selectedSlot.trainer.services.length > 0 ? (
             <div className="flex flex-col gap-2 mb-5">
@@ -346,7 +346,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                 className={cn(
                   "w-full text-left p-3 rounded-xl border-2 transition-all",
                   !selectedService
-                    ? "border-[#e94560] bg-[#e94560]/5"
+                    ? "border-[#FF5733] bg-[#FF5733]/5"
                     : "border-gray-200 hover:border-gray-300"
                 )}
               >
@@ -359,13 +359,13 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                   className={cn(
                     "w-full text-left p-3 rounded-xl border-2 transition-all",
                     selectedService?.id === svc.id
-                      ? "border-[#e94560] bg-[#e94560]/5"
+                      ? "border-[#FF5733] bg-[#FF5733]/5"
                       : "border-gray-200 hover:border-gray-300"
                   )}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-700 text-sm text-[#16213e]">{svc.name}</p>
+                      <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
                       {svc.description && (
                         <p className="text-xs text-gray-500 mt-0.5">{svc.description}</p>
                       )}
@@ -374,7 +374,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                         {svc.durationMinutes} min
                       </p>
                     </div>
-                    <span className="font-700 text-sm text-[#e94560] shrink-0 ml-3">
+                    <span className="font-700 text-sm text-[#FF5733] shrink-0 ml-3">
                       {formatPrice(svc.price)}
                     </span>
                   </div>
@@ -390,11 +390,11 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
           {/* Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#e94560]/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#FF5733]/10 flex items-center justify-center">
                 <span className="text-xl">🎾</span>
               </div>
               <div>
-                <p className="font-700 text-[#16213e]">
+                <p className="font-700 text-[#0B5C71]">
                   {selectedSlot.trainer.displayName}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -408,7 +408,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
               {selectedSlot.arena.name}, {selectedSlot.arena.address}
             </p>
             {selectedService && (
-              <p className="text-sm text-[#e94560] font-600 mt-2">
+              <p className="text-sm text-[#FF5733] font-600 mt-2">
                 {selectedService.name} – {formatPrice(selectedService.price)}
               </p>
             )}

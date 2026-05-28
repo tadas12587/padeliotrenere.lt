@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
-      <div className="bg-[#16213e] text-white py-12">
+    <div className="min-h-screen bg-[#F4F4F4]">
+      <div className="bg-[#0B5C71] text-white py-12">
         <div className="container-tight">
           <h1 className="text-3xl font-900">Privatumo politika</h1>
           <p className="text-gray-400 mt-2 text-sm">
@@ -20,8 +20,8 @@ export default function PrivacyPage() {
 
       <div className="container-tight py-12">
         <div className="card p-8 lg:p-12 prose prose-gray max-w-none
-          prose-headings:font-900 prose-headings:text-[#16213e]
-          prose-a:text-[#e94560] prose-a:no-underline hover:prose-a:underline">
+          prose-headings:font-900 prose-headings:text-[#0B5C71]
+          prose-a:text-[#FF5733] prose-a:no-underline hover:prose-a:underline">
 
           <h2>1. Duomenų valdytojas</h2>
           <p>

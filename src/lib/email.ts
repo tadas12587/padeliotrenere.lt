@@ -34,19 +34,19 @@ export async function sendBookingConfirmation({
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #1a1a2e; padding: 30px; text-align: center;">
-            <h1 style="color: #e94560; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
+            <h1 style="color: #FF5733; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
           </div>
           <div style="padding: 30px; background: #ffffff;">
             <h2 style="color: #1a1a2e;">Sveiki, ${name}!</h2>
             <p style="color: #555; font-size: 16px;">Jūsų treniruotė sėkmingai užregistruota:</p>
-            <div style="background: #f5f5f5; border-left: 4px solid #e94560; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <div style="background: #f5f5f5; border-left: 4px solid #FF5733; padding: 20px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>📅 Data:</strong> ${date}</p>
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${startTime} – ${endTime}</p>
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>🆔 Rezervacijos nr.:</strong> ${bookingId.slice(-8).toUpperCase()}</p>
             </div>
             <p style="color: #555;">Jeigu turite klausimų, susisiekite su mumis.</p>
             <a href="${APP_URL}/client/bookings"
-               style="display: inline-block; background: #e94560; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+               style="display: inline-block; background: #FF5733; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
               Peržiūrėti rezervaciją
             </a>
           </div>
@@ -82,12 +82,12 @@ export async function sendBookingReminder({
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #1a1a2e; padding: 30px; text-align: center;">
-            <h1 style="color: #e94560; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
+            <h1 style="color: #FF5733; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
           </div>
           <div style="padding: 30px; background: #ffffff;">
             <h2 style="color: #1a1a2e;">Sveiki, ${name}!</h2>
             <p style="color: #555; font-size: 16px;">Primename, kad rytoj turite treniruotę:</p>
-            <div style="background: #f5f5f5; border-left: 4px solid #e94560; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <div style="background: #f5f5f5; border-left: 4px solid #FF5733; padding: 20px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>📅 Data:</strong> ${date}</p>
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${startTime} – ${endTime}</p>
             </div>
@@ -123,18 +123,18 @@ export async function sendBookingCancellation({
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #1a1a2e; padding: 30px; text-align: center;">
-            <h1 style="color: #e94560; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
+            <h1 style="color: #FF5733; margin: 0; font-size: 28px;">🎾 Padelio Treneris</h1>
           </div>
           <div style="padding: 30px; background: #ffffff;">
             <h2 style="color: #1a1a2e;">Sveiki, ${name}!</h2>
             <p style="color: #555; font-size: 16px;">Deja, Jūsų treniruotė buvo atšaukta:</p>
-            <div style="background: #fff5f5; border-left: 4px solid #e94560; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <div style="background: #fff5f5; border-left: 4px solid #FF5733; padding: 20px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>📅 Data:</strong> ${date}</p>
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${startTime}</p>
             </div>
             <p style="color: #555;">Galite rezervuoti naują laiką mūsų svetainėje.</p>
             <a href="${APP_URL}/booking"
-               style="display: inline-block; background: #e94560; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+               style="display: inline-block; background: #FF5733; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
               Rezervuoti naują laiką
             </a>
           </div>

@@ -45,7 +45,7 @@ export default function ContactForm() {
         <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
           <CheckCircle size={32} className="text-green-500" />
         </div>
-        <h3 className="text-xl font-900 text-[#16213e] mb-2">Žinutė išsiųsta!</h3>
+        <h3 className="text-xl font-900 text-[#0B5C71] mb-2">Žinutė išsiųsta!</h3>
         <p className="text-gray-500 mb-6">
           Gavome jūsų žinutę. Atsakysime per 24 val.
         </p>
@@ -61,7 +61,7 @@ export default function ContactForm() {
 
   return (
     <div className="card p-8">
-      <h2 className="text-2xl font-900 text-[#16213e] mb-6">Rašykite žinutę</h2>
+      <h2 className="text-2xl font-900 text-[#0B5C71] mb-6">Rašykite žinutę</h2>
 
       {status === "error" && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-5 text-sm">
@@ -82,7 +82,7 @@ export default function ContactForm() {
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="Jūsų vardas"
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             />
           </div>
           <div>
@@ -95,7 +95,7 @@ export default function ContactForm() {
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               placeholder="jusu@pastas.lt"
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function ContactForm() {
             onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
             placeholder="Apie ką norite paklausi?"
             required
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
           />
         </div>
 
@@ -125,7 +125,7 @@ export default function ContactForm() {
             placeholder="Parašykite savo žinutę..."
             required
             minLength={5}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#e94560] transition-colors resize-none"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors resize-none"
           />
         </div>
 

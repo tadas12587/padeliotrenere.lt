@@ -16,7 +16,7 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black text-[#16213e]">Vartotojai</h1>
+        <h1 className="text-2xl font-black text-[#0B5C71]">Vartotojai</h1>
         <span className="badge bg-gray-100 text-gray-600 border-gray-200">
           {users.length} klientų
         </span>
@@ -52,11 +52,11 @@ export default async function AdminUsersPage() {
                   <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#e94560]/10 flex items-center justify-center font-black text-[#e94560] text-sm shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-[#FF5733]/10 flex items-center justify-center font-black text-[#FF5733] text-sm shrink-0">
                           {(user.name || user.email || "?")[0].toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-bold text-[#16213e]">{user.name || "—"}</p>
+                          <p className="font-bold text-[#0B5C71]">{user.name || "—"}</p>
                           <p className="text-xs text-gray-400">{user.email}</p>
                         </div>
                       </div>
@@ -65,7 +65,7 @@ export default async function AdminUsersPage() {
                       {user.phone || <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="font-bold text-[#16213e]">
+                      <span className="font-bold text-[#0B5C71]">
                         {user._count.bookings}
                       </span>
                     </td>

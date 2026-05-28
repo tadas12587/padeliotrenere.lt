@@ -37,12 +37,12 @@ export default async function TrainerLayout({
 
   if (user.trainerStatus !== "APPROVED") {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
         <div className="card p-8 max-w-md w-full text-center">
           <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">⏳</span>
           </div>
-          <h1 className="text-xl font-900 text-[#16213e] mb-2">
+          <h1 className="text-xl font-900 text-[#0B5C71] mb-2">
             Paskyra laukia patvirtinimo
           </h1>
           <p className="text-gray-500 text-sm mb-6">
@@ -64,15 +64,15 @@ export default async function TrainerLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f8f9fa]">
+    <div className="min-h-screen flex bg-[#F4F4F4]">
       {/* Sidebar – desktop */}
-      <aside className="w-64 bg-[#16213e] text-white hidden lg:flex flex-col shrink-0">
+      <aside className="w-64 bg-[#0B5C71] text-white hidden lg:flex flex-col shrink-0">
         <div className="px-6 py-5 border-b border-white/10">
           <Link
             href="/trainer/dashboard"
             className="flex items-center gap-2 font-black text-lg"
           >
-            <span className="w-8 h-8 rounded-lg bg-[#e94560] flex items-center justify-center">
+            <span className="w-8 h-8 rounded-lg bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={16} className="text-white" />
             </span>
             <span>Trenerio zona</span>
@@ -110,8 +110,8 @@ export default async function TrainerLayout({
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#16213e] text-white px-4 h-14 flex items-center gap-3">
-        <span className="w-7 h-7 rounded-lg bg-[#e94560] flex items-center justify-center">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0B5C71] text-white px-4 h-14 flex items-center gap-3">
+        <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center">
           <Dumbbell size={14} className="text-white" />
         </span>
         <span className="font-black text-sm">Trenerio zona</span>

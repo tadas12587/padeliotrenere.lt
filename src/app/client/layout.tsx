@@ -23,16 +23,16 @@ export default async function ClientLayout({
   const userName = (session.user as any)?.name || session.user?.email || "";
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa]">
+    <div className="min-h-screen bg-[#F4F4F4]">
       {/* Top bar */}
-      <header className="bg-[#16213e] text-white sticky top-0 z-40">
+      <header className="bg-[#0B5C71] text-white sticky top-0 z-40">
         <div className="container-wide h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-black text-lg">
-            <span className="w-8 h-8 rounded-lg bg-[#e94560] flex items-center justify-center">
+            <span className="w-8 h-8 rounded-lg bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={16} className="text-white" />
             </span>
             <span className="hidden sm:block">
-              Padelio<span className="text-[#e94560]">Treneris</span>
+              Padelio<span className="text-[#FF5733]">Treneris</span>
             </span>
           </Link>
 
@@ -60,7 +60,7 @@ export default async function ClientLayout({
                 <Link
                   key={href}
                   href={href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-all flex-1 lg:flex-none"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-all flex-1 lg:flex-none"
                 >
                   <Icon size={17} className="shrink-0" />
                   <span className="hidden sm:block">{label}</span>

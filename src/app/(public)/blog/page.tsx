@@ -38,9 +38,9 @@ export default async function BlogPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-[#16213e] text-white py-14">
+      <div className="bg-[#0B5C71] text-white py-14">
         <div className="container-tight text-center">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Blog'as
           </span>
           <h1 className="text-4xl font-900 mt-2 mb-3">Padelio žinios</h1>
@@ -66,7 +66,7 @@ export default async function BlogPage() {
                 className="card flex flex-col overflow-hidden group"
               >
                 {/* Cover */}
-                <div className="aspect-video bg-gradient-to-br from-[#16213e] to-[#0f3460] flex items-center justify-center text-5xl overflow-hidden">
+                <div className="aspect-video bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center text-5xl overflow-hidden">
                   {article.coverImage ? (
                     <img
                       src={article.coverImage}
@@ -83,7 +83,7 @@ export default async function BlogPage() {
                   <p className="text-xs text-gray-400 mb-2">
                     {formatDateLT(article.publishedAt || article.createdAt)}
                   </p>
-                  <h2 className="font-800 text-[#16213e] text-lg leading-snug mb-2 group-hover:text-[#e94560] transition-colors">
+                  <h2 className="font-800 text-[#0B5C71] text-lg leading-snug mb-2 group-hover:text-[#FF5733] transition-colors">
                     {article.title}
                   </h2>
                   {article.excerpt && (
@@ -91,7 +91,7 @@ export default async function BlogPage() {
                       {article.excerpt}
                     </p>
                   )}
-                  <div className="flex items-center gap-1 text-[#e94560] text-sm font-700 mt-4">
+                  <div className="flex items-center gap-1 text-[#FF5733] text-sm font-700 mt-4">
                     Skaityti <ArrowRight size={14} />
                   </div>
                 </div>

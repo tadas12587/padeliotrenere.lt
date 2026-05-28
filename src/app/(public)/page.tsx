@@ -16,29 +16,29 @@ import {
 // ── Hero Section ──────────────────────────────────────────────────────────────
 function HeroSection() {
   return (
-    <section className="relative bg-[#0d0d0d] text-white overflow-hidden min-h-[90vh] flex items-center">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#16213e] via-[#0d0d0d] to-[#0d0d0d]" />
-      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#e94560]/10 blur-3xl" />
-      <div className="absolute bottom-20 left-10 w-48 h-48 rounded-full bg-[#0f3460]/30 blur-3xl" />
+    <section className="relative bg-[#041f28] text-white overflow-hidden min-h-[90vh] flex items-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0B5C71] via-[#041f28] to-[#041f28]" />
+      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#FF5733]/10 blur-3xl" />
+      <div className="absolute bottom-20 left-10 w-48 h-48 rounded-full bg-[#083d4e]/30 blur-3xl" />
       <div
         className="absolute inset-0 opacity-5"
         style={{
-          backgroundImage: `linear-gradient(rgba(233,69,96,0.5) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(233,69,96,0.5) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgba(255,87,51,0.5) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,87,51,0.5) 1px, transparent 1px)`,
           backgroundSize: "60px 60px",
         }}
       />
       <div className="container-wide relative z-10 py-24">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-[#e94560]/15 border border-[#e94560]/30 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#e94560] animate-pulse" />
-            <span className="text-[#e94560] text-sm font-700 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 bg-[#FF5733]/15 border border-[#FF5733]/30 rounded-full px-4 py-1.5 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#FF5733] animate-pulse" />
+            <span className="text-[#FF5733] text-sm font-700 uppercase tracking-wider">
               Padelio trenerių platforma
             </span>
           </div>
           <h1 className="text-5xl lg:text-7xl font-900 leading-[1.05] mb-6">
             Rask savo{" "}
-            <span className="text-[#e94560]">padelio trenerį</span>{" "}
+            <span className="text-[#FF5733]">padelio trenerį</span>{" "}
             Lietuvoje
           </h1>
           <p className="text-gray-400 text-lg lg:text-xl max-w-2xl mb-8 leading-relaxed">
@@ -52,7 +52,7 @@ function HeroSection() {
             </Link>
             <Link
               href="/booking"
-              className="btn-secondary text-base py-4 px-8 border-white/30 text-white hover:border-[#e94560] hover:text-[#e94560]"
+              className="btn-secondary text-base py-4 px-8 border-white/30 text-white hover:border-[#FF5733] hover:text-[#FF5733]"
             >
               Rezervuoti treniruotę
             </Link>
@@ -82,16 +82,16 @@ async function FeaturedTrainersSection() {
       <div className="container-tight">
         <div className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+            <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
               Treneriai
             </span>
-            <h2 className="text-4xl font-900 mt-2 text-[#16213e]">
+            <h2 className="text-4xl font-900 mt-2 text-[#0B5C71]">
               Mūsų treneriai
             </h2>
           </div>
           <Link
             href="/trainers"
-            className="hidden sm:flex items-center gap-1 text-sm font-600 text-[#e94560] hover:underline"
+            className="hidden sm:flex items-center gap-1 text-sm font-600 text-[#FF5733] hover:underline"
           >
             Visi treneriai <ChevronRight size={16} />
           </Link>
@@ -119,19 +119,19 @@ async function FeaturedTrainersSection() {
                       className="w-16 h-16 rounded-2xl object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-[#e94560]/10 flex items-center justify-center text-2xl font-900 text-[#e94560]">
+                    <div className="w-16 h-16 rounded-2xl bg-[#FF5733]/10 flex items-center justify-center text-2xl font-900 text-[#FF5733]">
                       {t.displayName[0].toUpperCase()}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-800 text-[#16213e] truncate">{t.displayName}</p>
+                    <p className="font-800 text-[#0B5C71] truncate">{t.displayName}</p>
                     <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
                       <MapPin size={12} />
                       {t.city}
                     </p>
                     {avgRating !== null && (
                       <div className="flex items-center gap-1 mt-1">
-                        <Star size={12} className="text-[#e94560] fill-[#e94560]" />
+                        <Star size={12} className="text-[#FF5733] fill-[#FF5733]" />
                         <span className="text-xs font-700 text-gray-700">
                           {avgRating.toFixed(1)}
                         </span>
@@ -142,7 +142,7 @@ async function FeaturedTrainersSection() {
                     )}
                   </div>
                   {t.isFeatured && (
-                    <span className="shrink-0 text-xs font-700 bg-[#e94560]/10 text-[#e94560] px-2 py-0.5 rounded-full">
+                    <span className="shrink-0 text-xs font-700 bg-[#FF5733]/10 text-[#FF5733] px-2 py-0.5 rounded-full">
                       ⭐ Featured
                     </span>
                   )}
@@ -166,7 +166,7 @@ async function FeaturedTrainersSection() {
                   <span className="text-xs text-gray-400">
                     {t.services.length} paslaug{t.services.length === 1 ? "a" : "os"}
                   </span>
-                  <span className="text-sm font-700 text-[#e94560] group-hover:underline">
+                  <span className="text-sm font-700 text-[#FF5733] group-hover:underline">
                     Žiūrėti profilį →
                   </span>
                 </div>
@@ -199,20 +199,20 @@ async function ArenasSection() {
   if (arenas.length === 0) return null;
 
   return (
-    <section className="py-20 bg-[#f8f9fa]">
+    <section className="py-20 bg-[#F4F4F4]">
       <div className="container-tight">
         <div className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+            <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
               Arenos
             </span>
-            <h2 className="text-4xl font-900 mt-2 text-[#16213e]">
+            <h2 className="text-4xl font-900 mt-2 text-[#0B5C71]">
               Kortai ir arenos
             </h2>
           </div>
           <Link
             href="/arenas"
-            className="hidden sm:flex items-center gap-1 text-sm font-600 text-[#e94560] hover:underline"
+            className="hidden sm:flex items-center gap-1 text-sm font-600 text-[#FF5733] hover:underline"
           >
             Visos arenos <ChevronRight size={16} />
           </Link>
@@ -233,12 +233,12 @@ async function ArenasSection() {
                   className="w-full h-36 object-cover"
                 />
               ) : (
-                <div className="w-full h-36 bg-gradient-to-br from-[#16213e] to-[#0f3460] flex items-center justify-center text-4xl">
+                <div className="w-full h-36 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center text-4xl">
                   🏟️
                 </div>
               )}
               <div className="p-4">
-                <p className="font-800 text-[#16213e] mb-1">{a.name}</p>
+                <p className="font-800 text-[#0B5C71] mb-1">{a.name}</p>
                 <p className="text-sm text-gray-500 flex items-center gap-1 mb-2">
                   <MapPin size={12} />
                   {a.city}
@@ -266,10 +266,10 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section className="py-20 bg-[#16213e] text-white">
+    <section className="py-20 bg-[#0B5C71] text-white">
       <div className="container-tight">
         <div className="text-center mb-14">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Kaip tai veikia?
           </span>
           <h2 className="text-4xl font-900 mt-2">4 žingsniai iki treniruotės</h2>
@@ -277,8 +277,8 @@ function HowItWorksSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map(({ step, title, desc }) => (
             <div key={step} className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#e94560]/15 border border-[#e94560]/30 flex items-center justify-center mx-auto mb-5">
-                <span className="text-[#e94560] font-900 text-xl">{step}</span>
+              <div className="w-16 h-16 rounded-2xl bg-[#FF5733]/15 border border-[#FF5733]/30 flex items-center justify-center mx-auto mb-5">
+                <span className="text-[#FF5733] font-900 text-xl">{step}</span>
               </div>
               <h3 className="font-800 text-lg mb-2">{title}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
@@ -313,10 +313,10 @@ async function ReviewsSection() {
     <section className="py-20 bg-white">
       <div className="container-tight">
         <div className="text-center mb-14">
-          <span className="text-[#e94560] font-700 uppercase tracking-widest text-sm">
+          <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Atsiliepimai
           </span>
-          <h2 className="text-4xl font-900 mt-2 text-[#16213e]">
+          <h2 className="text-4xl font-900 mt-2 text-[#0B5C71]">
             Ką sako klientai
           </h2>
         </div>
@@ -325,7 +325,7 @@ async function ReviewsSection() {
             <div key={r.id} className="card p-7 flex flex-col gap-4">
               <div className="flex gap-1">
                 {Array.from({ length: r.rating }).map((_, i) => (
-                  <Star key={i} size={16} className="text-[#e94560] fill-[#e94560]" />
+                  <Star key={i} size={16} className="text-[#FF5733] fill-[#FF5733]" />
                 ))}
               </div>
               {r.comment && (
@@ -335,16 +335,16 @@ async function ReviewsSection() {
               )}
               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#e94560]/10 flex items-center justify-center font-800 text-[#e94560] text-sm">
+                  <div className="w-9 h-9 rounded-full bg-[#FF5733]/10 flex items-center justify-center font-800 text-[#FF5733] text-sm">
                     {(r.author.name ?? "?")[0].toUpperCase()}
                   </div>
-                  <p className="font-700 text-sm text-[#16213e]">
+                  <p className="font-700 text-sm text-[#0B5C71]">
                     {r.author.name ?? "Anonimai"}
                   </p>
                 </div>
                 <Link
                   href={`/trainers/${r.trainer.id}`}
-                  className="text-xs text-gray-400 hover:text-[#e94560] transition-colors"
+                  className="text-xs text-gray-400 hover:text-[#FF5733] transition-colors"
                 >
                   {r.trainer.displayName}
                 </Link>
@@ -360,7 +360,7 @@ async function ReviewsSection() {
 // ── CTA ───────────────────────────────────────────────────────────────────────
 function CTASection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-[#e94560] to-[#c73352]">
+    <section className="py-20 bg-gradient-to-br from-[#FF5733] to-[#E04520]">
       <div className="container-tight text-center text-white">
         <h2 className="text-4xl lg:text-5xl font-900 mb-4">
           Pradėk savo padelio kelionę šiandien
@@ -371,13 +371,13 @@ function CTASection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/trainers"
-            className="inline-flex items-center justify-center gap-2 bg-white text-[#e94560] font-800 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
+            className="inline-flex items-center justify-center gap-2 bg-white text-[#FF5733] font-800 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
           >
             🎾 Rasti trenerį
           </Link>
           <Link
             href="/auth/register-trainer"
-            className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-700 px-8 py-4 rounded-lg hover:bg-white hover:text-[#e94560] transition-all"
+            className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-700 px-8 py-4 rounded-lg hover:bg-white hover:text-[#FF5733] transition-all"
           >
             Tapti treneriu
           </Link>
