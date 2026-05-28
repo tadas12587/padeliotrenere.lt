@@ -50,3 +50,4 @@ next-env.d.ts
 
 # PM2 logs (not the config itself)
 /var/log/pm2
+.claude/
