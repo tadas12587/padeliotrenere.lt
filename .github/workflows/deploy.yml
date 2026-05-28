@@ -1,0 +1,133 @@
+name: Deploy to freehosting.lt
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Build Next.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: npm run build
+
+      - name: Prepare deployment package
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/migration.sql
+
+          cat > .next/standalone/ecosystem.config.js << 'ECOSYSTEM'
+          module.exports = {
+            apps: [{
+              name: "padeliotrenere",
+              script: "./server.js",
+              interpreter: "node24",
+              cwd: "/web",
+              instances: 1,
+              autorestart: true,
+              watch: false,
+              max_memory_restart: "256M",
+              env: {
+                NODE_ENV: "production",
+                PORT: 3000,
+                DATABASE_URL: "REPLACE_DATABASE_URL",
+                NEXTAUTH_URL: "REPLACE_NEXTAUTH_URL",
+                NEXTAUTH_SECRET: "REPLACE_NEXTAUTH_SECRET",
+                RESEND_API_KEY: "REPLACE_RESEND_API_KEY",
+                EMAIL_FROM: "REPLACE_EMAIL_FROM",
+                EMAIL_SERVER_HOST: "smtp.resend.com",
+                EMAIL_SERVER_PORT: "465",
+                EMAIL_SERVER_USER: "resend",
+                EMAIL_SERVER_PASSWORD: "REPLACE_RESEND_API_KEY",
+                TRAINER_EMAIL: "REPLACE_TRAINER_EMAIL",
+                VAPID_PUBLIC_KEY: "REPLACE_VAPID_PUBLIC_KEY",
+                VAPID_PRIVATE_KEY: "REPLACE_VAPID_PRIVATE_KEY",
+                VAPID_SUBJECT: "REPLACE_VAPID_SUBJECT",
+                NEXT_PUBLIC_VAPID_PUBLIC_KEY: "REPLACE_NEXT_PUBLIC_VAPID_PUBLIC_KEY",
+                NEXT_PUBLIC_APP_URL: "REPLACE_NEXT_PUBLIC_APP_URL",
+                ADMIN_EMAIL: "REPLACE_ADMIN_EMAIL",
+              }
+            }]
+          };
+          ECOSYSTEM
+
+          # Replace placeholders with actual secrets
+          sed -i "s|REPLACE_DATABASE_URL|${{ secrets.DATABASE_URL }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_NEXTAUTH_URL|${{ secrets.NEXTAUTH_URL }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_NEXTAUTH_SECRET|${{ secrets.NEXTAUTH_SECRET }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_RESEND_API_KEY|${{ secrets.RESEND_API_KEY }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_EMAIL_FROM|${{ secrets.EMAIL_FROM }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_TRAINER_EMAIL|${{ secrets.TRAINER_EMAIL }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_VAPID_PUBLIC_KEY|${{ secrets.VAPID_PUBLIC_KEY }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_VAPID_PRIVATE_KEY|${{ secrets.VAPID_PRIVATE_KEY }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_VAPID_SUBJECT|${{ secrets.VAPID_SUBJECT }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_NEXT_PUBLIC_VAPID_PUBLIC_KEY|${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_NEXT_PUBLIC_APP_URL|${{ secrets.NEXT_PUBLIC_APP_URL }}|g" .next/standalone/ecosystem.config.js
+          sed -i "s|REPLACE_ADMIN_EMAIL|${{ secrets.ADMIN_EMAIL }}|g" .next/standalone/ecosystem.config.js
+
+          tar -czf deploy.tar.gz -C .next/standalone .
+          echo "Package size: $(du -sh deploy.tar.gz | cut -f1)"
+
+      - name: Upload to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: web4.freehosting.lt
+          username: 3hr75qhkm9
+          port: 2231
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: deploy.tar.gz
+          target: "~/"
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: web4.freehosting.lt
+          username: 3hr75qhkm9
+          port: 2231
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            echo "Extracting to /web/"
+            cd /web
+            tar -xzf ~/deploy.tar.gz
+            rm ~/deploy.tar.gz
+
+            echo "Running MySQL migrations"
+            mysql -u mcx2g7feix -p'${{ secrets.DB_PASSWORD }}' mcx2g7feix < /web/migration.sql 2>/dev/null \
+              && echo "Migrations applied" \
+              || echo "Migrations already applied (OK)"
+
+            echo "Starting/reloading PM2"
+            if pm2 describe padeliotrenere &>/dev/null; then
+              pm2 reload ecosystem.config.js --update-env
+            else
+              pm2 start ecosystem.config.js
+            fi
+            pm2 save
+
+            echo "Done!"
+            pm2 list
