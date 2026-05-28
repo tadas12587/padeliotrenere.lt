@@ -107,9 +107,15 @@ rm "$PACKAGE"
 
 # ── 6. Diegimas serveryje ─────────────────────────────────────────────────────
 step "6/6 – Diegimas serveryje"
-# Kintamieji čia bus išplėsti lokaliai prieš siunčiant SSH komandą
-ssh "${SSH_ALIAS}" bash << ENDSSH
+# Quoted heredoc ('ENDSSH') prevents ALL local expansion.
+# Local variables are passed as positional args ($1..$4) to avoid
+# Windows Git Bash \$ escaping issues.
+ssh "${SSH_ALIAS}" bash -s -- "$DB_USER" "$DB_PASS" "$DB_NAME" "$PACKAGE" << 'ENDSSH'
   set -e
+  DB_USER="$1"
+  DB_PASS="$2"
+  DB_NAME="$3"
+  PACKAGE="$4"
 
   echo "▶ Atsarginė kopija (jei /web nėra tuščias)"
   if [ -f /web/server.js ]; then
@@ -129,9 +135,9 @@ ssh "${SSH_ALIAS}" bash << ENDSSH
 
   echo "▶ Prisma migracijos (MySQL)"
   for f in /web/prisma/migrations/*/migration.sql; do
-    mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < "\$f" 2>/dev/null \
-      && echo "  ✓ \$(basename \$(dirname \$f))" \
-      || echo "  ℹ \$(basename \$(dirname \$f)) – jau įvykdyta"
+    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$f" 2>/dev/null \
+      && echo "  ✓ $(basename $(dirname $f))" \
+      || echo "  ℹ $(basename $(dirname $f)) – jau įvykdyta"
   done
 
   echo "▶ PM2 paleidimas"
