@@ -11,6 +11,7 @@ GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${GREEN}▶  $1${NC}"; }
 die()  { echo -e "${RED}✗  $1${NC}" >&2; exit 1; }
 
+SSH_ALIAS="freehosting"   # ~/.ssh/config alias (user/host/port/key visi ten)
 SSH_USER="3hr75qhkm9"
 SSH_HOST="web4.freehosting.lt"
 SSH_PORT="2231"
@@ -85,13 +86,13 @@ echo "  Paketo dydis: $(du -sh "$PACKAGE" | cut -f1)"
 
 # ── 5. Įkėlimas ───────────────────────────────────────────────────────────────
 step "5/6 – Įkeliama į serverį"
-scp -P "$SSH_PORT" "$PACKAGE" "${SSH_USER}@${SSH_HOST}:~/"
+scp "$PACKAGE" "${SSH_ALIAS}:~/"
 rm "$PACKAGE"
 
 # ── 6. Diegimas serveryje ─────────────────────────────────────────────────────
 step "6/6 – Diegimas serveryje"
 # Kintamieji čia bus išplėsti lokaliai prieš siunčiant SSH komandą
-ssh -p "$SSH_PORT" "${SSH_USER}@${SSH_HOST}" bash << ENDSSH
+ssh "${SSH_ALIAS}" bash << ENDSSH
   set -e
 
   echo "▶ Atsarginė kopija (jei /web nėra tuščias)"
@@ -130,4 +131,4 @@ echo -e "${GREEN}║  🌐  https://padeliotrenere.lt                           
 echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 echo "Žurnalai:"
-echo "  ssh -p 2231 ${SSH_USER}@${SSH_HOST} 'pm2 logs padeliotrenere --lines 50'"
+echo "  ssh freehosting 'pm2 logs padeliotrenere --lines 50'"
