@@ -37,6 +37,9 @@ jobs:
         run: |
           cp -r .next/static .next/standalone/.next/static
           cp -r public .next/standalone/public
+          # Prisma 7 hash package fix: standalone only copies partial, replace with full
+          rm -rf .next/standalone/.next/node_modules
+          cp -r .next/node_modules .next/standalone/.next/node_modules
           # Copy all migrations
           for dir in prisma/migrations/*/; do
             name=$(basename "$dir")

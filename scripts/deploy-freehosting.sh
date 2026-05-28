@@ -40,6 +40,10 @@ npm run build
 step "3/6 – Paruošiamas standalone paketas"
 cp -r .next/static     .next/standalone/.next/static
 cp -r public           .next/standalone/public
+# Prisma 7 generates a virtual hash package in .next/node_modules/ that standalone
+# only copies partially. Replace it with the full version so ESM imports work.
+rm -rf .next/standalone/.next/node_modules
+cp -r .next/node_modules .next/standalone/.next/node_modules
 
 # Generuojamas ecosystem.config.js su tikrais env kintamaisiais (neįtraukiamas į git)
 cat > .next/standalone/ecosystem.config.js << ECOSYSTEM
