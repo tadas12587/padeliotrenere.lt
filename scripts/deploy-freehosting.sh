@@ -129,9 +129,9 @@ ssh "${SSH_ALIAS}" bash << ENDSSH
 
   echo "▶ Prisma migracijos (MySQL)"
   for f in /web/prisma/migrations/*/migration.sql; do
-    mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < "$f" 2>/dev/null \
-      && echo "  ✓ $(basename $(dirname $f))" \
-      || echo "  ℹ $(basename $(dirname $f)) – jau įvykdyta"
+    mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < "\$f" 2>/dev/null \
+      && echo "  ✓ \$(basename \$(dirname \$f))" \
+      || echo "  ℹ \$(basename \$(dirname \$f)) – jau įvykdyta"
   done
 
   echo "▶ PM2 paleidimas"
