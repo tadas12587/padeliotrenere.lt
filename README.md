@@ -103,12 +103,12 @@ Pirmą kartą prisijungus su `ADMIN_EMAIL` adresu, paskyra automatiškai gaus `A
 bash scripts/deploy-freehosting.sh
 
 # 2. Serveryje sukurkite ~/.env failą
-ssh -p 2231 l01s9uzjmz@web4.freehosting.lt
+ssh -p 2231 3hr75qhkm9@web4.freehosting.lt
 nano ~/.env   # užpildykite pagal .env.example
 exit
 
 # 3. Serveryje paleiskite migracijas
-ssh -p 2231 l01s9uzjmz@web4.freehosting.lt
+ssh -p 2231 3hr75qhkm9@web4.freehosting.lt
 cd ~/padeliotrenere && bash first-deploy.sh
 exit
 

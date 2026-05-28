@@ -11,7 +11,7 @@ GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${GREEN}▶  $1${NC}"; }
 die()  { echo -e "${RED}✗  $1${NC}" >&2; exit 1; }
 
-SSH_USER="l01s9uzjmz"
+SSH_USER="3hr75qhkm9"
 SSH_HOST="web4.freehosting.lt"
 SSH_PORT="2231"
 PACKAGE="deploy-$(date +%Y%m%d-%H%M%S).tar.gz"
