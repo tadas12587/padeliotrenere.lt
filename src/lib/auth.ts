@@ -38,23 +38,18 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // On first sign-in: promote ADMIN_EMAIL to ADMIN role
-        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-        if (
-          dbUser &&
-          dbUser.role === "CLIENT" &&
-          process.env.ADMIN_EMAIL &&
-          dbUser.email === process.env.ADMIN_EMAIL
-        ) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: { role: "ADMIN" },
-          });
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { trainerProfile: { select: { status: true } } },
+        });
+        if (dbUser?.role === "CLIENT" && process.env.ADMIN_EMAIL === dbUser.email) {
+          await prisma.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
           token.role = "ADMIN";
         } else {
-          token.role = dbUser?.role ?? (user as any).role;
+          token.role = dbUser?.role ?? "CLIENT";
         }
         token.id = user.id;
+        token.trainerStatus = dbUser?.trainerProfile?.status ?? null;
       }
       return token;
     },
@@ -62,6 +57,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).trainerStatus = token.trainerStatus;
       }
       return session;
     },

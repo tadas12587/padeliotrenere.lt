@@ -40,6 +40,10 @@ export async function GET(req: NextRequest) {
 const createBookingSchema = z.object({
   slotId: z.string().cuid(),
   clientNotes: z.string().max(500).optional(),
+  availabilitySlotId: z.string().cuid().optional(),
+  trainerId: z.string().cuid().optional(),
+  arenaId: z.string().cuid().optional(),
+  serviceId: z.string().cuid().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -55,8 +59,62 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { slotId, clientNotes } = parsed.data;
+  const { slotId, clientNotes, availabilitySlotId, trainerId, arenaId, serviceId } = parsed.data;
 
+  // ── AvailabilitySlot flow (multi-trainer) ──────────────────────────────────
+  if (availabilitySlotId) {
+    const availSlot = await prisma.availabilitySlot.findUnique({
+      where: { id: availabilitySlotId },
+    });
+
+    if (!availSlot) {
+      return NextResponse.json({ error: "Laikas nerastas" }, { status: 404 });
+    }
+
+    if (availSlot.status !== "AVAILABLE") {
+      return NextResponse.json({ error: "Šis laikas jau užimtas" }, { status: 409 });
+    }
+
+    const booking = await prisma.$transaction(async (tx) => {
+      const newBooking = await tx.booking.create({
+        data: {
+          userId: user.id,
+          slotId,
+          clientNotes,
+          status: "CONFIRMED",
+          trainerId: availSlot.trainerId,
+          arenaId: availSlot.arenaId,
+          serviceId: serviceId ?? null,
+        },
+        include: {
+          slot: true,
+          user: true,
+        },
+      });
+
+      await tx.availabilitySlot.update({
+        where: { id: availabilitySlotId },
+        data: { status: "BOOKED", bookingId: newBooking.id },
+      });
+
+      return newBooking;
+    });
+
+    if (booking.user.email) {
+      sendBookingConfirmation({
+        to: booking.user.email,
+        name: booking.user.name || "Klientas",
+        date: formatDateLT(booking.slot.date),
+        startTime: booking.slot.startTime,
+        endTime: booking.slot.endTime,
+        bookingId: booking.id,
+      }).catch(console.error);
+    }
+
+    return NextResponse.json(booking, { status: 201 });
+  }
+
+  // ── Legacy TimeSlot flow ───────────────────────────────────────────────────
   // Check slot availability
   const slot = await prisma.timeSlot.findUnique({
     where: { id: slotId },

@@ -81,8 +81,13 @@ module.exports = {
 };
 ECOSYSTEM
 
-# Migracijos SQL
-cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/migration.sql
+# Copy both migrations
+mkdir -p .next/standalone/prisma/migrations/20250101000000_init
+cp prisma/migrations/20250101000000_init/migration.sql .next/standalone/prisma/migrations/20250101000000_init/migration.sql
+mkdir -p .next/standalone/prisma/migrations/20250601000000_multi_trainer
+cp prisma/migrations/20250601000000_multi_trainer/migration.sql .next/standalone/prisma/migrations/20250601000000_multi_trainer/migration.sql
+# Keep old single migration.sql for backward compat
+cp prisma/migrations/20250601000000_multi_trainer/migration.sql .next/standalone/migration.sql
 
 # ── 4. Pakavimas ──────────────────────────────────────────────────────────────
 step "4/6 – Pakavama"

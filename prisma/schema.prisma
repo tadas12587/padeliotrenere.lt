@@ -12,6 +12,7 @@ datasource db {
 
 enum Role {
   CLIENT
+  TRAINER
   ADMIN
 }
 
@@ -20,6 +21,22 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum TrainerStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ArenaStatus {
+  PENDING
+  APPROVED
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
 }
 
 model User {
@@ -37,6 +54,9 @@ model User {
   sessions          Session[]
   bookings          Booking[]
   pushSubscriptions PushSubscription[]
+  trainerProfile    TrainerProfile?
+  createdArenas     Arena[]
+  reviews           Review[]
 }
 
 model Account {
@@ -99,9 +119,18 @@ model Booking {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slot        TimeSlot      @relation(fields: [slotId], references: [id])
-  sessionNote SessionNote?
+  trainerId          String?
+  arenaId            String?
+  serviceId          String?
+  availabilitySlotId String?
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slot             TimeSlot          @relation(fields: [slotId], references: [id])
+  sessionNote      SessionNote?
+  trainerProfile   TrainerProfile?   @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+  arena            Arena?            @relation(fields: [arenaId], references: [id], onDelete: SetNull)
+  service          Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  availabilitySlot AvailabilitySlot?
 }
 
 model SessionNote {
@@ -137,4 +166,96 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TrainerProfile {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName  String        @db.VarChar(191)
+  bio          String?       @db.Text
+  photoUrl     String?       @db.VarChar(500)
+  city         String        @db.VarChar(191)
+  phone        String?       @db.VarChar(50)
+  status       TrainerStatus @default(PENDING)
+  isFeatured   Boolean       @default(false)
+  certifications Certification[]
+  services     Service[]
+  arenas       TrainerArena[]
+  slots        AvailabilitySlot[]
+  reviews      Review[]
+  bookings     Booking[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Arena {
+  id          String      @id @default(cuid())
+  name        String      @db.VarChar(191)
+  city        String      @db.VarChar(191)
+  address     String      @db.VarChar(500)
+  description String?     @db.Text
+  photoUrl    String?     @db.VarChar(500)
+  status      ArenaStatus @default(PENDING)
+  createdById String
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  trainers    TrainerArena[]
+  slots       AvailabilitySlot[]
+  bookings    Booking[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Certification {
+  id        String         @id @default(cuid())
+  trainerId String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name      String         @db.VarChar(191)
+  issuedBy  String         @db.VarChar(191)
+  year      Int
+}
+
+model Service {
+  id              String         @id @default(cuid())
+  trainerId       String
+  trainer         TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  name            String         @db.VarChar(191)
+  description     String?        @db.Text
+  durationMinutes Int
+  price           Decimal?       @db.Decimal(10, 2)
+  bookings        Booking[]
+}
+
+model TrainerArena {
+  trainerId String
+  arenaId   String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  arena     Arena          @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+
+  @@id([trainerId, arenaId])
+}
+
+model AvailabilitySlot {
+  id        String         @id @default(cuid())
+  trainerId String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  arenaId   String
+  arena     Arena          @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  status    SlotStatus     @default(AVAILABLE)
+  bookingId String?        @unique
+  booking   Booking?       @relation(fields: [bookingId], references: [id])
+  createdAt DateTime       @default(now())
+}
+
+model Review {
+  id        String         @id @default(cuid())
+  trainerId String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User           @relation(fields: [authorId], references: [id])
+  rating    Int
+  comment   String?        @db.Text
+  createdAt DateTime       @default(now())
 }
