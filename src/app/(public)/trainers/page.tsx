@@ -15,19 +15,25 @@ export default async function TrainersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { city = "", serviceType = "" } = await searchParams;
+  const { city = "", serviceType = "", sport = "" } = await searchParams;
 
   const cityFilter = typeof city === "string" ? city.trim() : "";
   const serviceTypeFilter =
     typeof serviceType === "string" ? serviceType.trim() : "";
+  const sportFilter = typeof sport === "string" ? sport.trim() : "";
 
-  const [trainers, rawCities, rawServices] = await Promise.all([
+  const [trainers, rawCities, rawServices, availableSports] = await Promise.all([
     prisma.trainerProfile.findMany({
       where: {
         status: "APPROVED",
         ...(cityFilter ? { city: { contains: cityFilter } } : {}),
       },
-      include: { user: true, services: true, reviews: true },
+      include: {
+        user: true,
+        services: true,
+        reviews: true,
+        sports: { include: { sport: true } },
+      },
       orderBy: { isFeatured: "desc" },
     }),
     prisma.trainerProfile.findMany({
@@ -40,6 +46,10 @@ export default async function TrainersPage({
       where: { trainer: { status: "APPROVED" } },
       select: { name: true },
       distinct: ["name"],
+      orderBy: { name: "asc" },
+    }),
+    prisma.sport.findMany({
+      where: { trainers: { some: { trainer: { status: "APPROVED" } } } },
       orderBy: { name: "asc" },
     }),
   ]);
@@ -56,6 +66,10 @@ export default async function TrainersPage({
         )
       )
     : trainers;
+
+  const withSport = sportFilter
+    ? filtered.filter((t) => t.sports?.some((ts) => ts.sport.slug === sportFilter))
+    : filtered;
 
   return (
     <div className="min-h-screen">
@@ -81,8 +95,10 @@ export default async function TrainersPage({
           <TrainerFilters
             initialCity={cityFilter}
             initialServiceType={serviceTypeFilter}
+            initialSport={sportFilter}
             availableCities={availableCities}
             availableServiceTypes={availableServiceTypes}
+            availableSports={availableSports}
           />
         </div>
       </section>
@@ -90,7 +106,7 @@ export default async function TrainersPage({
       {/* Trainer Grid */}
       <section className="py-12 bg-[#F4F4F4]">
         <div className="container-wide">
-          {filtered.length === 0 ? (
+          {withSport.length === 0 ? (
             <div className="text-center py-24">
               <div className="text-6xl mb-4">🎾</div>
               <h2 className="text-2xl font-800 text-[#0B5C71] mb-2">
@@ -102,7 +118,7 @@ export default async function TrainersPage({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((trainer) => {
+              {withSport.map((trainer) => {
                 const avgRating =
                   trainer.reviews.length > 0
                     ? trainer.reviews.reduce((s, r) => s + r.rating, 0) /

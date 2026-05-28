@@ -9,17 +9,22 @@ export default async function TrainerProfilePage() {
   const session = await getServerSession(authOptions);
   const sessionUser = session!.user as any;
 
-  const trainerProfile = await prisma.trainerProfile.findUnique({
-    where: { userId: sessionUser.id },
-    include: {
-      arenas: { include: { arena: true } },
-    },
-  });
-
-  const allArenas = await prisma.arena.findMany({
-    where: { status: "APPROVED" },
-    orderBy: { name: "asc" },
-  });
+  const [trainerProfile, allArenas, allSports] = await Promise.all([
+    prisma.trainerProfile.findUnique({
+      where: { userId: sessionUser.id },
+      include: {
+        arenas: { include: { arena: true } },
+        sports: { include: { sport: true } },
+      },
+    }),
+    prisma.arena.findMany({
+      where: { status: "APPROVED" },
+      orderBy: { name: "asc" },
+    }),
+    prisma.sport.findMany({
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   const profileData = trainerProfile
     ? {
@@ -30,6 +35,7 @@ export default async function TrainerProfilePage() {
         city: trainerProfile.city,
         phone: trainerProfile.phone ?? "",
         arenaIds: trainerProfile.arenas.map((ta) => ta.arenaId),
+        sportIds: trainerProfile.sports.map((ts) => ts.sportId),
       }
     : null;
 
@@ -41,7 +47,7 @@ export default async function TrainerProfilePage() {
           Redaguokite savo viešą trenerio profilį
         </p>
       </div>
-      <TrainerProfileForm profile={profileData} arenas={allArenas} />
+      <TrainerProfileForm profile={profileData} arenas={allArenas} sports={allSports} />
     </div>
   );
 }

@@ -16,10 +16,11 @@ export default async function ArenasPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { city = "" } = await searchParams;
+  const { city = "", sport = "" } = await searchParams;
   const cityFilter = typeof city === "string" ? city.trim() : "";
+  const sportFilter = typeof sport === "string" ? sport.trim() : "";
 
-  const [arenas, rawCities] = await Promise.all([
+  const [arenas, rawCities, availableSports] = await Promise.all([
     prisma.arena.findMany({
       where: {
         status: "APPROVED",
@@ -29,6 +30,7 @@ export default async function ArenasPage({
         trainers: {
           include: { trainer: { select: { status: true } } },
         },
+        sports: { include: { sport: true } },
       },
       orderBy: { name: "asc" },
     }),
@@ -38,11 +40,19 @@ export default async function ArenasPage({
       distinct: ["city"],
       orderBy: { city: "asc" },
     }),
+    prisma.sport.findMany({
+      where: { arenas: { some: { arena: { status: "APPROVED" } } } },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const availableCities = rawCities
     .map((a) => a.city)
     .filter((c): c is string => !!c);
+
+  const filteredArenas = sportFilter
+    ? arenas.filter((a) => a.sports?.some((as) => as.sport.slug === sportFilter))
+    : arenas;
 
   return (
     <div className="min-h-screen">
@@ -62,14 +72,19 @@ export default async function ArenasPage({
       {/* Filters */}
       <section className="bg-white border-b border-gray-100 py-6 sticky top-0 z-10 shadow-sm">
         <div className="container-tight">
-          <ArenaFilters initialCity={cityFilter} availableCities={availableCities} />
+          <ArenaFilters
+            initialCity={cityFilter}
+            initialSport={sportFilter}
+            availableCities={availableCities}
+            availableSports={availableSports}
+          />
         </div>
       </section>
 
       {/* Arena Grid */}
       <section className="py-12 bg-[#F4F4F4]">
         <div className="container-wide">
-          {arenas.length === 0 ? (
+          {filteredArenas.length === 0 ? (
             <div className="text-center py-24">
               <div className="text-6xl mb-4">🏟️</div>
               <h2 className="text-2xl font-800 text-[#0B5C71] mb-2">
@@ -81,7 +96,7 @@ export default async function ArenasPage({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {arenas.map((arena) => {
+              {filteredArenas.map((arena) => {
                 const approvedTrainers = arena.trainers.filter(
                   (ta) => ta.trainer.status === "APPROVED"
                 ).length;

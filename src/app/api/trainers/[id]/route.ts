@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json();
-  const { displayName, bio, photoUrl, city, phone, isFeatured, arenaIds } = body;
+  const { displayName, bio, photoUrl, city, phone, isFeatured, arenaIds, sportIds } = body;
 
   const updated = await prisma.trainerProfile.update({
     where: { id },
@@ -64,6 +64,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (arenaIds.length > 0) {
       await prisma.trainerArena.createMany({
         data: arenaIds.map((arenaId: string) => ({ trainerId: id, arenaId })),
+      });
+    }
+  }
+
+  if (sportIds !== undefined) {
+    await prisma.trainerSport.deleteMany({ where: { trainerId: id } });
+    if (sportIds.length > 0) {
+      await prisma.trainerSport.createMany({
+        data: sportIds.map((sportId: string) => ({ trainerId: id, sportId })),
       });
     }
   }

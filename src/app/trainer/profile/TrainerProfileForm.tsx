@@ -9,6 +9,12 @@ interface Arena {
   city: string;
 }
 
+interface SportItem {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 interface ProfileData {
   id: string;
   displayName: string;
@@ -17,14 +23,16 @@ interface ProfileData {
   city: string;
   phone: string;
   arenaIds: string[];
+  sportIds: string[];
 }
 
 interface Props {
   profile: ProfileData | null;
   arenas: Arena[];
+  sports: SportItem[];
 }
 
-export default function TrainerProfileForm({ profile, arenas }: Props) {
+export default function TrainerProfileForm({ profile, arenas, sports }: Props) {
   const [displayName, setDisplayName] = useState(profile?.displayName ?? "");
   const [bio, setBio] = useState(profile?.bio ?? "");
   const [photoUrl, setPhotoUrl] = useState(profile?.photoUrl ?? "");
@@ -33,12 +41,21 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
   const [selectedArenaIds, setSelectedArenaIds] = useState<string[]>(
     profile?.arenaIds ?? []
   );
+  const [selectedSportIds, setSelectedSportIds] = useState<string[]>(
+    profile?.sportIds ?? []
+  );
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const toggleArena = (arenaId: string) => {
     setSelectedArenaIds((prev) =>
       prev.includes(arenaId) ? prev.filter((id) => id !== arenaId) : [...prev, arenaId]
+    );
+  };
+
+  const toggleSport = (sportId: string) => {
+    setSelectedSportIds((prev) =>
+      prev.includes(sportId) ? prev.filter((id) => id !== sportId) : [...prev, sportId]
     );
   };
 
@@ -59,6 +76,7 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
           city,
           phone,
           arenaIds: selectedArenaIds,
+          sportIds: selectedSportIds,
         }),
       });
 
@@ -205,6 +223,41 @@ export default function TrainerProfileForm({ profile, arenas }: Props) {
                   <div>
                     <p className="text-sm font-700 text-[#0B5C71]">{arena.name}</p>
                     <p className="text-xs text-gray-500">{arena.city}</p>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Sports */}
+      <div className="card p-6">
+        <h2 className="font-800 text-[#0B5C71] text-lg mb-4">Mano sportai</h2>
+        {sports.length === 0 ? (
+          <p className="text-sm text-gray-500">Sportų nėra.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {sports.map((sport) => {
+              const checked = selectedSportIds.includes(sport.id);
+              return (
+                <label
+                  key={sport.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                    checked
+                      ? "border-[#FF5733] bg-[#FF5733]/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleSport(sport.id)}
+                    className="w-4 h-4 accent-[#FF5733]"
+                  />
+                  <div className="flex items-center gap-2">
+                    {sport.icon && <span className="text-lg">{sport.icon}</span>}
+                    <p className="text-sm font-700 text-[#0B5C71]">{sport.name}</p>
                   </div>
                 </label>
               );

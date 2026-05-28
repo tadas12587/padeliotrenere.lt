@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { displayName, city, phone, bio } = body;
+  const { displayName, city, phone, bio, sportIds = [] }: { displayName: string; city: string; phone?: string; bio?: string; sportIds: string[] } = body;
 
   if (!displayName || !city) {
     return NextResponse.json({ error: "Vardas ir miestas privalomi" }, { status: 400 });
@@ -27,12 +27,18 @@ export async function POST(req: NextRequest) {
   const existing = await prisma.trainerProfile.findUnique({ where: { userId } });
   if (existing) return NextResponse.json({ error: "Profilis jau egzistuoja" }, { status: 409 });
 
-  await prisma.$transaction([
+  const [, trainerProfile] = await prisma.$transaction([
     prisma.user.update({ where: { id: userId }, data: { role: "TRAINER" } }),
     prisma.trainerProfile.create({
       data: { userId, displayName, city, phone, bio, status: "PENDING" },
     }),
   ]);
+
+  if (sportIds.length > 0) {
+    await prisma.trainerSport.createMany({
+      data: sportIds.map((sportId: string) => ({ trainerId: trainerProfile.id, sportId })),
+    });
+  }
 
   // Notify admin
   if (process.env.ADMIN_EMAIL && process.env.RESEND_API_KEY) {

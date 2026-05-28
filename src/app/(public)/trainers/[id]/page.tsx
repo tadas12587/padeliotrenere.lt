@@ -106,6 +106,9 @@ export default async function TrainerDetailPage({
       arenas: {
         include: { arena: true },
       },
+      sports: {
+        include: { sport: true },
+      },
       reviews: {
         include: { author: true },
         orderBy: { createdAt: "desc" },
@@ -337,6 +340,26 @@ export default async function TrainerDetailPage({
 
         {/* Right column */}
         <div className="flex flex-col gap-6">
+          {/* Sports */}
+          {trainer.sports.length > 0 && (
+            <div className="card p-6">
+              <h2 className="text-lg font-800 text-[#0B5C71] mb-4">
+                Sporto šakos
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {trainer.sports.map(({ sport }) => (
+                  <span
+                    key={sport.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-600 bg-[#0B5C71]/10 text-[#0B5C71] border border-[#0B5C71]/20"
+                  >
+                    {sport.icon && <span>{sport.icon}</span>}
+                    {sport.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Arenas */}
           {trainer.arenas.length > 0 && (
             <div className="card p-6">

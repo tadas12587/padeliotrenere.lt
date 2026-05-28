@@ -182,6 +182,7 @@ model TrainerProfile {
   certifications Certification[]
   services     Service[]
   arenas       TrainerArena[]
+  sports       TrainerSport[]
   slots        AvailabilitySlot[]
   reviews      Review[]
   bookings     Booking[]
@@ -200,6 +201,7 @@ model Arena {
   createdById String
   createdBy   User        @relation(fields: [createdById], references: [id])
   trainers    TrainerArena[]
+  sports      ArenaSport[]
   slots       AvailabilitySlot[]
   bookings    Booking[]
   createdAt   DateTime    @default(now())
@@ -258,4 +260,29 @@ model Review {
   rating    Int
   comment   String?        @db.Text
   createdAt DateTime       @default(now())
+}
+
+model Sport {
+  id       String  @id @default(cuid())
+  name     String  @unique @db.VarChar(191)
+  slug     String  @unique @db.VarChar(191)
+  icon     String? @db.VarChar(10)
+  trainers TrainerSport[]
+  arenas   ArenaSport[]
+}
+
+model TrainerSport {
+  trainerId String
+  sportId   String
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  sport     Sport          @relation(fields: [sportId], references: [id], onDelete: Cascade)
+  @@id([trainerId, sportId])
+}
+
+model ArenaSport {
+  arenaId String
+  sportId String
+  arena   Arena @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  sport   Sport @relation(fields: [sportId], references: [id], onDelete: Cascade)
+  @@id([arenaId, sportId])
 }
