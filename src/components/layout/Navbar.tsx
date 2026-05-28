@@ -2,21 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
-import { Menu, X, Dumbbell } from "lucide-react";
+import { Menu, X, Dumbbell, ChevronDown, LogOut, User, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
+const publicNavLinks = [
   { href: "/", label: "Pagrindinis" },
-  { href: "/about", label: "Apie mane" },
+  { href: "/trainers", label: "Treneriai" },
+  { href: "/arenas", label: "Arenos" },
   { href: "/booking", label: "Rezervacija" },
   { href: "/blog", label: "Blog'as" },
   { href: "/contact", label: "Kontaktai" },
 ];
 
+function getDashboardLink(role: string, trainerStatus: string | null | undefined) {
+  if (role === "ADMIN") return { href: "/admin/dashboard", label: "Admin" };
+  if (role === "TRAINER" && trainerStatus === "APPROVED") return { href: "/trainer/dashboard", label: "Trenerio sritis" };
+  if (role === "TRAINER") return { href: "/trainer/dashboard", label: "Mano sritis" };
+  return { href: "/client/dashboard", label: "Mano sritis" };
+}
+
 export default function Navbar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const user = session?.user as any;
+  const isLoggedIn = !!session?.user;
+  const dashboard = isLoggedIn ? getDashboardLink(user?.role ?? "CLIENT", user?.trainerStatus) : null;
 
   return (
     <header
@@ -40,7 +55,7 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <ul className="hidden md:flex items-center gap-1">
-          {navLinks.map(({ href, label }) => (
+          {publicNavLinks.map(({ href, label }) => (
             <li key={href}>
               <Link
                 href={href}
@@ -59,15 +74,62 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/auth/login"
-            className="text-sm font-600 text-gray-700 hover:text-[#e94560] transition-colors px-3 py-2"
-          >
-            Prisijungti
-          </Link>
-          <Link href="/booking" className="btn-primary text-sm py-2 px-5">
-            Rezervuoti
-          </Link>
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-600 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-full bg-[#e94560]/15 flex items-center justify-center text-[#e94560] font-800 text-xs">
+                  {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U"}
+                </div>
+                <span className="max-w-[120px] truncate">{user?.name ?? user?.email}</span>
+                <ChevronDown size={14} />
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-lg py-1 z-50">
+                  {dashboard && (
+                    <Link
+                      href={dashboard.href}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                    >
+                      <LayoutDashboard size={15} />
+                      {dashboard.label}
+                    </Link>
+                  )}
+                  <Link
+                    href="/client/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                  >
+                    <User size={15} />
+                    Profilis
+                  </Link>
+                  <hr className="my-1 border-gray-100" />
+                  <button
+                    onClick={() => { signOut({ callbackUrl: "/" }); setUserMenuOpen(false); }}
+                    className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#e94560] transition-colors"
+                  >
+                    <LogOut size={15} />
+                    Atsijungti
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="text-sm font-600 text-gray-700 hover:text-[#e94560] transition-colors px-3 py-2"
+              >
+                Prisijungti
+              </Link>
+              <Link href="/booking" className="btn-primary text-sm py-2 px-5">
+                Rezervuoti
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -84,7 +146,7 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <ul className="container-wide py-4 flex flex-col gap-1">
-            {navLinks.map(({ href, label }) => (
+            {publicNavLinks.map(({ href, label }) => (
               <li key={href}>
                 <Link
                   href={href}
@@ -101,20 +163,42 @@ export default function Navbar() {
               </li>
             ))}
             <li className="pt-3 border-t border-gray-100 mt-2 flex flex-col gap-2">
-              <Link
-                href="/auth/login"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
-              >
-                Prisijungti
-              </Link>
-              <Link
-                href="/booking"
-                onClick={() => setOpen(false)}
-                className="btn-primary text-sm text-center"
-              >
-                🎾 Rezervuoti dabar
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  {dashboard && (
+                    <Link
+                      href={dashboard.href}
+                      onClick={() => setOpen(false)}
+                      className="block px-4 py-3 rounded-lg text-sm font-600 text-center bg-[#16213e] text-white transition-all"
+                    >
+                      {dashboard.label}
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { signOut({ callbackUrl: "/" }); setOpen(false); }}
+                    className="block w-full px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                  >
+                    Atsijungti
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-3 rounded-lg text-sm font-600 text-center border-2 border-gray-200 text-gray-700 hover:border-[#e94560] hover:text-[#e94560] transition-all"
+                  >
+                    Prisijungti
+                  </Link>
+                  <Link
+                    href="/booking"
+                    onClick={() => setOpen(false)}
+                    className="btn-primary text-sm text-center"
+                  >
+                    🎾 Rezervuoti dabar
+                  </Link>
+                </>
+              )}
             </li>
           </ul>
         </div>
