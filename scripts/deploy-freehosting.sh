@@ -110,6 +110,12 @@ ssh "${SSH_ALIAS}" bash << ENDSSH
   tar -xzf ~/$PACKAGE
   rm ~/$PACKAGE
 
+  echo "▶ _next statiniai failai (nginx reikalavimas)"
+  rm -rf /web/_next
+  mkdir -p /web/_next
+  cp -r /web/.next/static /web/_next/
+  echo "  ✓ /web/_next/static/ sukurtas"
+
   echo "▶ Prisma migracijos (MySQL)"
   mysql -u ${DB_USER} -p'${DB_PASS}' ${DB_NAME} < /web/migration.sql 2>/dev/null \
     && echo "  ✓ Migracijos įvykdytos" \
