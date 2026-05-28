@@ -52,7 +52,9 @@ jobs:
               max_memory_restart: "256M",
               env: {
                 NODE_ENV: "production",
-                PORT: 3000,
+                PORT: 30004,
+                HOST: "0.0.0.0",
+                HOSTNAME: "0.0.0.0",
                 DATABASE_URL: "REPLACE_DATABASE_URL",
                 NEXTAUTH_URL: "REPLACE_NEXTAUTH_URL",
                 NEXTAUTH_SECRET: "REPLACE_NEXTAUTH_SECRET",
