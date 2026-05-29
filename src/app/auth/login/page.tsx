@@ -5,60 +5,42 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Dumbbell, Mail, Loader2 } from "lucide-react";
+import { Dumbbell, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/client/dashboard";
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
-  const handleEmailSignin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     setLoading(true);
     setError("");
 
-    const res = await signIn("email", {
+    const res = await signIn("credentials", {
       email,
+      password,
       callbackUrl,
       redirect: false,
     });
 
     setLoading(false);
+
     if (res?.ok) {
-      setSent(true);
+      window.location.href = callbackUrl;
     } else {
-      setError("Klaida siunčiant nuorodą. Bandykite dar kartą.");
+      setError("Neteisingas el. paštas arba slaptažodis.");
     }
   };
 
   const handleGoogleSignin = () => {
     signIn("google", { callbackUrl });
   };
-
-  if (sent) {
-    return (
-      <div className="card p-10">
-        <div className="text-6xl mb-5">📧</div>
-        <h1 className="text-2xl font-900 text-[#0B5C71] mb-3">
-          Patikrinkite el. paštą
-        </h1>
-        <p className="text-gray-500 mb-2">
-          Prisijungimo nuoroda išsiųsta į:
-        </p>
-        <p className="font-700 text-[#0B5C71] bg-gray-100 rounded-lg px-4 py-2 inline-block">
-          {email}
-        </p>
-        <p className="text-gray-400 text-sm mt-4">
-          Spustelkite nuorodą el. laiške, kad prisijungtumėte.
-          Nuoroda galioja 24 val.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="card p-8">
@@ -75,6 +57,7 @@ function LoginContent() {
 
       {/* Google */}
       <button
+        type="button"
         onClick={handleGoogleSignin}
         className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 rounded-xl px-5 py-3 text-sm font-600 text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all mb-5"
       >
@@ -108,17 +91,14 @@ function LoginContent() {
         </div>
       </div>
 
-      {/* Email magic link */}
-      <form onSubmit={handleEmailSignin} className="space-y-4">
+      {/* Email + password */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
             El. paštas
           </label>
           <div className="relative">
-            <Mail
-              size={17}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-            />
+            <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="email"
               value={email}
@@ -130,23 +110,51 @@ function LoginContent() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
+            Slaptažodis
+          </label>
+          <div className="relative">
+            <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className="w-full border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
           className="btn-primary w-full justify-center py-3 text-sm"
         >
           {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Siunčiama...
-            </>
+            <><Loader2 size={16} className="animate-spin" />Jungiamasi...</>
           ) : (
-            "📧 Gauti prisijungimo nuorodą"
+            "Prisijungti"
           )}
         </button>
       </form>
 
-      <p className="text-xs text-gray-400 text-center mt-5">
+      <p className="text-sm text-center text-gray-500 mt-5">
+        Neturite paskyros?{" "}
+        <Link href="/auth/register" className="text-[#FF5733] font-700 hover:underline">
+          Registruotis
+        </Link>
+      </p>
+
+      <p className="text-xs text-gray-400 text-center mt-3">
         Prisijungdami sutinkate su{" "}
         <Link href="/terms" className="underline hover:text-gray-600">
           naudojimo sąlygomis
@@ -162,10 +170,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 font-black text-xl"
-          >
+          <Link href="/" className="inline-flex items-center gap-2 font-black text-xl">
             <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={22} className="text-white" />
             </span>
