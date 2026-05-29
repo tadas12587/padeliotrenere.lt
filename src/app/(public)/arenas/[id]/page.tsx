@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { MapPin, ExternalLink } from "lucide-react";
+import { MapPin, ExternalLink, Award, Calendar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import ArenaHero from "./ArenaHero";
+import GallerySection from "./GallerySection";
 
 export async function generateMetadata({
   params,
@@ -22,7 +23,7 @@ export async function generateMetadata({
   };
 }
 
-function InitialsAvatar({ name }: { name: string }) {
+function TrainerPlaceholder({ name }: { name: string }) {
   const initials = name
     .split(" ")
     .map((w) => w[0])
@@ -30,8 +31,8 @@ function InitialsAvatar({ name }: { name: string }) {
     .slice(0, 2)
     .toUpperCase();
   return (
-    <div className="w-12 h-12 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-[#0B5C71] text-sm shrink-0">
-      {initials}
+    <div className="w-full h-full flex items-center justify-center bg-[#0B5C71]/10">
+      <span className="text-4xl font-900 text-[#0B5C71]/40">{initials}</span>
     </div>
   );
 }
@@ -42,6 +43,7 @@ export default async function ArenaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const now = new Date();
 
   const arena = await prisma.arena.findUnique({
     where: { id },
@@ -51,6 +53,11 @@ export default async function ArenaDetailPage({
           trainer: {
             include: {
               user: { select: { name: true } },
+              certifications: { select: { id: true, name: true } },
+              slots: {
+                where: { status: "AVAILABLE", startTime: { gt: now } },
+                select: { id: true },
+              },
             },
           },
         },
@@ -76,7 +83,6 @@ export default async function ArenaDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
-      {/* Full-width hero with cycling background */}
       <ArenaHero
         name={arena.name}
         city={arena.city}
@@ -102,7 +108,7 @@ export default async function ArenaDetailPage({
 
           {/* Trainers */}
           <div className="card p-7">
-            <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
+            <h2 className="text-xl font-800 text-[#0B5C71] mb-5">
               Treneriai šioje arenoje
               {approvedTrainers.length > 0 && (
                 <span className="text-gray-400 font-600 text-base ml-2">
@@ -114,35 +120,68 @@ export default async function ArenaDetailPage({
             {approvedTrainers.length === 0 ? (
               <p className="text-gray-400 text-sm">Šioje arenoje trenerių kol kas nėra.</p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {approvedTrainers.map(({ trainer }) => (
                   <Link
                     key={trainer.id}
                     href={`/trainers/${trainer.id}`}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-[#FF5733]/30 hover:bg-[#FF5733]/5 transition-all group"
+                    className="group flex flex-col rounded-2xl border border-gray-100 overflow-hidden hover:border-[#FF5733]/30 hover:shadow-md transition-all bg-white"
                   >
-                    {trainer.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={trainer.photoUrl}
-                        alt={trainer.displayName}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-[#FF5733]/30 shrink-0"
-                      />
-                    ) : (
-                      <InitialsAvatar name={trainer.displayName} />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
+                    {/* 3:4 portrait photo */}
+                    <div className="aspect-[3/4] overflow-hidden bg-gray-100 relative">
+                      {trainer.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={trainer.photoUrl}
+                          alt={trainer.displayName}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <TrainerPlaceholder name={trainer.displayName} />
+                      )}
+                      {/* Available slots badge */}
+                      {trainer.slots.length > 0 && (
+                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-green-500 text-white text-xs font-700 px-2.5 py-1 rounded-full shadow-sm">
+                          <Calendar size={11} />
+                          <span>{trainer.slots.length} laisv.</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-4 flex flex-col gap-2">
+                      <p className="font-800 text-[#0B5C71] text-base group-hover:text-[#FF5733] transition-colors leading-tight">
                         {trainer.displayName}
                       </p>
-                      <div className="flex items-center gap-1 text-gray-400 text-sm mt-0.5">
-                        <MapPin size={12} />
+                      <div className="flex items-center gap-1 text-gray-400 text-xs">
+                        <MapPin size={11} className="text-[#FF5733]" />
                         <span>{trainer.city}</span>
                       </div>
+
+                      {/* Certifications */}
+                      {trainer.certifications.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {trainer.certifications.slice(0, 2).map((cert) => (
+                            <span
+                              key={cert.id}
+                              className="flex items-center gap-1 text-xs bg-[#0B5C71]/8 text-[#0B5C71] px-2 py-0.5 rounded-full"
+                            >
+                              <Award size={10} />
+                              {cert.name}
+                            </span>
+                          ))}
+                          {trainer.certifications.length > 2 && (
+                            <span className="text-xs text-gray-400 px-1 py-0.5">
+                              +{trainer.certifications.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <span className="mt-1 text-[#FF5733] text-xs font-700 group-hover:underline">
+                        Žiūrėti profilį →
+                      </span>
                     </div>
-                    <span className="text-[#FF5733] text-sm font-700 shrink-0 group-hover:underline">
-                      Žiūrėti profilį →
-                    </span>
                   </Link>
                 ))}
               </div>
@@ -177,13 +216,16 @@ export default async function ArenaDetailPage({
           </div>
 
           {/* Booking CTA */}
-          <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
-            <h2 className="text-lg font-800 mb-2">Rezervuokite</h2>
-            <p className="text-white/60 text-sm mb-5 leading-relaxed">
+          <div className="rounded-2xl shadow-sm p-6" style={{ background: "linear-gradient(135deg, #0B5C71 0%, #083d4e 100%)" }}>
+            <h2 className="text-lg font-800 text-white mb-2">Rezervuokite</h2>
+            <p className="text-white/65 text-sm mb-5 leading-relaxed">
               Pasirinkite trenerį arba rezervuokite kortą šioje arenoje.
             </p>
             <div className="flex flex-col gap-2">
-              <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary w-full text-center py-3">
+              <Link
+                href={`/booking?arenaId=${arena.id}`}
+                className="btn-primary w-full text-center py-3"
+              >
                 Rezervuoti trenerį
               </Link>
               {arena.courtBookingUrl && (
@@ -201,23 +243,7 @@ export default async function ArenaDetailPage({
 
           {/* Gallery */}
           {arena.photos.length > 0 && (
-            <div className="card p-6">
-              <h2 className="text-lg font-800 text-[#0B5C71] mb-4">Galerija</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {arena.photos.map((photo) => (
-                  <a
-                    key={photo.id}
-                    href={photo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="aspect-square rounded-xl overflow-hidden block hover:opacity-90 transition-opacity"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="Galerija" className="w-full h-full object-cover" />
-                  </a>
-                ))}
-              </div>
-            </div>
+            <GallerySection photos={arena.photos} />
           )}
         </div>
       </div>

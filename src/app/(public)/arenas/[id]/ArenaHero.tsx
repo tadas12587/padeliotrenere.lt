@@ -52,7 +52,7 @@ export default function ArenaHero({
   }, [advance, bgPhotos.length]);
 
   return (
-    <section className="relative overflow-hidden min-h-[460px] lg:min-h-[520px]">
+    <section className="relative overflow-hidden min-h-[520px] lg:min-h-[640px]">
       {/* Background images — crossfade */}
       {hasBg ? (
         bgPhotos.map((photo, i) => (
@@ -63,7 +63,7 @@ export default function ArenaHero({
             aria-hidden={i !== currentIdx}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt="" className="w-full h-full object-cover" />
+            <img src={photo.url} alt="" className="w-full h-full object-cover" style={{ objectPosition: "center 25%" }} />
           </div>
         ))
       ) : (
@@ -75,13 +75,13 @@ export default function ArenaHero({
         className="absolute inset-0"
         style={{
           background: hasBg
-            ? "linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.38) 55%, rgba(0,0,0,0.18) 100%)"
+            ? "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.12) 100%)"
             : "none",
         }}
       />
 
       {/* Content — anchored to bottom */}
-      <div className="relative z-10 container-tight flex flex-col justify-end min-h-[460px] lg:min-h-[520px] pb-10 pt-20 text-white">
+      <div className="relative z-10 container-tight flex flex-col justify-end min-h-[520px] lg:min-h-[640px] pb-10 pt-20 text-white">
         <div className="flex flex-col lg:flex-row items-start lg:items-end gap-6">
           {/* Logo */}
           {logoUrl && (
