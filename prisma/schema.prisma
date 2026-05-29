@@ -270,18 +270,19 @@ model TrainerArena {
 }
 
 model AvailabilitySlot {
-  id        String         @id @default(cuid())
-  trainerId String
-  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  arenaId   String
-  arena     Arena          @relation(fields: [arenaId], references: [id], onDelete: Cascade)
-  startTime DateTime
-  endTime   DateTime
-  status    SlotStatus     @default(AVAILABLE)
-  bookingId String?        @unique
-  booking   Booking?       @relation(fields: [bookingId], references: [id])
-  services  Service[]
-  createdAt DateTime       @default(now())
+  id              String         @id @default(cuid())
+  trainerId       String
+  trainer         TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  arenaId         String
+  arena           Arena          @relation(fields: [arenaId], references: [id], onDelete: Cascade)
+  startTime       DateTime
+  endTime         DateTime
+  maxParticipants Int?
+  status          SlotStatus     @default(AVAILABLE)
+  bookingId       String?        @unique
+  booking         Booking?       @relation(fields: [bookingId], references: [id])
+  services        Service[]
+  createdAt       DateTime       @default(now())
 }
 
 model Review {

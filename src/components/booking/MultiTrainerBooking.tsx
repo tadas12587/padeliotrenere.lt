@@ -33,6 +33,7 @@ interface AvailabilitySlot {
   id: string;
   startTime: string;
   endTime: string;
+  maxParticipants?: number | null;
   trainer: {
     id: string;
     displayName: string;
@@ -396,6 +397,11 @@ export default function MultiTrainerBooking({
                           <MapPin size={11} />
                           {slot.arena.name}, {slot.arena.city}
                         </p>
+                        {slot.maxParticipants && (
+                          <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-1">
+                            Grupinė · ≤{slot.maxParticipants} dalyvių
+                          </span>
+                        )}
                       </div>
 
                       {isSelected && (

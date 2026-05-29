@@ -115,11 +115,11 @@ export async function sendPasswordResetEmail({
     const r = getResend(); if (!r) return; await r.emails.send({
       from: FROM,
       to,
-      subject: "🔑 Slaptažodžio atstatymas – ManoTreniruote.lt",
+      subject: "🔑 Slaptažodžio atstatymas – padeliotrenere.lt",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: #0B5C71; padding: 30px; text-align: center;">
-            <h1 style="color: #FF5733; margin: 0; font-size: 24px;">ManoTreniruote.lt</h1>
+            <h1 style="color: #FF5733; margin: 0; font-size: 24px;">padeliotrenere.lt</h1>
           </div>
           <div style="padding: 30px; background: #ffffff;">
             <h2 style="color: #0B5C71;">Slaptažodžio atstatymas</h2>
@@ -135,7 +135,7 @@ export async function sendPasswordResetEmail({
             <p style="color: #ccc; font-size: 12px; word-break: break-all;">Arba atidarykite šią nuorodą naršyklėje: ${resetUrl}</p>
           </div>
           <div style="background: #f5f5f5; padding: 20px; text-align: center; color: #999; font-size: 14px;">
-            <p>© 2025 ManoTreniruote.lt. Visos teisės saugomos.</p>
+            <p>© 2025 padeliotrenere.lt. Visos teisės saugomos.</p>
           </div>
         </div>
       `,
@@ -187,5 +187,132 @@ export async function sendBookingCancellation({
     });
   } catch (error) {
     console.error("Failed to send cancellation email:", error);
+  }
+}
+
+export async function sendBookingConfirmationNew({
+  to,
+  clientName,
+  trainerName,
+  arenaName,
+  startTime,
+  endTime,
+  bookingId,
+  isGroup,
+}: {
+  to: string;
+  clientName: string;
+  trainerName: string;
+  arenaName: string;
+  startTime: Date;
+  endTime: Date;
+  bookingId: string;
+  isGroup: boolean;
+}) {
+  try {
+    const r = getResend(); if (!r) return;
+    const dateStr = startTime.toLocaleDateString("lt-LT", { year: "numeric", month: "long", day: "numeric" });
+    const timeStr = `${startTime.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })} – ${endTime.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}`;
+    const typeLabel = isGroup ? "Grupinė treniruotė" : "Individuali treniruotė";
+
+    await r.emails.send({
+      from: FROM,
+      to,
+      subject: `✅ ${typeLabel} patvirtinta – padeliotrenere.lt`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #0B5C71; padding: 30px; text-align: center;">
+            <h1 style="color: #FF5733; margin: 0; font-size: 28px;">🎾 padeliotrenere.lt</h1>
+          </div>
+          <div style="padding: 30px; background: #ffffff;">
+            <h2 style="color: #0B5C71;">Sveiki, ${clientName}!</h2>
+            <p style="color: #555; font-size: 16px;">Jūsų ${isGroup ? "grupinė treniruotė" : "treniruotė"} sėkmingai užregistruota:</p>
+            <div style="background: #f5f5f5; border-left: 4px solid #FF5733; padding: 20px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>🏋️ Treneris:</strong> ${trainerName}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>📍 Arena:</strong> ${arenaName}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>📅 Data:</strong> ${dateStr}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${timeStr}</p>
+              ${isGroup ? '<p style="margin: 5px 0; color: #FF5733;"><strong>👥 Grupinė treniruotė</strong></p>' : ""}
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>🆔 Rezervacijos nr.:</strong> ${bookingId.slice(-8).toUpperCase()}</p>
+            </div>
+            <p style="color: #555;">Jeigu turite klausimų, susisiekite su mumis.</p>
+            <a href="${APP_URL}/client/bookings"
+               style="display: inline-block; background: #FF5733; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+              Peržiūrėti rezervaciją
+            </a>
+          </div>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; color: #999; font-size: 14px;">
+            <p>© 2025 padeliotrenere.lt. Visi teisės saugomos.</p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Failed to send booking confirmation email:", error);
+  }
+}
+
+export async function sendTrainerBookingNotification({
+  to,
+  trainerName,
+  clientName,
+  clientEmail,
+  arenaName,
+  startTime,
+  endTime,
+  isGroup,
+  currentCount,
+  maxParticipants,
+}: {
+  to: string;
+  trainerName: string;
+  clientName: string;
+  clientEmail: string;
+  arenaName: string;
+  startTime: Date;
+  endTime: Date;
+  isGroup: boolean;
+  currentCount?: number;
+  maxParticipants?: number | null;
+}) {
+  try {
+    const r = getResend(); if (!r) return;
+    const dateStr = startTime.toLocaleDateString("lt-LT", { year: "numeric", month: "long", day: "numeric" });
+    const timeStr = `${startTime.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })} – ${endTime.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}`;
+    const occupancy = isGroup && maxParticipants ? `${currentCount}/${maxParticipants}` : null;
+
+    await r.emails.send({
+      from: FROM,
+      to,
+      subject: `📅 Nauja rezervacija – ${clientName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #0B5C71; padding: 30px; text-align: center;">
+            <h1 style="color: #FF5733; margin: 0; font-size: 28px;">🎾 padeliotrenere.lt</h1>
+          </div>
+          <div style="padding: 30px; background: #ffffff;">
+            <h2 style="color: #0B5C71;">Sveiki, ${trainerName}!</h2>
+            <p style="color: #555; font-size: 16px;">Gautas naujas${isGroup ? " grupinės treniruotės" : ""} užsiregistravimas:</p>
+            <div style="background: #f5f5f5; border-left: 4px solid #0B5C71; padding: 20px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>👤 Klientas:</strong> ${clientName}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>📧 El. paštas:</strong> ${clientEmail}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>📍 Arena:</strong> ${arenaName}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>📅 Data:</strong> ${dateStr}</p>
+              <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${timeStr}</p>
+              ${isGroup && occupancy ? `<p style="margin: 5px 0; color: #FF5733;"><strong>👥 Užimtumas:</strong> ${occupancy} dalyvių</p>` : ""}
+            </div>
+            <a href="${APP_URL}/trainer/bookings"
+               style="display: inline-block; background: #0B5C71; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+              Peržiūrėti rezervacijas
+            </a>
+          </div>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; color: #999; font-size: 14px;">
+            <p>© 2025 padeliotrenere.lt. Visi teisės saugomos.</p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Failed to send trainer booking notification email:", error);
   }
 }

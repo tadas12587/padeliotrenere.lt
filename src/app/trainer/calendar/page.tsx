@@ -38,6 +38,7 @@ interface AvailabilitySlot {
   startTime: string;
   endTime: string;
   status: string;
+  maxParticipants: number | null;
   arena: Arena;
   services: SlotService[];
 }
@@ -57,6 +58,7 @@ export default function TrainerCalendarPage() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+  const [maxParticipants, setMaxParticipants] = useState("");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -183,6 +185,7 @@ export default function TrainerCalendarPage() {
           endTime: endDateTime.toISOString(),
           recurrence,
           serviceIds: selectedServiceIds,
+          ...(maxParticipants ? { maxParticipants: Number(maxParticipants) } : {}),
         }),
       });
 
@@ -201,6 +204,7 @@ export default function TrainerCalendarPage() {
       setSelectedDays([]);
       setRecurrenceType("none");
       setSelectedServiceIds([]);
+      setMaxParticipants("");
       setMessage({
         type: "success",
         text:
@@ -401,6 +405,22 @@ export default function TrainerCalendarPage() {
               </div>
             )}
 
+            {/* Group training capacity */}
+            <div className="pt-2 border-t border-gray-100">
+              <label className={labelCls}>
+                Maks. dalyvių{" "}
+                <span className="text-gray-400 font-400">(grupinei treniruotei — palikite tuščią individualiai)</span>
+              </label>
+              <input
+                type="number"
+                value={maxParticipants}
+                onChange={(e) => setMaxParticipants(e.target.value)}
+                min={2}
+                placeholder="Neribota (individuali)"
+                className={`max-w-xs ${inputCls}`}
+              />
+            </div>
+
             {/* Recurrence */}
             <div className="space-y-3 pt-2 border-t border-gray-100">
               <label className={labelCls}>Pasikartojimas</label>
@@ -560,6 +580,11 @@ export default function TrainerCalendarPage() {
                           </span>
                         ))}
                       </div>
+                    )}
+                    {slot.maxParticipants && (
+                      <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-1.5">
+                        Grupinė · max {slot.maxParticipants} dalyvių
+                      </span>
                     )}
                   </div>
                 </div>

@@ -101,28 +101,45 @@ function generateDates(baseStart: Date, baseEnd: Date, recurrence: Recurrence): 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role;
-  if (!session?.user || role !== "TRAINER") {
+  if (!session?.user || (role !== "TRAINER" && role !== "ADMIN")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = (session.user as any).id;
-  const profile = await prisma.trainerProfile.findUnique({ where: { userId } });
-  if (!profile || profile.status !== "APPROVED") {
-    return NextResponse.json({ error: "Trainer not approved" }, { status: 403 });
-  }
-
   const body = await req.json();
-  const { arenaId, startTime, endTime, recurrence, serviceIds } = body;
+  const { arenaId, startTime, endTime, recurrence, serviceIds, maxParticipants } = body;
+
+  let profile: any;
+  if (role === "ADMIN") {
+    // Admin must provide trainerId (TrainerProfile.id)
+    if (!body.trainerId) return NextResponse.json({ error: "trainerId required for admin" }, { status: 400 });
+    profile = await prisma.trainerProfile.findUnique({ where: { id: body.trainerId } });
+    if (!profile) return NextResponse.json({ error: "Trainer not found" }, { status: 404 });
+  } else {
+    const userId = (session.user as any).id;
+    profile = await prisma.trainerProfile.findUnique({ where: { userId } });
+    if (!profile || profile.status !== "APPROVED") {
+      return NextResponse.json({ error: "Trainer not approved" }, { status: 403 });
+    }
+  }
 
   if (!arenaId || !startTime || !endTime) {
     return NextResponse.json({ error: "arenaId, startTime, endTime required" }, { status: 400 });
   }
 
-  const trainerArena = await prisma.trainerArena.findUnique({
-    where: { trainerId_arenaId: { trainerId: profile.id, arenaId } },
-  });
-  if (!trainerArena) {
-    return NextResponse.json({ error: "Trainer not associated with this arena" }, { status: 403 });
+  // For non-admin trainers, check arena association; admin can create for any arena
+  if (role !== "ADMIN") {
+    const trainerArena = await prisma.trainerArena.findUnique({
+      where: { trainerId_arenaId: { trainerId: profile.id, arenaId } },
+    });
+    if (!trainerArena) {
+      return NextResponse.json({ error: "Trainer not associated with this arena" }, { status: 403 });
+    }
+  } else {
+    // Admin: just verify the arena exists
+    const arena = await prisma.arena.findUnique({ where: { id: arenaId } });
+    if (!arena) {
+      return NextResponse.json({ error: "Arena not found" }, { status: 404 });
+    }
   }
 
   const baseStart = new Date(startTime);
@@ -130,6 +147,8 @@ export async function POST(req: NextRequest) {
   const serviceConnect = Array.isArray(serviceIds) && serviceIds.length > 0
     ? { connect: serviceIds.map((id: string) => ({ id })) }
     : undefined;
+
+  const maxParticipantsValue = maxParticipants ? Number(maxParticipants) : null;
 
   // Single slot
   if (!recurrence || recurrence.type === "none") {
@@ -139,6 +158,7 @@ export async function POST(req: NextRequest) {
         arenaId,
         startTime: baseStart,
         endTime: baseEnd,
+        maxParticipants: maxParticipantsValue,
         ...(serviceConnect ? { services: serviceConnect } : {}),
       },
       include: { services: { select: SERVICE_SELECT } },
@@ -173,6 +193,7 @@ export async function POST(req: NextRequest) {
           arenaId,
           startTime: start,
           endTime: end,
+          maxParticipants: maxParticipantsValue,
           ...(serviceConnect ? { services: serviceConnect } : {}),
         },
       })
