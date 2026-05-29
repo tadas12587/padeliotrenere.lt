@@ -11,6 +11,7 @@ import {
   Dumbbell,
   Globe,
 } from "lucide-react";
+import DashboardMobileNav from "@/components/DashboardMobileNav";
 
 const navItems = [
   { href: "/trainer/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -117,24 +118,7 @@ export default async function TrainerLayout({
         </div>
       </aside>
 
-      {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0B5C71] text-white px-4 h-14 flex items-center gap-3">
-        <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center">
-          <Dumbbell size={14} className="text-white" />
-        </span>
-        <span className="font-black text-sm">Trenerio zona</span>
-        <nav className="flex gap-2 ml-auto">
-          {navItems.map(({ href, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="p-2 text-gray-400 hover:text-white transition-colors"
-            >
-              <Icon size={16} />
-            </Link>
-          ))}
-        </nav>
-      </div>
+      <DashboardMobileNav type="trainer" email={user.email} />
 
       {/* Main content */}
       <main className="flex-1 overflow-auto p-4 pt-18 lg:pt-0 lg:p-8">

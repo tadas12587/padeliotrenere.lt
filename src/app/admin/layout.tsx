@@ -16,6 +16,7 @@ import {
   Trophy,
   Globe,
 } from "lucide-react";
+import DashboardMobileNav from "@/components/DashboardMobileNav";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -89,14 +90,7 @@ export default async function AdminLayout({
         </div>
       </aside>
 
-      {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0B5C71] text-white px-4 h-14 flex items-center gap-3">
-        <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center">
-          <Dumbbell size={14} className="text-white" />
-        </span>
-        <span className="font-black text-sm">Admin Panel</span>
-        {/* Future: mobile menu toggle */}
-      </div>
+      <DashboardMobileNav type="admin" email={(session as any).user?.email ?? ""} />
 
       {/* Main content */}
       <main className="flex-1 overflow-auto p-4 pt-18 lg:pt-0 lg:p-8">
