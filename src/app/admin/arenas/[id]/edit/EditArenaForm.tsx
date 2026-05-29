@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import ImageUpload from "@/components/ImageUpload";
 import GalleryUpload from "@/components/GalleryUpload";
+import LocationPicker from "@/components/LocationPicker";
 
 interface SportItem {
   id: string;
@@ -26,6 +27,8 @@ interface ArenaData {
   photoUrl: string;
   logoUrl: string;
   bannerUrl: string;
+  lat: number | null;
+  lng: number | null;
   status: string;
   sportIds: string[];
   photos: GalleryPhoto[];
@@ -45,6 +48,8 @@ export default function EditArenaForm({ arena, allSports }: Props) {
   const [photoUrl, setPhotoUrl] = useState(arena.photoUrl);
   const [logoUrl, setLogoUrl] = useState(arena.logoUrl);
   const [bannerUrl, setBannerUrl] = useState(arena.bannerUrl);
+  const [lat, setLat] = useState<number | null>(arena.lat);
+  const [lng, setLng] = useState<number | null>(arena.lng);
   const [status, setStatus] = useState(arena.status);
   const [selectedSportIds, setSelectedSportIds] = useState<string[]>(arena.sportIds);
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>(arena.photos);
@@ -101,6 +106,8 @@ export default function EditArenaForm({ arena, allSports }: Props) {
           photoUrl,
           logoUrl,
           bannerUrl,
+          lat,
+          lng,
           status,
           sportIds: selectedSportIds,
         }),
@@ -143,19 +150,26 @@ export default function EditArenaForm({ arena, allSports }: Props) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-700 text-gray-700 mb-1.5">
-              Miestas
-            </label>
-            <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-            />
-          </div>
+        <LocationPicker
+          address={address}
+          city={city}
+          onAddressChange={setAddress}
+          onCityChange={setCity}
+          onPlaceSelect={(place) => {
+            setAddress(place.address);
+            setCity(place.city);
+            setLat(place.lat);
+            setLng(place.lng);
+          }}
+        />
 
+        {lat !== null && lng !== null && (
+          <p className="text-xs text-green-600 flex items-center gap-1">
+            ✓ Koordinatės išsaugotos: {lat.toFixed(5)}, {lng.toFixed(5)}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-700 text-gray-700 mb-1.5">
               Statusas
@@ -169,18 +183,6 @@ export default function EditArenaForm({ arena, allSports }: Props) {
               <option value="APPROVED">Patvirtinta</option>
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-700 text-gray-700 mb-1.5">
-            Adresas
-          </label>
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-          />
         </div>
 
         <div>
@@ -206,7 +208,7 @@ export default function EditArenaForm({ arena, allSports }: Props) {
             onUploaded={(url) => setLogoUrl(url)}
             aspectRatio={1}
             uploadType="logo"
-            label="Logotipas"
+            label="Logotipas (1:1)"
           />
 
           <ImageUpload
@@ -214,7 +216,7 @@ export default function EditArenaForm({ arena, allSports }: Props) {
             onUploaded={(url) => setBannerUrl(url)}
             aspectRatio={4 / 3}
             uploadType="banner"
-            label="Reklamjuostė (banner)"
+            label="Reklamjuostė (4:3)"
           />
 
           <ImageUpload

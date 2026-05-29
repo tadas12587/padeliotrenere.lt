@@ -54,6 +54,8 @@ export default async function EditArenaPage({ params }: Props) {
           photoUrl: arena.photoUrl ?? "",
           logoUrl: arena.logoUrl ?? "",
           bannerUrl: arena.bannerUrl ?? "",
+          lat: arena.lat ?? null,
+          lng: arena.lng ?? null,
           status: arena.status,
           sportIds: arena.sports.map((as) => as.sportId),
           photos: arena.photos,

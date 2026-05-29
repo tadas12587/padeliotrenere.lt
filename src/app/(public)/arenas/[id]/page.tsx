@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { MapPin } from "lucide-react";
+import { MapPin, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({
@@ -16,8 +16,8 @@ export async function generateMetadata({
   });
   if (!arena) return { title: "Arena nerasta" };
   return {
-    title: `${arena.name} – Padelio arena`,
-    description: `${arena.name} padelio arena, ${arena.city}`,
+    title: `${arena.name} – Sporto arena`,
+    description: `${arena.name} sporto arena, ${arena.city}`,
   };
 }
 
@@ -54,6 +54,7 @@ export default async function ArenaDetailPage({
           },
         },
       },
+      photos: { orderBy: { order: "asc" } },
     },
   });
 
@@ -65,36 +66,60 @@ export default async function ArenaDetailPage({
     (ta) => ta.trainer.status === "APPROVED"
   );
 
+  const mapsUrl =
+    arena.lat && arena.lng
+      ? `https://www.google.com/maps?q=${arena.lat},${arena.lng}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          [arena.name, arena.address, arena.city].filter(Boolean).join(", ")
+        )}`;
+
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
       {/* Header */}
       <section className="bg-[#0B5C71] text-white py-12">
         <div className="container-tight">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-            {/* Photo / Placeholder */}
-            <div className="shrink-0 w-full lg:w-48 h-40 lg:h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-[#083d4e] to-[#0B5C71] flex items-center justify-center">
-              {arena.photoUrl ? (
-                <img
-                  src={arena.photoUrl}
-                  alt={arena.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-5xl">🏟️</span>
+            {/* Logo + Photo */}
+            <div className="shrink-0 flex items-center gap-4">
+              {arena.logoUrl && (
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-white/20 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={arena.logoUrl} alt={`${arena.name} logo`} className="w-full h-full object-cover" />
+                </div>
+              )}
+              {arena.photoUrl && (
+                <div className="w-full lg:w-48 h-36 rounded-2xl overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={arena.photoUrl} alt={arena.name} className="w-full h-full object-cover" />
+                </div>
+              )}
+              {!arena.logoUrl && !arena.photoUrl && (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#083d4e] to-[#0B5C71] flex items-center justify-center">
+                  <span className="text-4xl">🏟️</span>
+                </div>
               )}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl lg:text-4xl font-900 mb-2">
-                {arena.name}
-              </h1>
-              <div className="flex items-center gap-1.5 text-gray-400 text-sm mb-3">
-                <MapPin size={15} className="text-[#FF5733]" />
-                <span>
-                  {arena.city}
-                  {arena.address ? `, ${arena.address}` : ""}
-                </span>
+              <h1 className="text-3xl lg:text-4xl font-900 mb-2">{arena.name}</h1>
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+                  <MapPin size={15} className="text-[#FF5733]" />
+                  <span>
+                    {arena.city}
+                    {arena.address ? `, ${arena.address}` : ""}
+                  </span>
+                </div>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-full text-white"
+                >
+                  <ExternalLink size={11} />
+                  Google Maps
+                </a>
               </div>
               <span className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
                 Patvirtinta
@@ -103,10 +128,7 @@ export default async function ArenaDetailPage({
 
             {/* CTA */}
             <div className="shrink-0">
-              <Link
-                href={`/booking?arenaId=${arena.id}`}
-                className="btn-primary py-3 px-7"
-              >
+              <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary py-3 px-7">
                 Rezervuoti
               </Link>
             </div>
@@ -120,12 +142,29 @@ export default async function ArenaDetailPage({
           {/* Description */}
           {arena.description && (
             <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
-                Apie areną
-              </h2>
-              <p className="text-gray-600 leading-relaxed">
-                {arena.description}
-              </p>
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-4">Apie areną</h2>
+              <p className="text-gray-600 leading-relaxed">{arena.description}</p>
+            </div>
+          )}
+
+          {/* Gallery */}
+          {arena.photos.length > 0 && (
+            <div className="card p-7">
+              <h2 className="text-xl font-800 text-[#0B5C71] mb-5">Galerija</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {arena.photos.map((photo) => (
+                  <a
+                    key={photo.id}
+                    href={photo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="aspect-square rounded-xl overflow-hidden block hover:opacity-90 transition-opacity"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="Galerija" className="w-full h-full object-cover" />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 
@@ -141,45 +180,39 @@ export default async function ArenaDetailPage({
             </h2>
 
             {approvedTrainers.length === 0 ? (
-              <p className="text-gray-400 text-sm">
-                Šioje arenoje trenerių kol kas nėra.
-              </p>
+              <p className="text-gray-400 text-sm">Šioje arenoje trenerių kol kas nėra.</p>
             ) : (
               <div className="flex flex-col gap-4">
-                {approvedTrainers.map(({ trainer }) => {
-                  return (
-                    <Link
-                      key={trainer.id}
-                      href={`/trainers/${trainer.id}`}
-                      className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-[#FF5733]/30 hover:bg-[#FF5733]/5 transition-all group"
-                    >
-                      {/* Photo / Avatar */}
-                      {trainer.photoUrl ? (
-                        <img
-                          src={trainer.photoUrl}
-                          alt={trainer.displayName}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-[#FF5733]/30 shrink-0"
-                        />
-                      ) : (
-                        <InitialsAvatar name={trainer.displayName} />
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
-                          {trainer.displayName}
-                        </p>
-                        <div className="flex items-center gap-1 text-gray-400 text-sm mt-0.5">
-                          <MapPin size={12} />
-                          <span>{trainer.city}</span>
-                        </div>
+                {approvedTrainers.map(({ trainer }) => (
+                  <Link
+                    key={trainer.id}
+                    href={`/trainers/${trainer.id}`}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-[#FF5733]/30 hover:bg-[#FF5733]/5 transition-all group"
+                  >
+                    {trainer.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={trainer.photoUrl}
+                        alt={trainer.displayName}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-[#FF5733]/30 shrink-0"
+                      />
+                    ) : (
+                      <InitialsAvatar name={trainer.displayName} />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-700 text-[#0B5C71] group-hover:text-[#FF5733] transition-colors">
+                        {trainer.displayName}
+                      </p>
+                      <div className="flex items-center gap-1 text-gray-400 text-sm mt-0.5">
+                        <MapPin size={12} />
+                        <span>{trainer.city}</span>
                       </div>
-
-                      <span className="text-[#FF5733] text-sm font-700 shrink-0 group-hover:underline">
-                        Žiūrėti profilį →
-                      </span>
-                    </Link>
-                  );
-                })}
+                    </div>
+                    <span className="text-[#FF5733] text-sm font-700 shrink-0 group-hover:underline">
+                      Žiūrėti profilį →
+                    </span>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
@@ -189,10 +222,8 @@ export default async function ArenaDetailPage({
         <div className="flex flex-col gap-6">
           {/* Location card */}
           <div className="card p-6">
-            <h2 className="text-lg font-800 text-[#0B5C71] mb-4">
-              Vieta
-            </h2>
-            <div className="flex flex-col gap-2 text-sm text-gray-600">
+            <h2 className="text-lg font-800 text-[#0B5C71] mb-4">Vieta</h2>
+            <div className="flex flex-col gap-3 text-sm text-gray-600">
               <div className="flex items-start gap-2">
                 <MapPin size={15} className="text-[#FF5733] shrink-0 mt-0.5" />
                 <div>
@@ -201,19 +232,25 @@ export default async function ArenaDetailPage({
                   <p>{arena.city}</p>
                 </div>
               </div>
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-600 text-[#0B5C71] hover:bg-[#0B5C71] hover:text-white hover:border-[#0B5C71] transition-colors"
+              >
+                <ExternalLink size={14} />
+                Atidaryti Google Maps
+              </a>
             </div>
           </div>
 
-          {/* Booking CTA card */}
+          {/* Booking CTA */}
           <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
             <h2 className="text-lg font-800 mb-2">Rezervuokite kortą</h2>
             <p className="text-gray-400 text-sm mb-5 leading-relaxed">
               Pasirinkite trenerį ir rezervuokite laiką šioje arenoje.
             </p>
-            <Link
-              href={`/booking?arenaId=${arena.id}`}
-              className="btn-primary w-full text-center py-3"
-            >
+            <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary w-full text-center py-3">
               Rezervuoti
             </Link>
           </div>

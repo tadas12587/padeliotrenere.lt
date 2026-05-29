@@ -117,6 +117,11 @@ export default async function ArenasPage({
                       ) : (
                         <span className="text-6xl">🏟️</span>
                       )}
+                      {arena.logoUrl && (
+                        <div className="absolute bottom-3 left-3 w-12 h-12 rounded-xl bg-white shadow-md overflow-hidden border-2 border-white">
+                          <img src={arena.logoUrl} alt={`${arena.name} logo`} className="w-full h-full object-cover" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Info */}
