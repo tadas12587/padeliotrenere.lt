@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { MapPin, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import ArenaHero from "./ArenaHero";
 
 export async function generateMetadata({
   params,
@@ -29,7 +30,7 @@ function InitialsAvatar({ name }: { name: string }) {
     .slice(0, 2)
     .toUpperCase();
   return (
-    <div className="w-12 h-12 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-white text-sm shrink-0">
+    <div className="w-12 h-12 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-[#0B5C71] text-sm shrink-0">
       {initials}
     </div>
   );
@@ -75,66 +76,17 @@ export default async function ArenaDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
-      {/* Header */}
-      <section className="bg-[#0B5C71] text-white py-12">
-        <div className="container-tight">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-            {/* Logo + Photo */}
-            <div className="shrink-0 flex items-center gap-4">
-              {arena.logoUrl && (
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-white/20 shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={arena.logoUrl} alt={`${arena.name} logo`} className="w-full h-full object-cover" />
-                </div>
-              )}
-              {arena.photoUrl && (
-                <div className="w-full lg:w-48 h-36 rounded-2xl overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={arena.photoUrl} alt={arena.name} className="w-full h-full object-cover" />
-                </div>
-              )}
-              {!arena.logoUrl && !arena.photoUrl && (
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#083d4e] to-[#0B5C71] flex items-center justify-center">
-                  <span className="text-4xl">🏟️</span>
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl lg:text-4xl font-900 mb-2">{arena.name}</h1>
-              <div className="flex flex-wrap items-center gap-3 mb-3">
-                <div className="flex items-center gap-1.5 text-gray-400 text-sm">
-                  <MapPin size={15} className="text-[#FF5733]" />
-                  <span>
-                    {arena.city}
-                    {arena.address ? `, ${arena.address}` : ""}
-                  </span>
-                </div>
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-full text-white"
-                >
-                  <ExternalLink size={11} />
-                  Google Maps
-                </a>
-              </div>
-              <span className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
-                Patvirtinta
-              </span>
-            </div>
-
-            {/* CTA */}
-            <div className="shrink-0">
-              <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary py-3 px-7">
-                Rezervuoti
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Full-width hero with cycling background */}
+      <ArenaHero
+        name={arena.name}
+        city={arena.city}
+        address={arena.address}
+        logoUrl={arena.logoUrl ?? null}
+        bannerUrl={arena.bannerUrl ?? null}
+        photos={arena.photos}
+        mapsUrl={mapsUrl}
+        arenaId={arena.id}
+      />
 
       <div className="container-tight py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left / main column */}
