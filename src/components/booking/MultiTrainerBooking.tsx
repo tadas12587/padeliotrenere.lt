@@ -8,12 +8,18 @@ import {
   ChevronRight,
   Clock,
   MapPin,
-  User,
   Loader2,
   X,
   CheckCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface Sport {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
 
 interface Service {
   id: string;
@@ -52,7 +58,20 @@ function formatTime(isoStr: string) {
   return format(parseISO(isoStr), "HH:mm");
 }
 
-export default function MultiTrainerBooking({ initialTrainerId = "", initialArenaId = "" }) {
+interface Props {
+  initialTrainerId?: string;
+  initialArenaId?: string;
+  availableSports?: Sport[];
+  availableCities?: string[];
+}
+
+export default function MultiTrainerBooking({
+  initialTrainerId = "",
+  initialArenaId = "",
+  availableSports = [],
+  availableCities = [],
+}: Props) {
+  const [sport, setSport] = useState("");
   const [city, setCity] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -66,6 +85,16 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  const toggleSport = (s: string) => {
+    setSport((prev) => (prev === s ? "" : s));
+    setSelectedDate(null);
+  };
+
+  const toggleCity = (c: string) => {
+    setCity((prev) => (prev === c ? "" : c));
+    setSelectedDate(null);
+  };
 
   const fetchSlots = useCallback(
     (date: Date) => {
@@ -82,6 +111,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
       const params = new URLSearchParams();
       params.set("from", dayStart.toISOString());
       params.set("to", dayEnd.toISOString());
+      if (sport.trim()) params.set("sport", sport.trim());
       if (city.trim()) params.set("city", city.trim());
       if (initialTrainerId) params.set("trainerId", initialTrainerId);
 
@@ -91,7 +121,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
         .catch(console.error)
         .finally(() => setLoading(false));
     },
-    [city, initialTrainerId]
+    [sport, city, initialTrainerId]
   );
 
   useEffect(() => {
@@ -111,7 +141,6 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
         trainerId: selectedSlot.trainer.id,
         arenaId: selectedSlot.arena.id,
         ...(selectedService ? { serviceId: selectedService.id } : {}),
-        // Legacy slotId still expected by API — pass a dummy that will be handled
       }),
     });
 
@@ -162,14 +191,14 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
     );
   }
 
-  const slotsForDay = slots;
+  const hasFilter = sport || city;
 
   return (
     <div className="max-w-3xl mx-auto">
       {/* Step indicator */}
       <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-1">
         {[
-          { n: 1, label: "Miestas", done: !!city },
+          { n: 1, label: "Filtrai", done: !!(sport || city) },
           { n: 2, label: "Diena", done: !!selectedDate },
           { n: 3, label: "Laikas", done: !!selectedSlot },
           { n: 4, label: "Patvirtinimas", done: false },
@@ -186,19 +215,67 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
         ))}
       </div>
 
-      {/* City filter */}
-      <div className="card p-5 mb-5">
-        <label className="block text-sm font-700 text-[#0B5C71] mb-2">
-          Miestas (nebūtinas – rodo visų miestų laikus)
-        </label>
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => { setCity(e.target.value); if (selectedDate) setSelectedDate(null); }}
-          placeholder="pvz. Vilnius, Kaunas..."
-          className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/30 focus:border-[#FF5733]"
-        />
-      </div>
+      {/* Filters */}
+      {(availableSports.length > 0 || availableCities.length > 0) && (
+        <div className="card p-5 mb-5">
+          <div className="flex flex-col gap-4">
+            {availableSports.length > 0 && (
+              <div>
+                <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Sporto šaka</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableSports.map((sp) => (
+                    <button
+                      key={sp.id}
+                      type="button"
+                      onClick={() => toggleSport(sp.slug)}
+                      className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
+                        sport === sp.slug
+                          ? "bg-[#0B5C71] text-white border-[#0B5C71]"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
+                      }`}
+                    >
+                      {sp.icon ? `${sp.icon} ` : ""}{sp.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {availableCities.length > 0 && (
+              <div>
+                <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Miestas</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableCities.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => toggleCity(c)}
+                      className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
+                        city === c
+                          ? "bg-[#0B5C71] text-white border-[#0B5C71]"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {hasFilter && (
+              <button
+                type="button"
+                onClick={() => { setSport(""); setCity(""); setSelectedDate(null); }}
+                className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors w-fit"
+              >
+                <X size={14} />
+                Išvalyti filtrus
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Calendar */}
       <div className="card p-6 mb-5">
@@ -265,7 +342,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
               <Loader2 size={22} className="animate-spin" />
               <span>Kraunama...</span>
             </div>
-          ) : slotsForDay.length === 0 ? (
+          ) : slots.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               <p className="text-4xl mb-3">😔</p>
               <p className="font-600">Šią dieną laisvų laikų nėra</p>
@@ -273,7 +350,7 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {slotsForDay.map((slot) => {
+              {slots.map((slot) => {
                 const isSelected = selectedSlot?.id === slot.id;
                 return (
                   <button
@@ -287,7 +364,6 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                     )}
                   >
                     <div className="flex items-start gap-4">
-                      {/* Time */}
                       <div className="shrink-0 text-center min-w-[60px]">
                         <p className="font-800 text-lg text-[#0B5C71]">
                           {formatTime(slot.startTime)}
@@ -297,7 +373,6 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
                         </p>
                       </div>
 
-                      {/* Trainer + Arena */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           {slot.trainer.photoUrl ? (
@@ -390,8 +465,8 @@ export default function MultiTrainerBooking({ initialTrainerId = "", initialAren
           {/* Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FF5733]/10 flex items-center justify-center">
-                <span className="text-xl">🎾</span>
+              <div className="w-10 h-10 rounded-xl bg-[#0B5C71]/10 flex items-center justify-center text-xl">
+                🏅
               </div>
               <div>
                 <p className="font-700 text-[#0B5C71]">

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get("city");
+  const sport = searchParams.get("sport");
   const trainerId = searchParams.get("trainerId");
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -17,7 +18,10 @@ export async function GET(req: NextRequest) {
       ...(city ? { arena: { city: { contains: city } } } : {}),
       ...(from ? { startTime: { gte: new Date(from) } } : { startTime: { gte: new Date() } }),
       ...(to ? { endTime: { lte: new Date(to) } } : {}),
-      trainer: { status: "APPROVED" },
+      trainer: {
+        status: "APPROVED",
+        ...(sport ? { sports: { some: { sport: { slug: sport } } } } : {}),
+      },
     },
     include: {
       trainer: { select: { id: true, displayName: true, photoUrl: true, services: true } },
