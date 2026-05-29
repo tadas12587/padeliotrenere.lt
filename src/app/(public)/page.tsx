@@ -3,14 +3,11 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
-  Trophy,
   Star,
   MapPin,
   ArrowRight,
   ChevronRight,
-  Clock,
   Users,
-  CheckCircle,
 } from "lucide-react";
 
 // ── Hero Section ──────────────────────────────────────────────────────────────
@@ -67,19 +64,19 @@ async function FeaturedTrainersSection() {
   const trainers = await prisma.trainerProfile.findMany({
     where: { status: "APPROVED" },
     include: {
-      services: { take: 3 },
+      services: true,
       reviews: { select: { rating: true } },
     },
     orderBy: [{ isFeatured: "desc" }, { createdAt: "asc" }],
-    take: 6,
+    take: 8,
   });
 
   if (trainers.length === 0) return null;
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container-tight">
-        <div className="flex items-end justify-between mb-12">
+    <section className="py-20 bg-[#F4F4F4]">
+      <div className="container-wide">
+        <div className="flex items-end justify-between mb-10">
           <div>
             <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
               Treneriai
@@ -96,80 +93,76 @@ async function FeaturedTrainersSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trainers.map((t) => {
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {trainers.map((trainer) => {
             const avgRating =
-              t.reviews.length > 0
-                ? t.reviews.reduce((s, r) => s + r.rating, 0) / t.reviews.length
+              trainer.reviews.length > 0
+                ? trainer.reviews.reduce((s, r) => s + r.rating, 0) / trainer.reviews.length
                 : null;
+            const initials = trainer.displayName
+              .split(" ")
+              .map((w) => w[0])
+              .join("")
+              .slice(0, 2)
+              .toUpperCase();
+
             return (
-              <Link
-                key={t.id}
-                href={`/trainers/${t.id}`}
-                className="card p-6 flex flex-col gap-4 group"
-              >
-                {/* Photo / Avatar */}
-                <div className="flex items-center gap-4">
-                  {t.photoUrl ? (
+              <div key={trainer.id} className="card p-0 overflow-hidden flex flex-col">
+                {/* 3:4 portrait photo */}
+                <div className="relative aspect-[3/4] bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
+                  {trainer.photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={t.photoUrl}
-                      alt={t.displayName}
-                      className="w-16 h-16 rounded-2xl object-cover"
+                      src={trainer.photoUrl}
+                      alt={trainer.displayName}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-[#FF5733]/10 flex items-center justify-center text-2xl font-900 text-[#FF5733]">
-                      {t.displayName[0].toUpperCase()}
+                    <div className="w-24 h-24 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center">
+                      <span className="text-3xl font-900 text-white">{initials}</span>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-800 text-[#0B5C71] truncate">{t.displayName}</p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                      <MapPin size={12} />
-                      {t.city}
-                    </p>
-                    {avgRating !== null && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star size={12} className="text-[#FF5733] fill-[#FF5733]" />
-                        <span className="text-xs font-700 text-gray-700">
-                          {avgRating.toFixed(1)}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          ({t.reviews.length})
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {t.isFeatured && (
-                    <span className="shrink-0 text-xs font-700 bg-[#FF5733]/10 text-[#FF5733] px-2 py-0.5 rounded-full">
-                      ⭐ Featured
-                    </span>
+                  {trainer.isFeatured && (
+                    <div className="absolute top-3 right-3 bg-[#FF5733] text-white text-xs font-700 px-2 py-1 rounded-full">
+                      Rekomenduojamas
+                    </div>
                   )}
                 </div>
 
-                {/* Services */}
-                {t.services.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {t.services.slice(0, 3).map((s) => (
-                      <span
-                        key={s.id}
-                        className="text-xs font-600 bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full"
-                      >
-                        {s.name}
-                      </span>
-                    ))}
+                {/* Info */}
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  <div>
+                    <h2 className="font-800 text-base text-[#0B5C71] leading-tight">
+                      {trainer.displayName}
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-0.5 flex items-center gap-1">
+                      <MapPin size={11} />
+                      {trainer.city}
+                    </p>
                   </div>
-                )}
 
-                <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-xs text-gray-400">
-                    {t.services.length} paslaug{t.services.length === 1 ? "a" : "os"}
-                  </span>
-                  <span className="text-sm font-700 text-[#FF5733] group-hover:underline">
-                    Žiūrėti profilį →
-                  </span>
+                  <div className="flex items-center gap-3 text-sm">
+                    {avgRating !== null ? (
+                      <div className="flex items-center gap-1 text-[#FF5733]">
+                        <span className="font-800">{avgRating.toFixed(1)}</span>
+                        <Star size={12} className="fill-[#FF5733]" />
+                        <span className="text-gray-400">({trainer.reviews.length})</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Nėra atsiliepimų</span>
+                    )}
+                  </div>
+
+                  <div className="mt-auto pt-3 border-t border-gray-100">
+                    <Link
+                      href={`/trainers/${trainer.id}`}
+                      className="btn-primary w-full text-center text-sm py-2.5"
+                    >
+                      Žiūrėti profilį
+                    </Link>
+                  </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
@@ -189,18 +182,20 @@ async function ArenasSection() {
   const arenas = await prisma.arena.findMany({
     where: { status: "APPROVED" },
     include: {
-      trainers: { where: { trainer: { status: "APPROVED" } } },
+      trainers: {
+        include: { trainer: { select: { status: true } } },
+      },
     },
-    orderBy: { createdAt: "asc" },
-    take: 4,
+    orderBy: { name: "asc" },
+    take: 6,
   });
 
   if (arenas.length === 0) return null;
 
   return (
-    <section className="py-20 bg-[#F4F4F4]">
-      <div className="container-tight">
-        <div className="flex items-end justify-between mb-12">
+    <section className="py-20 bg-white">
+      <div className="container-wide">
+        <div className="flex items-end justify-between mb-10">
           <div>
             <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
               Arenos
@@ -217,38 +212,61 @@ async function ArenasSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {arenas.map((a) => (
-            <Link
-              key={a.id}
-              href={`/arenas/${a.id}`}
-              className="card overflow-hidden group"
-            >
-              {a.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={a.photoUrl}
-                  alt={a.name}
-                  className="w-full h-36 object-cover"
-                />
-              ) : (
-                <div className="w-full h-36 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center text-4xl">
-                  🏟️
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {arenas.map((arena) => {
+            const approvedTrainers = arena.trainers.filter(
+              (ta) => ta.trainer.status === "APPROVED"
+            ).length;
+
+            return (
+              <div key={arena.id} className="card p-0 overflow-hidden flex flex-col">
+                {/* Photo */}
+                <div className="relative h-44 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
+                  {arena.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={arena.photoUrl}
+                      alt={arena.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-6xl">🏟️</span>
+                  )}
+                  {arena.logoUrl && (
+                    <div className="absolute bottom-3 left-3 w-12 h-12 rounded-xl bg-white shadow-md overflow-hidden border-2 border-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={arena.logoUrl} alt={`${arena.name} logo`} className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="p-4">
-                <p className="font-800 text-[#0B5C71] mb-1">{a.name}</p>
-                <p className="text-sm text-gray-500 flex items-center gap-1 mb-2">
-                  <MapPin size={12} />
-                  {a.city}
-                </p>
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <Users size={11} />
-                  {a.trainers.length} trener{a.trainers.length === 1 ? "is" : "ių"}
-                </p>
+
+                {/* Info */}
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  <div>
+                    <h2 className="font-800 text-lg text-[#0B5C71] leading-tight">{arena.name}</h2>
+                    <div className="flex items-center gap-1.5 text-gray-500 text-sm mt-1">
+                      <MapPin size={13} className="text-[#FF5733]" />
+                      <span>{arena.city}{arena.address ? `, ${arena.address}` : ""}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+                    <Users size={13} />
+                    <span>{approvedTrainers} {approvedTrainers === 1 ? "treneris" : "treneriai"}</span>
+                  </div>
+
+                  <div className="mt-auto pt-3 border-t border-gray-100">
+                    <Link
+                      href={`/arenas/${arena.id}`}
+                      className="btn-primary w-full text-center text-sm py-2.5"
+                    >
+                      Žiūrėti
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
