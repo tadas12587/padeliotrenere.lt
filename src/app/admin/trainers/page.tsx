@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import TrainerStatusActions from "./TrainerStatusActions";
 import Link from "next/link";
 import { formatDateLT } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -128,10 +129,18 @@ export default async function AdminTrainersPage({ searchParams }: Props) {
                       {formatDateLT(trainer.createdAt)}
                     </td>
                     <td className="py-3 px-4">
-                      <TrainerStatusActions
-                        trainerId={trainer.id}
-                        currentStatus={trainer.status}
-                      />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/admin/trainers/${trainer.id}/edit`}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-700 transition-colors"
+                        >
+                          <Pencil size={13} /> Redaguoti
+                        </Link>
+                        <TrainerStatusActions
+                          trainerId={trainer.id}
+                          currentStatus={trainer.status}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))

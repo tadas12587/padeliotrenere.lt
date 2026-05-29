@@ -11,16 +11,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { status } = body;
+  const { status, displayName, bio, city, phone, isFeatured, photoUrl, sportIds } = body;
 
-  if (!["APPROVED", "REJECTED", "PENDING"].includes(status)) {
+  if (status !== undefined && !["APPROVED", "REJECTED", "PENDING"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
   const trainer = await prisma.trainerProfile.update({
     where: { id },
-    data: { status },
+    data: {
+      ...(status !== undefined && { status }),
+      ...(displayName !== undefined && { displayName }),
+      ...(bio !== undefined && { bio }),
+      ...(city !== undefined && { city }),
+      ...(phone !== undefined && { phone }),
+      ...(isFeatured !== undefined && { isFeatured }),
+      ...(photoUrl !== undefined && { photoUrl }),
+    },
   });
+
+  if (sportIds !== undefined) {
+    await prisma.trainerSport.deleteMany({ where: { trainerId: id } });
+    if (sportIds.length > 0) {
+      await prisma.trainerSport.createMany({
+        data: sportIds.map((sportId: string) => ({ trainerId: id, sportId })),
+      });
+    }
+  }
 
   return NextResponse.json(trainer);
 }

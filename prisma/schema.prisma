@@ -187,6 +187,7 @@ model TrainerProfile {
   slots        AvailabilitySlot[]
   reviews      Review[]
   bookings     Booking[]
+  gallery      TrainerPhoto[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -198,6 +199,8 @@ model Arena {
   address     String      @db.VarChar(500)
   description String?     @db.Text
   photoUrl    String?     @db.VarChar(500)
+  logoUrl     String?     @db.VarChar(500)
+  bannerUrl   String?     @db.VarChar(500)
   status      ArenaStatus @default(PENDING)
   createdById String
   createdBy   User        @relation(fields: [createdById], references: [id])
@@ -205,6 +208,7 @@ model Arena {
   sports      ArenaSport[]
   slots       AvailabilitySlot[]
   bookings    Booking[]
+  photos      ArenaPhoto[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -294,4 +298,22 @@ model PasswordResetToken {
   token     String   @unique @db.VarChar(255)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model TrainerPhoto {
+  id        String         @id @default(cuid())
+  trainerId String
+  url       String         @db.VarChar(500)
+  order     Int            @default(0)
+  createdAt DateTime       @default(now())
+  trainer   TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+}
+
+model ArenaPhoto {
+  id        String   @id @default(cuid())
+  arenaId   String
+  url       String   @db.VarChar(500)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  arena     Arena    @relation(fields: [arenaId], references: [id], onDelete: Cascade)
 }

@@ -51,3 +51,7 @@ next-env.d.ts
 # PM2 logs (not the config itself)
 /var/log/pm2
 .claude/
+
+# Uploaded files (keep the directory marker)
+public/uploads/*
+!public/uploads/.gitkeep

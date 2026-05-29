@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { status, name, city, address, description, photoUrl } = body;
+  const { status, name, city, address, description, photoUrl, logoUrl, bannerUrl, sportIds } = body;
 
   const arena = await prisma.arena.update({
     where: { id },
@@ -22,8 +22,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(address !== undefined && { address }),
       ...(description !== undefined && { description }),
       ...(photoUrl !== undefined && { photoUrl }),
+      ...(logoUrl !== undefined && { logoUrl }),
+      ...(bannerUrl !== undefined && { bannerUrl }),
     },
   });
+
+  if (sportIds !== undefined) {
+    await prisma.arenaSport.deleteMany({ where: { arenaId: id } });
+    if (sportIds.length > 0) {
+      await prisma.arenaSport.createMany({
+        data: sportIds.map((sportId: string) => ({ arenaId: id, sportId })),
+      });
+    }
+  }
 
   return NextResponse.json(arena);
 }

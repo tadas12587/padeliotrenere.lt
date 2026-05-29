@@ -15,6 +15,7 @@ export default async function TrainerProfilePage() {
       include: {
         arenas: { include: { arena: true } },
         sports: { include: { sport: true } },
+        gallery: { orderBy: { order: "asc" } },
       },
     }),
     prisma.arena.findMany({
@@ -47,7 +48,12 @@ export default async function TrainerProfilePage() {
           Redaguokite savo viešą trenerio profilį
         </p>
       </div>
-      <TrainerProfileForm profile={profileData} arenas={allArenas} sports={allSports} />
+      <TrainerProfileForm
+        profile={profileData}
+        arenas={allArenas}
+        sports={allSports}
+        gallery={trainerProfile?.gallery ?? []}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import ArenaStatusActions from "./ArenaStatusActions";
 import Link from "next/link";
 import { formatDateLT } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -129,10 +130,18 @@ export default async function AdminArenasPage({ searchParams }: Props) {
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <ArenaStatusActions
-                        arenaId={arena.id}
-                        currentStatus={arena.status}
-                      />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/admin/arenas/${arena.id}/edit`}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-700 transition-colors"
+                        >
+                          <Pencil size={13} /> Redaguoti
+                        </Link>
+                        <ArenaStatusActions
+                          arenaId={arena.id}
+                          currentStatus={arena.status}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))
