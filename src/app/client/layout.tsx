@@ -2,7 +2,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Calendar, User, LogOut, Dumbbell, Bell } from "lucide-react";
+import {
+  LayoutDashboard,
+  Calendar,
+  User,
+  LogOut,
+  Dumbbell,
+  Globe,
+} from "lucide-react";
+
+const navItems = [
+  { href: "/client/dashboard", label: "Mano paskyra", icon: LayoutDashboard },
+  { href: "/client/bookings", label: "Rezervacijos", icon: Calendar },
+  { href: "/client/profile", label: "Profilis", icon: User },
+];
 
 export default async function ClientLayout({
   children,
@@ -14,65 +27,87 @@ export default async function ClientLayout({
     redirect("/auth/login?callbackUrl=/client/dashboard");
   }
 
-  const navItems = [
-    { href: "/client/dashboard", label: "Mano paskyra", icon: User },
-    { href: "/client/bookings", label: "Rezervacijos", icon: Calendar },
-    { href: "/client/profile", label: "Profilis", icon: Bell },
-  ];
-
-  const userName = (session.user as any)?.name || session.user?.email || "";
+  const user = session.user as any;
+  const email = user?.email ?? "";
+  const name = user?.name || email;
 
   return (
-    <div className="min-h-screen bg-[#F4F4F4]">
-      {/* Top bar */}
-      <header className="bg-[#0B5C71] text-white sticky top-0 z-40">
-        <div className="container-wide h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-black text-lg">
+    <div className="min-h-screen flex bg-[#F4F4F4]">
+      {/* Sidebar – desktop */}
+      <aside className="w-64 bg-[#0B5C71] text-white hidden lg:flex flex-col shrink-0">
+        <div className="px-6 py-5 border-b border-white/10">
+          <Link href="/client/dashboard" className="flex items-center gap-2 font-black text-lg">
             <span className="w-8 h-8 rounded-lg bg-[#FF5733] flex items-center justify-center">
               <Dumbbell size={16} className="text-white" />
             </span>
-            <span className="hidden sm:block">
-              Padelio<span className="text-[#FF5733]">Treneris</span>
-            </span>
+            <span>Mano paskyra</span>
           </Link>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400 hidden sm:block truncate max-w-[160px]">
-              {userName}
-            </span>
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map(({ href, label, icon: Icon }) => (
             <Link
-              href="/api/auth/signout"
-              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10"
+              key={href}
+              href={href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
             >
-              <LogOut size={15} />
-              <span className="hidden sm:block">Atsijungti</span>
+              <Icon size={17} />
+              {label}
             </Link>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-white/10 space-y-1">
+          <div className="px-3 py-2">
+            <p className="text-xs text-gray-500">Prisijungta kaip</p>
+            <p className="text-sm font-semibold text-gray-300 truncate">{name}</p>
           </div>
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <Globe size={17} />
+            Grįžti į svetainę
+          </Link>
+          <Link
+            href="/api/auth/signout"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <LogOut size={17} />
+            Atsijungti
+          </Link>
         </div>
-      </header>
+      </aside>
 
-      <div className="container-wide py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <aside className="lg:col-span-1">
-            <nav className="card p-3 flex flex-row lg:flex-col gap-1">
-              {navItems.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-all flex-1 lg:flex-none"
-                >
-                  <Icon size={17} className="shrink-0" />
-                  <span className="hidden sm:block">{label}</span>
-                </Link>
-              ))}
-            </nav>
-          </aside>
-
-          {/* Main content */}
-          <main className="lg:col-span-3">{children}</main>
-        </div>
+      {/* Mobile header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0B5C71] text-white px-4 h-14 flex items-center gap-3">
+        <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center">
+          <Dumbbell size={14} className="text-white" />
+        </span>
+        <span className="font-black text-sm">Mano paskyra</span>
+        <nav className="flex gap-1 ml-auto">
+          {navItems.map(({ href, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="p-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <Icon size={16} />
+            </Link>
+          ))}
+          <Link href="/" className="p-2 text-gray-400 hover:text-white transition-colors">
+            <Globe size={16} />
+          </Link>
+          <Link href="/api/auth/signout" className="p-2 text-gray-400 hover:text-white transition-colors">
+            <LogOut size={16} />
+          </Link>
+        </nav>
       </div>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-auto p-4 pt-18 lg:pt-0 lg:p-8">
+        {children}
+      </main>
     </div>
   );
 }

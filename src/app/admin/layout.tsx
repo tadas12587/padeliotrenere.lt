@@ -14,6 +14,7 @@ import {
   UserCheck,
   Building2,
   Trophy,
+  Globe,
 } from "lucide-react";
 
 const navItems = [
@@ -64,13 +65,20 @@ export default async function AdminLayout({
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
-          <div className="px-3 py-2 mb-2">
+        <div className="p-4 border-t border-white/10 space-y-1">
+          <div className="px-3 py-2">
             <p className="text-xs text-gray-500">Prisijungta kaip</p>
             <p className="text-sm font-semibold text-gray-300 truncate">
               {(session as any).user?.email}
             </p>
           </div>
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <Globe size={17} />
+            Grįžti į svetainę
+          </Link>
           <Link
             href="/api/auth/signout"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
