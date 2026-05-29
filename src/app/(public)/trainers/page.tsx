@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { MapPin, Star, Award } from "lucide-react";
 import { TrainerFilters } from "./TrainerFilters";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default async function TrainersPage({
         services: true,
         reviews: true,
         sports: { include: { sport: true } },
+        certifications: { select: { id: true, name: true } },
       },
       orderBy: { isFeatured: "desc" },
     }),
@@ -117,7 +119,7 @@ export default async function TrainersPage({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {withSport.map((trainer) => {
                 const avgRating =
                   trainer.reviews.length > 0
@@ -134,60 +136,95 @@ export default async function TrainersPage({
 
                 return (
                   <div key={trainer.id} className="card p-0 overflow-hidden flex flex-col">
-                    {/* Photo / Avatar */}
-                    <div className="relative aspect-[3/4] bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
+                    {/* 3:4 portrait photo */}
+                    <div className="relative aspect-[3/4] bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center overflow-hidden">
                       {trainer.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={trainer.photoUrl}
                           alt={trainer.displayName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center">
-                          <span className="text-3xl font-900 text-white">
-                            {initials}
-                          </span>
+                        <div className="w-20 h-20 rounded-full bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center">
+                          <span className="text-2xl font-900 text-white">{initials}</span>
                         </div>
                       )}
+
+                      {/* Featured badge */}
                       {trainer.isFeatured && (
-                        <div className="absolute top-3 right-3 bg-[#FF5733] text-white text-xs font-700 px-2 py-1 rounded-full">
-                          Rekomenduojamas
+                        <div className="absolute top-2.5 right-2.5 bg-[#FF5733] text-white text-xs font-700 px-2 py-0.5 rounded-full shadow-sm">
+                          ⭐ Top
+                        </div>
+                      )}
+
+                      {/* Sport labels — bottom of photo */}
+                      {trainer.sports.length > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2.5 flex flex-wrap gap-1"
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%)" }}
+                        >
+                          {trainer.sports.slice(0, 2).map(({ sport }) => (
+                            <span
+                              key={sport.id}
+                              className="bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-700 px-2 py-0.5 rounded-full"
+                            >
+                              {sport.icon ? `${sport.icon} ` : ""}{sport.name}
+                            </span>
+                          ))}
+                          {trainer.sports.length > 2 && (
+                            <span className="bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-700 px-2 py-0.5 rounded-full">
+                              +{trainer.sports.length - 2}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
 
                     {/* Info */}
-                    <div className="p-5 flex flex-col gap-3 flex-1">
+                    <div className="p-3 sm:p-4 flex flex-col gap-2 flex-1">
                       <div>
-                        <h2 className="font-800 text-lg text-[#0B5C71] leading-tight">
+                        <h2 className="font-800 text-sm sm:text-base text-[#0B5C71] leading-tight">
                           {trainer.displayName}
                         </h2>
-                        <p className="text-gray-500 text-sm mt-0.5">
+                        <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1">
+                          <MapPin size={10} className="text-[#FF5733] shrink-0" />
                           {trainer.city}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm">
-                        {avgRating !== null ? (
-                          <div className="flex items-center gap-1 text-[#FF5733]">
-                            <span className="font-800">{avgRating.toFixed(1)}</span>
-                            <span className="text-yellow-400">★</span>
-                            <span className="text-gray-400">
-                              ({trainer.reviews.length})
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">Nėra atsiliepimų</span>
-                        )}
-                        <div className="text-gray-400">
-                          {trainer.services.length} paslaugos
+                      {/* Rating */}
+                      {avgRating !== null && (
+                        <div className="flex items-center gap-1">
+                          <Star size={11} className="text-[#FF5733] fill-[#FF5733]" />
+                          <span className="text-xs font-800 text-gray-700">{avgRating.toFixed(1)}</span>
+                          <span className="text-xs text-gray-400">({trainer.reviews.length})</span>
                         </div>
-                      </div>
+                      )}
 
-                      <div className="mt-auto pt-3 border-t border-gray-100">
+                      {/* Certifications */}
+                      {trainer.certifications.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {trainer.certifications.slice(0, 2).map((cert) => (
+                            <span
+                              key={cert.id}
+                              className="flex items-center gap-0.5 text-xs bg-[#0B5C71]/8 text-[#0B5C71] px-1.5 py-0.5 rounded-full leading-none"
+                            >
+                              <Award size={9} className="shrink-0" />
+                              {cert.name}
+                            </span>
+                          ))}
+                          {trainer.certifications.length > 2 && (
+                            <span className="text-xs text-gray-400 self-center">
+                              +{trainer.certifications.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-auto pt-2 border-t border-gray-100">
                         <Link
                           href={`/trainers/${trainer.id}`}
-                          className="btn-primary w-full text-center text-sm py-2.5"
+                          className="btn-primary w-full text-center text-xs sm:text-sm py-2"
                         >
                           Žiūrėti profilį
                         </Link>
