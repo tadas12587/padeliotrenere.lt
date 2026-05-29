@@ -20,11 +20,12 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { name, description, durationMinutes, price } = body;
+  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType } = body;
 
   const updateData: any = {};
   if (name !== undefined) updateData.name = name;
   if (description !== undefined) updateData.description = description ?? null;
+  if (templateId !== undefined) updateData.templateId = templateId || null;
   if (durationMinutes !== undefined) {
     const durationNum = Number(durationMinutes);
     if (!Number.isInteger(durationNum) || durationNum < 15) {
@@ -33,6 +34,12 @@ export async function PATCH(
     updateData.durationMinutes = durationNum;
   }
   if (price !== undefined) updateData.price = price != null && price !== "" ? price : null;
+  if (type !== undefined) {
+    const serviceType = type === "GROUP" ? "GROUP" : "INDIVIDUAL";
+    updateData.type = serviceType;
+    updateData.maxParticipants = serviceType === "GROUP" && maxParticipants ? Number(maxParticipants) : null;
+    updateData.priceType = serviceType === "GROUP" ? (priceType === "PER_PERSON" ? "PER_PERSON" : "TOTAL") : null;
+  }
 
   const service = await prisma.service.update({
     where: { id: serviceId },

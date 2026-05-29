@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Calendar, User,
   Award, CalendarDays,
   BookOpen, Clock, Users, FileText,
-  UserCheck, Building2, Trophy,
+  UserCheck, Building2, Trophy, LayoutList,
 } from "lucide-react";
 
 type NavType = "client" | "trainer" | "admin";
@@ -46,6 +46,7 @@ const NAV_CONFIG: Record<NavType, {
       { href: "/admin/trainers", label: "Treneriai", icon: UserCheck },
       { href: "/admin/arenas", label: "Arenos", icon: Building2 },
       { href: "/admin/sports", label: "Sporto šakos", icon: Trophy },
+      { href: "/admin/service-catalog", label: "Paslaugų katalogas", icon: LayoutList },
     ],
   },
 };

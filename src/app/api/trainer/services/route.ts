@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, description, durationMinutes, price } = body;
+  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType } = body;
 
   if (!name || !durationMinutes) {
     return NextResponse.json({ error: "name and durationMinutes are required" }, { status: 400 });
@@ -47,13 +47,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "durationMinutes must be an integer >= 15" }, { status: 400 });
   }
 
+  const serviceType = type === "GROUP" ? "GROUP" : "INDIVIDUAL";
+
   const service = await prisma.service.create({
     data: {
       trainerId: profile.id,
+      templateId: templateId || null,
       name,
       description: description ?? null,
       durationMinutes: durationNum,
       price: price != null && price !== "" ? price : null,
+      type: serviceType,
+      maxParticipants: serviceType === "GROUP" && maxParticipants ? Number(maxParticipants) : null,
+      priceType: serviceType === "GROUP" ? (priceType === "PER_PERSON" ? "PER_PERSON" : "TOTAL") : null,
     },
   });
 

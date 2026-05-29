@@ -39,6 +39,16 @@ enum SlotStatus {
   BOOKED
 }
 
+enum ServiceType {
+  INDIVIDUAL
+  GROUP
+}
+
+enum PriceType {
+  TOTAL
+  PER_PERSON
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -225,14 +235,27 @@ model Certification {
   year      Int
 }
 
+model ServiceTemplate {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(191)
+  description String?   @db.Text
+  services    Service[]
+  createdAt   DateTime  @default(now())
+}
+
 model Service {
-  id              String         @id @default(cuid())
+  id              String           @id @default(cuid())
   trainerId       String
-  trainer         TrainerProfile @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  name            String         @db.VarChar(191)
-  description     String?        @db.Text
+  trainer         TrainerProfile   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  templateId      String?
+  template        ServiceTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  name            String           @db.VarChar(191)
+  description     String?          @db.Text
   durationMinutes Int
-  price           Decimal?       @db.Decimal(10, 2)
+  price           Decimal?         @db.Decimal(10, 2)
+  type            ServiceType      @default(INDIVIDUAL)
+  maxParticipants Int?
+  priceType       PriceType?
   bookings        Booking[]
 }
 
