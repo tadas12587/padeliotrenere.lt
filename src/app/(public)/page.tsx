@@ -9,54 +9,31 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
+import HeroBanner from "./HeroBanner";
 
 // ── Hero Section ──────────────────────────────────────────────────────────────
-function HeroSection() {
-  return (
-    <section className="relative bg-[#041f28] text-white overflow-hidden min-h-[90vh] flex items-center">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0B5C71] via-[#041f28] to-[#041f28]" />
-      <div className="absolute top-20 right-10 w-64 h-64 rounded-full bg-[#FF5733]/10 blur-3xl" />
-      <div className="absolute bottom-20 left-10 w-48 h-48 rounded-full bg-[#083d4e]/30 blur-3xl" />
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255,87,51,0.5) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(255,87,51,0.5) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
-      <div className="container-wide relative z-10 py-24">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-[#FF5733]/15 border border-[#FF5733]/30 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#FF5733] animate-pulse" />
-            <span className="text-[#FF5733] text-sm font-700 uppercase tracking-wider">
-              Sporto trenerių platforma
-            </span>
-          </div>
-          <h1 className="text-5xl lg:text-7xl font-900 leading-[1.05] mb-6">
-            Rask savo{" "}
-            <span className="text-[#FF5733]">sporto trenerį</span>{" "}
-            Lietuvoje
-          </h1>
-          <p className="text-gray-400 text-lg lg:text-xl max-w-2xl mb-8 leading-relaxed">
-            Profesionalūs treneriai visame šalyje – padelis, tenisas, krepšinis ir daugiau. Pasirink trenerį, areną ir rezervuok laiką.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/trainers" className="btn-primary text-base py-4 px-8">
-              🏆 Rasti trenerį
-              <ArrowRight size={18} />
-            </Link>
-            <Link
-              href="/booking"
-              className="btn-secondary text-base py-4 px-8 border-white/30 text-white hover:border-[#FF5733] hover:text-[#FF5733]"
-            >
-              Rezervuoti treniruotę
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+async function HeroSection() {
+  const [galleryPhotos, bannerArenas] = await Promise.all([
+    prisma.arenaPhoto.findMany({
+      where: { arena: { status: "APPROVED" } },
+      select: { id: true, url: true },
+      take: 40,
+    }),
+    prisma.arena.findMany({
+      where: { status: "APPROVED", bannerUrl: { not: null } },
+      select: { id: true, bannerUrl: true },
+    }),
+  ]);
+
+  const all = [
+    ...galleryPhotos,
+    ...bannerArenas.map((a) => ({ id: `banner-${a.id}`, url: a.bannerUrl! })),
+  ];
+
+  // Shuffle and cap at 12
+  const photos = [...all].sort(() => Math.random() - 0.5).slice(0, 12);
+
+  return <HeroBanner photos={photos} />;
 }
 
 // ── Featured Trainers ─────────────────────────────────────────────────────────
