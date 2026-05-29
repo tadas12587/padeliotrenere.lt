@@ -287,3 +287,11 @@ model ArenaSport {
   sport   Sport @relation(fields: [sportId], references: [id], onDelete: Cascade)
   @@id([arenaId, sportId])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String   @db.VarChar(191)
+  token     String   @unique @db.VarChar(255)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

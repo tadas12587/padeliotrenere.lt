@@ -134,6 +134,15 @@ function LoginContent() {
           </div>
         </div>
 
+        <div className="flex justify-end">
+          <Link
+            href="/auth/forgot-password"
+            className="text-xs text-gray-400 hover:text-[#FF5733] transition-colors"
+          >
+            Pamiršote slaptažodį?
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={loading}

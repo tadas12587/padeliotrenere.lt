@@ -104,6 +104,47 @@ export async function sendBookingReminder({
   }
 }
 
+export async function sendPasswordResetEmail({
+  to,
+  resetUrl,
+}: {
+  to: string;
+  resetUrl: string;
+}) {
+  try {
+    const r = getResend(); if (!r) return; await r.emails.send({
+      from: FROM,
+      to,
+      subject: "🔑 Slaptažodžio atstatymas – ManoTreniruote.lt",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #0B5C71; padding: 30px; text-align: center;">
+            <h1 style="color: #FF5733; margin: 0; font-size: 24px;">ManoTreniruote.lt</h1>
+          </div>
+          <div style="padding: 30px; background: #ffffff;">
+            <h2 style="color: #0B5C71;">Slaptažodžio atstatymas</h2>
+            <p style="color: #555; font-size: 16px;">Gavome užklausą atstatyti jūsų paskyros slaptažodį.</p>
+            <p style="color: #555;">Spustelkite žemiau esantį mygtuką, kad nustatytumėte naują slaptažodį. Nuoroda galioja <strong>1 valandą</strong>.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}"
+                 style="display: inline-block; background: #FF5733; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                Atstatyti slaptažodį
+              </a>
+            </div>
+            <p style="color: #999; font-size: 14px;">Jei neprašėte atstatyti slaptažodžio, tiesiog ignoruokite šį laišką.</p>
+            <p style="color: #ccc; font-size: 12px; word-break: break-all;">Arba atidarykite šią nuorodą naršyklėje: ${resetUrl}</p>
+          </div>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; color: #999; font-size: 14px;">
+            <p>© 2025 ManoTreniruote.lt. Visos teisės saugomos.</p>
+          </div>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Failed to send password reset email:", error);
+  }
+}
+
 export async function sendBookingCancellation({
   to,
   name,
