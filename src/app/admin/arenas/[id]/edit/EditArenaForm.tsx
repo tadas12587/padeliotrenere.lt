@@ -29,6 +29,7 @@ interface ArenaData {
   bannerUrl: string;
   lat: number | null;
   lng: number | null;
+  courtBookingUrl: string;
   status: string;
   sportIds: string[];
   photos: GalleryPhoto[];
@@ -50,6 +51,7 @@ export default function EditArenaForm({ arena, allSports }: Props) {
   const [bannerUrl, setBannerUrl] = useState(arena.bannerUrl);
   const [lat, setLat] = useState<number | null>(arena.lat);
   const [lng, setLng] = useState<number | null>(arena.lng);
+  const [courtBookingUrl, setCourtBookingUrl] = useState(arena.courtBookingUrl);
   const [status, setStatus] = useState(arena.status);
   const [selectedSportIds, setSelectedSportIds] = useState<string[]>(arena.sportIds);
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>(arena.photos);
@@ -108,6 +110,7 @@ export default function EditArenaForm({ arena, allSports }: Props) {
           bannerUrl,
           lat,
           lng,
+          courtBookingUrl,
           status,
           sportIds: selectedSportIds,
         }),
@@ -168,6 +171,21 @@ export default function EditArenaForm({ arena, allSports }: Props) {
             ✓ Koordinatės išsaugotos: {lat.toFixed(5)}, {lng.toFixed(5)}
           </p>
         )}
+
+        <div>
+          <label className="block text-sm font-700 text-gray-700 mb-1.5">
+            Kortų rezervacijos nuoroda
+            <span className="text-gray-400 font-400 ml-1 text-xs">(neprivaloma)</span>
+          </label>
+          <input
+            type="url"
+            value={courtBookingUrl}
+            onChange={(e) => setCourtBookingUrl(e.target.value)}
+            placeholder="https://rezervacija.lt/..."
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
+          />
+          <p className="mt-1 text-xs text-gray-400">Nuoroda į arenos kortų rezervacijos sistemą</p>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>

@@ -1,0 +1,1 @@
+ALTER TABLE `Arena` ADD COLUMN `courtBookingUrl` VARCHAR(500) NULL;

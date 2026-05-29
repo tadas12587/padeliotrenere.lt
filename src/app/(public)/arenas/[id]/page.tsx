@@ -86,6 +86,7 @@ export default async function ArenaDetailPage({
         photos={arena.photos}
         mapsUrl={mapsUrl}
         arenaId={arena.id}
+        courtBookingUrl={arena.courtBookingUrl ?? null}
       />
 
       <div className="container-tight py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -96,27 +97,6 @@ export default async function ArenaDetailPage({
             <div className="card p-7">
               <h2 className="text-xl font-800 text-[#0B5C71] mb-4">Apie areną</h2>
               <p className="text-gray-600 leading-relaxed">{arena.description}</p>
-            </div>
-          )}
-
-          {/* Gallery */}
-          {arena.photos.length > 0 && (
-            <div className="card p-7">
-              <h2 className="text-xl font-800 text-[#0B5C71] mb-5">Galerija</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {arena.photos.map((photo) => (
-                  <a
-                    key={photo.id}
-                    href={photo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="aspect-square rounded-xl overflow-hidden block hover:opacity-90 transition-opacity"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photo.url} alt="Galerija" className="w-full h-full object-cover" />
-                  </a>
-                ))}
-              </div>
             </div>
           )}
 
@@ -198,14 +178,47 @@ export default async function ArenaDetailPage({
 
           {/* Booking CTA */}
           <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
-            <h2 className="text-lg font-800 mb-2">Rezervuokite kortą</h2>
-            <p className="text-gray-400 text-sm mb-5 leading-relaxed">
-              Pasirinkite trenerį ir rezervuokite laiką šioje arenoje.
+            <h2 className="text-lg font-800 mb-2">Rezervuokite</h2>
+            <p className="text-white/60 text-sm mb-5 leading-relaxed">
+              Pasirinkite trenerį arba rezervuokite kortą šioje arenoje.
             </p>
-            <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary w-full text-center py-3">
-              Rezervuoti
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link href={`/booking?arenaId=${arena.id}`} className="btn-primary w-full text-center py-3">
+                Rezervuoti trenerį
+              </Link>
+              {arena.courtBookingUrl && (
+                <a
+                  href={arena.courtBookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full text-center py-3 rounded-xl font-700 text-sm bg-white/15 hover:bg-white/25 border border-white/30 text-white transition-colors"
+                >
+                  Rezervuoti kortą
+                </a>
+              )}
+            </div>
           </div>
+
+          {/* Gallery */}
+          {arena.photos.length > 0 && (
+            <div className="card p-6">
+              <h2 className="text-lg font-800 text-[#0B5C71] mb-4">Galerija</h2>
+              <div className="grid grid-cols-2 gap-2">
+                {arena.photos.map((photo) => (
+                  <a
+                    key={photo.id}
+                    href={photo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="aspect-square rounded-xl overflow-hidden block hover:opacity-90 transition-opacity"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo.url} alt="Galerija" className="w-full h-full object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

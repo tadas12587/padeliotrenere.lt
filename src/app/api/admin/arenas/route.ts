@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, city, address, description, photoUrl, sportIds } = body;
+  const { name, city, address, description, photoUrl, courtBookingUrl, sportIds } = body;
 
   if (!name || !city || !address) {
     return NextResponse.json(
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       address,
       description: description ?? null,
       photoUrl: photoUrl ?? null,
+      courtBookingUrl: courtBookingUrl ?? null,
       status: "APPROVED",
       createdById,
       ...(sportIds && sportIds.length > 0

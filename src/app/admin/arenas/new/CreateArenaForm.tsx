@@ -23,6 +23,7 @@ export default function CreateArenaForm({ sports }: Props) {
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [courtBookingUrl, setCourtBookingUrl] = useState("");
   const [sportIds, setSportIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,6 +48,7 @@ export default function CreateArenaForm({ sports }: Props) {
           address,
           description: description || undefined,
           photoUrl: photoUrl || undefined,
+          courtBookingUrl: courtBookingUrl || undefined,
           sportIds: sportIds.length > 0 ? sportIds : undefined,
         }),
       });
@@ -132,6 +134,20 @@ export default function CreateArenaForm({ sports }: Props) {
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
             placeholder="https://..."
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
+            Kortų rezervacijos nuoroda
+          </label>
+          <input
+            type="url"
+            value={courtBookingUrl}
+            onChange={(e) => setCourtBookingUrl(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
+            placeholder="https://rezervacija.lt/..."
+          />
+          <p className="mt-1 text-xs text-gray-400">Nuoroda į arenos kortų rezervacijos sistemą</p>
         </div>
 
         {sports.length > 0 && (

@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { status, name, city, address, description, photoUrl, logoUrl, bannerUrl, lat, lng, sportIds } = body;
+  const { status, name, city, address, description, photoUrl, logoUrl, bannerUrl, lat, lng, courtBookingUrl, sportIds } = body;
 
   const arena = await prisma.arena.update({
     where: { id },
@@ -26,6 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(bannerUrl !== undefined && { bannerUrl }),
       ...(lat !== undefined && { lat }),
       ...(lng !== undefined && { lng }),
+      ...(courtBookingUrl !== undefined && { courtBookingUrl: courtBookingUrl || null }),
     },
   });
 

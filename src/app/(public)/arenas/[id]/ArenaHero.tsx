@@ -18,6 +18,7 @@ interface Props {
   photos: Photo[];
   mapsUrl: string;
   arenaId: string;
+  courtBookingUrl: string | null;
 }
 
 export default function ArenaHero({
@@ -29,6 +30,7 @@ export default function ArenaHero({
   photos,
   mapsUrl,
   arenaId,
+  courtBookingUrl,
 }: Props) {
   // Banner first, then gallery photos — deduplicated by URL
   const bgPhotos = [
@@ -114,11 +116,24 @@ export default function ArenaHero({
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="shrink-0">
-            <Link href={`/booking?arenaId=${arenaId}`} className="btn-primary py-3 px-7">
-              Rezervuoti
+          {/* CTAs */}
+          <div className="shrink-0 flex flex-col sm:flex-row gap-2">
+            <Link
+              href={`/booking?arenaId=${arenaId}`}
+              className="btn-primary py-3 px-6 text-center whitespace-nowrap"
+            >
+              Rezervuoti trenerį
             </Link>
+            {courtBookingUrl && (
+              <a
+                href={courtBookingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3 px-6 text-center whitespace-nowrap rounded-xl font-700 text-sm bg-white/15 hover:bg-white/25 border border-white/30 text-white transition-colors backdrop-blur-sm"
+              >
+                Rezervuoti kortą
+              </a>
+            )}
           </div>
         </div>
       </div>
