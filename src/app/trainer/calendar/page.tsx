@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { CalendarDays, Plus, Trash2, Clock, MapPin } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus } from "lucide-react";
+import BookForClientModal from "@/components/BookForClientModal";
 
 interface Arena {
   id: string;
@@ -22,6 +23,10 @@ interface AvailabilitySlot {
   arena: Arena;
 }
 
+type RecurrenceType = "none" | "weekly" | "daily";
+
+const DAY_LABELS = ["S", "P", "A", "T", "K", "P", "Š"]; // Sun=0..Sat=6 => Lithuanian labels
+
 export default function TrainerCalendarPage() {
   const [trainerArenas, setTrainerArenas] = useState<TrainerArenaItem[]>([]);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -35,6 +40,14 @@ export default function TrainerCalendarPage() {
   const [endTime, setEndTime] = useState("");
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Recurrence state
+  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("none");
+  const [untilDate, setUntilDate] = useState("");
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
+
+  // BookForClientModal state
+  const [bookingSlot, setBookingSlot] = useState<AvailabilitySlot | null>(null);
 
   const fetchSlots = useCallback(async (tid: string) => {
     try {
@@ -66,10 +79,55 @@ export default function TrainerCalendarPage() {
     init();
   }, [fetchSlots]);
 
+  // When date changes and recurrence is weekly, pre-check the day matching the selected date
+  useEffect(() => {
+    if (recurrenceType === "weekly" && date) {
+      const d = new Date(date + "T00:00:00");
+      setSelectedDays([d.getDay()]);
+    }
+  }, [date, recurrenceType]);
+
+  const toggleDay = (day: number) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
+  // Preview count of slots that would be created
+  const previewCount = useMemo(() => {
+    if (recurrenceType === "none" || !date || !untilDate) return 1;
+
+    const baseDate = new Date(date + "T00:00:00");
+    const until = new Date(untilDate + "T23:59:59");
+
+    if (until < baseDate) return 0;
+
+    let count = 0;
+    const current = new Date(baseDate);
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    while (current <= until) {
+      if (recurrenceType === "daily") {
+        count++;
+      } else if (recurrenceType === "weekly") {
+        const days = selectedDays.length > 0 ? selectedDays : [baseDate.getDay()];
+        if (days.includes(current.getDay())) count++;
+      }
+      current.setTime(current.getTime() + dayMs);
+    }
+
+    return Math.min(count, 365);
+  }, [recurrenceType, date, untilDate, selectedDays]);
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!arenaId || !date || !startTime || !endTime) {
       setMessage({ type: "error", text: "Užpildykite visus laukus" });
+      return;
+    }
+
+    if (recurrenceType !== "none" && !untilDate) {
+      setMessage({ type: "error", text: "Pasirinkite pabaigos datą" });
       return;
     }
 
@@ -84,6 +142,17 @@ export default function TrainerCalendarPage() {
         throw new Error("Pabaigos laikas turi būti vėliau nei pradžios");
       }
 
+      const recurrence =
+        recurrenceType === "none"
+          ? { type: "none" }
+          : recurrenceType === "daily"
+          ? { type: "daily", until: untilDate }
+          : {
+              type: "weekly",
+              daysOfWeek: selectedDays.length > 0 ? selectedDays : [startDateTime.getUTCDay()],
+              until: untilDate,
+            };
+
       const res = await fetch("/api/availability", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,6 +160,7 @@ export default function TrainerCalendarPage() {
           arenaId,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
+          recurrence,
         }),
       });
 
@@ -99,10 +169,22 @@ export default function TrainerCalendarPage() {
         throw new Error(data.error || "Klaida");
       }
 
+      const result = await res.json();
+      const created = result.created ?? 1;
+
       setDate("");
       setStartTime("");
       setEndTime("");
-      setMessage({ type: "success", text: "Laiko tarpas pridėtas!" });
+      setUntilDate("");
+      setSelectedDays([]);
+      setRecurrenceType("none");
+      setMessage({
+        type: "success",
+        text:
+          created === 1
+            ? "Laiko tarpas pridėtas!"
+            : `Sukurta ${created} laiko tarp${created % 10 === 1 && created % 100 !== 11 ? "as" : created % 10 >= 2 && created % 10 <= 9 && (created % 100 < 10 || created % 100 >= 20) ? "ai" : "ų"}!`,
+      });
       if (trainerId) await fetchSlots(trainerId);
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Nepavyko pridėti laiko tarpo" });
@@ -137,6 +219,10 @@ export default function TrainerCalendarPage() {
       minute: "2-digit",
     });
   };
+
+  const inputCls =
+    "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]";
+  const labelCls = "block text-sm font-700 text-gray-700 mb-1.5";
 
   return (
     <div className="space-y-6">
@@ -175,67 +261,167 @@ export default function TrainerCalendarPage() {
             .
           </div>
         ) : (
-          <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Arena <span className="text-[#FF5733]">*</span>
-              </label>
-              <select
-                value={arenaId}
-                onChange={(e) => setArenaId(e.target.value)}
-                required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-              >
-                <option value="">Pasirinkite areną</option>
-                {trainerArenas.map((ta) => (
-                  <option key={ta.arenaId} value={ta.arenaId}>
-                    {ta.arena.name} — {ta.arena.city}
-                  </option>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>
+                  Arena <span className="text-[#FF5733]">*</span>
+                </label>
+                <select
+                  value={arenaId}
+                  onChange={(e) => setArenaId(e.target.value)}
+                  required
+                  className={inputCls}
+                >
+                  <option value="">Pasirinkite areną</option>
+                  {trainerArenas.map((ta) => (
+                    <option key={ta.arenaId} value={ta.arenaId}>
+                      {ta.arena.name} — {ta.arena.city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className={labelCls}>
+                  Data <span className="text-[#FF5733]">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <label className={labelCls}>
+                  Pradžia <span className="text-[#FF5733]">*</span>
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                  className={inputCls}
+                />
+              </div>
+
+              <div>
+                <label className={labelCls}>
+                  Pabaiga <span className="text-[#FF5733]">*</span>
+                </label>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                  className={inputCls}
+                />
+              </div>
+            </div>
+
+            {/* Recurrence */}
+            <div className="space-y-3 pt-2 border-t border-gray-100">
+              <label className={labelCls}>Pasikartojimas</label>
+              <div className="flex flex-wrap gap-3">
+                {(
+                  [
+                    { value: "none", label: "Vienkartinis" },
+                    { value: "weekly", label: "Kas savaitę" },
+                    { value: "daily", label: "Kasdien" },
+                  ] as { value: RecurrenceType; label: string }[]
+                ).map((opt) => (
+                  <label
+                    key={opt.value}
+                    className="flex items-center gap-2 cursor-pointer text-sm font-600 text-gray-700"
+                  >
+                    <input
+                      type="radio"
+                      name="recurrenceType"
+                      value={opt.value}
+                      checked={recurrenceType === opt.value}
+                      onChange={() => {
+                        setRecurrenceType(opt.value);
+                        if (opt.value === "none") {
+                          setUntilDate("");
+                          setSelectedDays([]);
+                        }
+                      }}
+                      className="accent-[#FF5733]"
+                    />
+                    {opt.label}
+                  </label>
                 ))}
-              </select>
+              </div>
+
+              {recurrenceType !== "none" && (
+                <div className="space-y-3">
+                  <div className="max-w-xs">
+                    <label className={labelCls}>
+                      Iki <span className="text-[#FF5733]">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={untilDate}
+                      onChange={(e) => setUntilDate(e.target.value)}
+                      required
+                      min={date || new Date().toISOString().split("T")[0]}
+                      className={inputCls}
+                    />
+                  </div>
+
+                  {recurrenceType === "weekly" && (
+                    <div>
+                      <label className={labelCls}>Savaitės dienos</label>
+                      <div className="flex gap-2 flex-wrap">
+                        {/* Days: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=0 */}
+                        {[
+                          { day: 1, label: "P" },
+                          { day: 2, label: "A" },
+                          { day: 3, label: "T" },
+                          { day: 4, label: "K" },
+                          { day: 5, label: "P" },
+                          { day: 6, label: "Š" },
+                          { day: 0, label: "S" },
+                        ].map(({ day, label }) => {
+                          const checked = selectedDays.includes(day);
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => toggleDay(day)}
+                              className={`w-9 h-9 rounded-lg text-sm font-700 border transition-colors ${
+                                checked
+                                  ? "bg-[#FF5733] text-white border-[#FF5733]"
+                                  : "bg-white text-gray-500 border-gray-200 hover:border-[#FF5733]/50"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-sm text-[#0B5C71] font-600">
+                    Sukurs {previewCount} laiko tarp
+                    {previewCount === 1
+                      ? "ą"
+                      : previewCount % 10 >= 2 &&
+                        previewCount % 10 <= 9 &&
+                        (previewCount % 100 < 10 || previewCount % 100 >= 20)
+                      ? "us"
+                      : "ų"}
+                  </p>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Data <span className="text-[#FF5733]">*</span>
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Pradžia <span className="text-[#FF5733]">*</span>
-              </label>
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-700 text-gray-700 mb-1.5">
-                Pabaiga <span className="text-[#FF5733]">*</span>
-              </label>
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
-              />
-            </div>
-
-            <div className="sm:col-span-2 flex justify-end">
+            <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={adding}
@@ -297,6 +483,15 @@ export default function TrainerCalendarPage() {
                   >
                     {slot.status === "AVAILABLE" ? "Laisvas" : "Užimtas"}
                   </span>
+                  {slot.status === "AVAILABLE" && trainerId && (
+                    <button
+                      onClick={() => setBookingSlot(slot)}
+                      className="p-2 text-gray-400 hover:text-[#0B5C71] hover:bg-[#0B5C71]/10 rounded-lg transition-colors"
+                      title="Užsisakyti klientui"
+                    >
+                      <UserPlus size={16} />
+                    </button>
+                  )}
                   {slot.status === "AVAILABLE" && (
                     <button
                       onClick={() => handleDelete(slot.id)}
@@ -312,6 +507,20 @@ export default function TrainerCalendarPage() {
           </div>
         )}
       </div>
+
+      {/* BookForClientModal */}
+      {bookingSlot && trainerId && (
+        <BookForClientModal
+          slot={bookingSlot}
+          trainerId={trainerId}
+          onClose={() => setBookingSlot(null)}
+          onBooked={async () => {
+            setBookingSlot(null);
+            if (trainerId) await fetchSlots(trainerId);
+            setMessage({ type: "success", text: "Rezervacija sukurta!" });
+          }}
+        />
+      )}
     </div>
   );
 }

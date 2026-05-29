@@ -34,6 +34,61 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(slots);
 }
 
+interface Recurrence {
+  type: "none" | "daily" | "weekly";
+  daysOfWeek?: number[];
+  until?: string;
+}
+
+function generateDates(baseStart: Date, baseEnd: Date, recurrence: Recurrence): { start: Date; end: Date }[] {
+  const startMs = baseStart.getTime();
+  const endMs = baseEnd.getTime();
+  const durationMs = endMs - startMs;
+
+  // Time-of-day offsets relative to midnight UTC of the base date
+  const baseDateMidnight = new Date(
+    Date.UTC(baseStart.getUTCFullYear(), baseStart.getUTCMonth(), baseStart.getUTCDate())
+  );
+  const startOffset = startMs - baseDateMidnight.getTime();
+  const endOffset = startOffset + durationMs;
+
+  const until = new Date(recurrence.until!);
+  // Set until to end of day
+  const untilMidnight = new Date(
+    Date.UTC(until.getUTCFullYear(), until.getUTCMonth(), until.getUTCDate() + 1)
+  );
+
+  const results: { start: Date; end: Date }[] = [];
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  let current = new Date(baseDateMidnight.getTime());
+
+  while (current.getTime() < untilMidnight.getTime()) {
+    const dayOfWeek = current.getUTCDay();
+    let include = false;
+
+    if (recurrence.type === "daily") {
+      include = true;
+    } else if (recurrence.type === "weekly") {
+      const days = recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0
+        ? recurrence.daysOfWeek
+        : [baseStart.getUTCDay()];
+      include = days.includes(dayOfWeek);
+    }
+
+    if (include) {
+      results.push({
+        start: new Date(current.getTime() + startOffset),
+        end: new Date(current.getTime() + endOffset),
+      });
+    }
+
+    current = new Date(current.getTime() + dayMs);
+  }
+
+  return results;
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role;
@@ -48,7 +103,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { arenaId, startTime, endTime } = body;
+  const { arenaId, startTime, endTime, recurrence } = body;
 
   if (!arenaId || !startTime || !endTime) {
     return NextResponse.json({ error: "arenaId, startTime, endTime required" }, { status: 400 });
@@ -61,14 +116,48 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Trainer not associated with this arena" }, { status: 403 });
   }
 
-  const slot = await prisma.availabilitySlot.create({
-    data: {
+  const baseStart = new Date(startTime);
+  const baseEnd = new Date(endTime);
+
+  // Single slot (no recurrence)
+  if (!recurrence || recurrence.type === "none") {
+    const slot = await prisma.availabilitySlot.create({
+      data: {
+        trainerId: profile.id,
+        arenaId,
+        startTime: baseStart,
+        endTime: baseEnd,
+      },
+    });
+    return NextResponse.json(slot, { status: 201 });
+  }
+
+  // Recurring
+  if (!recurrence.until) {
+    return NextResponse.json({ error: "until date required for recurrence" }, { status: 400 });
+  }
+
+  const dates = generateDates(baseStart, baseEnd, recurrence as Recurrence);
+
+  if (dates.length > 365) {
+    return NextResponse.json(
+      { error: "Vienu kartu galima sukurti ne daugiau 365 laiko tarpų" },
+      { status: 400 }
+    );
+  }
+
+  if (dates.length === 0) {
+    return NextResponse.json({ error: "Nerasta tinkamų datų" }, { status: 400 });
+  }
+
+  const result = await prisma.availabilitySlot.createMany({
+    data: dates.map(({ start, end }) => ({
       trainerId: profile.id,
       arenaId,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-    },
+      startTime: start,
+      endTime: end,
+    })),
   });
 
-  return NextResponse.json(slot, { status: 201 });
+  return NextResponse.json({ created: result.count }, { status: 201 });
 }

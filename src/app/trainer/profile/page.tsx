@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import TrainerProfileForm from "./TrainerProfileForm";
+import ServicesManager from "@/components/ServicesManager";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function TrainerProfilePage() {
         arenas: { include: { arena: true } },
         sports: { include: { sport: true } },
         gallery: { orderBy: { order: "asc" } },
+        services: { orderBy: { name: "asc" } },
       },
     }),
     prisma.arena.findMany({
@@ -54,6 +56,16 @@ export default async function TrainerProfilePage() {
         sports={allSports}
         gallery={trainerProfile?.gallery ?? []}
       />
+      {trainerProfile && (
+        <ServicesManager
+          trainerId={trainerProfile.id}
+          isAdmin={false}
+          initialServices={trainerProfile.services.map((s) => ({
+            ...s,
+            price: s.price !== null ? String(s.price) : null,
+          }))}
+        />
+      )}
     </div>
   );
 }

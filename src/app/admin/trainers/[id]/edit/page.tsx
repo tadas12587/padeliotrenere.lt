@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EditTrainerForm from "./EditTrainerForm";
+import ServicesManager from "@/components/ServicesManager";
 import { ChevronLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function EditTrainerPage({ params }: Props) {
       include: {
         sports: { include: { sport: true } },
         gallery: { orderBy: { order: "asc" } },
+        services: { orderBy: { name: "asc" } },
       },
     }),
     prisma.sport.findMany({ orderBy: { name: "asc" } }),
@@ -58,6 +60,15 @@ export default async function EditTrainerPage({ params }: Props) {
           gallery: trainer.gallery,
         }}
         allSports={allSports}
+      />
+
+      <ServicesManager
+        trainerId={trainer.id}
+        isAdmin={true}
+        initialServices={trainer.services.map((s) => ({
+          ...s,
+          price: s.price !== null ? String(s.price) : null,
+        }))}
       />
     </div>
   );

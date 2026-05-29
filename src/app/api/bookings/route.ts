@@ -44,6 +44,7 @@ const createBookingSchema = z.object({
   trainerId: z.string().cuid().optional(),
   arenaId: z.string().cuid().optional(),
   serviceId: z.string().cuid().optional(),
+  targetUserId: z.string().cuid().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -59,7 +60,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { slotId, clientNotes, availabilitySlotId, trainerId, arenaId, serviceId } = parsed.data;
+  const { slotId, clientNotes, availabilitySlotId, trainerId, arenaId, serviceId, targetUserId } = parsed.data;
+
+  // Determine effective userId for the booking
+  let effectiveUserId = user.id;
+  if (targetUserId && (user.role === "ADMIN" || user.role === "TRAINER")) {
+    effectiveUserId = targetUserId;
+  }
 
   // ── AvailabilitySlot flow (multi-trainer) ──────────────────────────────────
   if (availabilitySlotId) {
@@ -76,10 +83,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Šis laikas jau užimtas" }, { status: 409 });
     }
 
+    // Trainer can only book for others on their own slots
+    if (targetUserId && user.role === "TRAINER") {
+      const profile = await prisma.trainerProfile.findUnique({ where: { userId: user.id } });
+      if (!profile || availSlot.trainerId !== profile.id) {
+        return NextResponse.json({ error: "Galite rezervuoti tik savo laiko tarpus" }, { status: 403 });
+      }
+    }
+
     const booking = await prisma.$transaction(async (tx) => {
       const newBooking = await tx.booking.create({
         data: {
-          userId: user.id,
+          userId: effectiveUserId,
           clientNotes,
           status: "CONFIRMED",
           trainerId: availSlot.trainerId,
