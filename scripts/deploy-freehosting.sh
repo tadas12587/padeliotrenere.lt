@@ -133,14 +133,11 @@ ssh "${SSH_ALIAS}" bash -s -- "$DB_USER" "$DB_PASS" "$DB_NAME" "$PACKAGE" << 'EN
   cp -r /web/.next/static /web/_next/
   echo "  ✓ /web/_next/static/ sukurtas"
 
-  echo "▶ Uploads direktorija (nginx pasiekimas)"
-  mkdir -p /web/public/uploads
-  if [ ! -L /web/uploads ]; then
-    ln -sfn /web/public/uploads /web/uploads
-    echo "  ✓ /web/uploads -> /web/public/uploads symlink sukurtas"
-  else
-    echo "  ✓ /web/uploads symlink jau egzistuoja"
-  fi
+  echo "▶ Uploads direktorija (nginx root /web/)"
+  # Remove symlink from previous deploy attempts, create real directory
+  [ -L /web/uploads ] && rm /web/uploads || true
+  mkdir -p /web/uploads
+  echo "  ✓ /web/uploads/ katalgas sukurtas"
 
   echo "▶ Prisma migracijos (MySQL)"
   for f in /web/prisma/migrations/*/migration.sql; do

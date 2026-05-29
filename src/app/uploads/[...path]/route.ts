@@ -22,7 +22,9 @@ export async function GET(
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const uploadsDir = nodePath.join(process.cwd(), "public", "uploads");
+  const uploadsDir = process.env.NODE_ENV === "production"
+    ? nodePath.join(process.cwd(), "uploads")
+    : nodePath.join(process.cwd(), "public", "uploads");
   const filePath = nodePath.join(uploadsDir, ...parts);
 
   // Extra safety: ensure resolved path is inside uploads dir

@@ -49,7 +49,11 @@ export async function POST(req: NextRequest) {
   const ext = file.type === "image/webp" ? "webp" : file.type === "image/png" ? "png" : "jpg";
   const filename = `${Date.now()}-${randomBytes(8).toString("hex")}.${ext}`;
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+  // Production: nginx root = /web/, save directly to {cwd}/uploads/ → URL /uploads/filename
+  // Development: Next.js dev serves public/ at root, save to public/uploads/ → URL /uploads/filename
+  const uploadsDir = process.env.NODE_ENV === "production"
+    ? path.join(process.cwd(), "uploads")
+    : path.join(process.cwd(), "public", "uploads");
   await fs.mkdir(uploadsDir, { recursive: true });
 
   await fs.writeFile(path.join(uploadsDir, filename), buffer);
