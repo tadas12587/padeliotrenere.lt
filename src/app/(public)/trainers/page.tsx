@@ -135,7 +135,7 @@ export default async function TrainersPage({
                 return (
                   <div key={trainer.id} className="card p-0 overflow-hidden flex flex-col">
                     {/* Photo / Avatar */}
-                    <div className="relative h-48 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
+                    <div className="relative aspect-[3/4] bg-gradient-to-br from-[#0B5C71] to-[#083d4e] flex items-center justify-center">
                       {trainer.photoUrl ? (
                         <img
                           src={trainer.photoUrl}
