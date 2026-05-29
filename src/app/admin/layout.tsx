@@ -13,6 +13,7 @@ import {
   Dumbbell,
   UserCheck,
   Building2,
+  Trophy,
 } from "lucide-react";
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/admin/users", label: "Vartotojai", icon: Users },
   { href: "/admin/trainers", label: "Treneriai", icon: UserCheck },
   { href: "/admin/arenas", label: "Arenos", icon: Building2 },
+  { href: "/admin/sports", label: "Sporto šakos", icon: Trophy },
 ];
 
 export default async function AdminLayout({

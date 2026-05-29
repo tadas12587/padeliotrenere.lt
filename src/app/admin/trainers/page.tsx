@@ -35,11 +35,16 @@ export default async function AdminTrainersPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-900 text-[#0B5C71]">Treneriai</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Valdykite trenerių profilius ir jų statusą
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-900 text-[#0B5C71]">Treneriai</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Valdykite trenerių profilius ir jų statusą
+          </p>
+        </div>
+        <Link href="/admin/trainers/new" className="btn-primary text-sm py-2 px-4">
+          + Kurti naują
+        </Link>
       </div>
 
       {/* Status filter */}
