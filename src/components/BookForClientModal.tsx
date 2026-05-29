@@ -25,11 +25,14 @@ interface Service {
   name: string;
   durationMinutes: number;
   price: string | number | null;
+  type?: "INDIVIDUAL" | "GROUP";
+  priceType?: "TOTAL" | "PER_PERSON" | null;
 }
 
 interface Props {
   slot: Slot;
   trainerId: string;
+  slotServices?: Service[];
   onClose: () => void;
   onBooked: () => void;
 }
@@ -38,7 +41,15 @@ const inputCls =
   "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]";
 const labelCls = "block text-sm font-700 text-gray-700 mb-1.5";
 
-export default function BookForClientModal({ slot, trainerId, onClose, onBooked }: Props) {
+function formatServiceLabel(s: Service) {
+  const price =
+    s.price != null && s.price !== ""
+      ? `${s.price} €${s.type === "GROUP" && s.priceType === "PER_PERSON" ? "/asm." : ""}`
+      : "nemokama";
+  return `${s.name} (${s.durationMinutes} min, ${price})`;
+}
+
+export default function BookForClientModal({ slot, trainerId, slotServices, onClose, onBooked }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -47,44 +58,35 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
 
   const [services, setServices] = useState<Service[]>([]);
   const [serviceId, setServiceId] = useState("");
-  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingServices, setLoadingServices] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch services for this trainer
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await fetch(`/api/trainer/services`);
-        if (res.ok) {
-          const data = await res.json();
-          setServices(Array.isArray(data) ? data : []);
-        }
-      } catch {
-        // ignore
-      } finally {
-        setLoadingServices(false);
-      }
-    };
-    fetchServices();
-  }, [trainerId]);
+    if (slotServices && slotServices.length > 0) {
+      setServices(slotServices);
+      return;
+    }
+    setLoadingServices(true);
+    fetch("/api/trainer/services")
+      .then((r) => r.json())
+      .then((data) => setServices(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoadingServices(false));
+  }, [trainerId, slotServices]);
 
-  // Debounced user search
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
     setSelectedUser(null);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
     if (!value.trim()) {
       setResults([]);
       setShowDropdown(false);
       return;
     }
-
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       try {
@@ -115,10 +117,8 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
       setError("Pasirinkite klientą");
       return;
     }
-
     setSubmitting(true);
     setError(null);
-
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
@@ -129,14 +129,10 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
           serviceId: serviceId || undefined,
         }),
       });
-
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(
-          typeof data.error === "string" ? data.error : "Nepavyko sukurti rezervacijos"
-        );
+        throw new Error(typeof data.error === "string" ? data.error : "Nepavyko sukurti rezervacijos");
       }
-
       onBooked();
     } catch (err: any) {
       setError(err.message || "Nepavyko sukurti rezervacijos");
@@ -153,10 +149,11 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
       minute: "2-digit",
     });
 
+  const hasSlotServices = slotServices && slotServices.length > 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-800 text-[#0B5C71] text-lg">Rezervuoti klientui</h2>
           <button
@@ -168,15 +165,11 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Slot info */}
           <div className="p-3 bg-[#F4F4F4] rounded-xl text-sm">
             <p className="font-700 text-[#0B5C71]">{slot.arena.name}</p>
             <p className="text-gray-500 mt-0.5">
               {formatDT(slot.startTime)} –{" "}
-              {new Date(slot.endTime).toLocaleTimeString("lt-LT", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {new Date(slot.endTime).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}
             </p>
           </div>
 
@@ -192,10 +185,7 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
               Klientas <span className="text-[#FF5733]">*</span>
             </label>
             <div className="relative">
-              <Search
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 value={query}
@@ -205,9 +195,7 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
                 className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
               />
               {searching && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                  ...
-                </span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">...</span>
               )}
             </div>
 
@@ -224,9 +212,7 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
                       <User size={14} className="text-[#0B5C71]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-700 text-[#0B5C71] truncate">
-                        {u.name || "—"}
-                      </p>
+                      <p className="text-sm font-700 text-[#0B5C71] truncate">{u.name || "—"}</p>
                       <p className="text-xs text-gray-400 truncate">{u.email}</p>
                     </div>
                   </button>
@@ -241,7 +227,6 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
             )}
           </div>
 
-          {/* Selected user badge */}
           {selectedUser && (
             <div className="flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-xl text-sm">
               <User size={14} className="text-green-600 shrink-0" />
@@ -254,27 +239,28 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
 
           {/* Service selection */}
           <div>
-            <label className={labelCls}>Paslauga (neprivaloma)</label>
+            <label className={labelCls}>
+              Paslauga{" "}
+              {hasSlotServices ? (
+                <span className="text-[#0B5C71] font-400 text-xs">(priskirtos šiam laikui)</span>
+              ) : (
+                <span className="text-gray-400 font-400">(neprivaloma)</span>
+              )}
+            </label>
             {loadingServices ? (
               <p className="text-sm text-gray-400">Kraunama...</p>
             ) : (
-              <select
-                value={serviceId}
-                onChange={(e) => setServiceId(e.target.value)}
-                className={inputCls}
-              >
+              <select value={serviceId} onChange={(e) => setServiceId(e.target.value)} className={inputCls}>
                 <option value="">— Be paslaugos —</option>
                 {services.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.durationMinutes} min
-                    {s.price != null && s.price !== "" ? `, ${s.price} €` : ", nemokama"})
+                    {formatServiceLabel(s)}
                   </option>
                 ))}
               </select>
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center gap-3 pt-1">
             <button
               type="submit"
@@ -283,11 +269,7 @@ export default function BookForClientModal({ slot, trainerId, onClose, onBooked 
             >
               {submitting ? "Rezervuojama..." : "Patvirtinti rezervaciją"}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary px-5"
-            >
+            <button type="button" onClick={onClose} className="btn-secondary px-5">
               Atšaukti
             </button>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus } from "lucide-react";
+import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus, Tag } from "lucide-react";
 import BookForClientModal from "@/components/BookForClientModal";
 
 interface Arena {
@@ -15,20 +15,38 @@ interface TrainerArenaItem {
   arena: Arena;
 }
 
+interface SlotService {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  price: string | number | null;
+  type: "INDIVIDUAL" | "GROUP";
+  priceType: "TOTAL" | "PER_PERSON" | null;
+}
+
+interface TrainerService {
+  id: string;
+  name: string;
+  durationMinutes: number;
+  price: string | number | null;
+  type: "INDIVIDUAL" | "GROUP";
+  priceType: "TOTAL" | "PER_PERSON" | null;
+}
+
 interface AvailabilitySlot {
   id: string;
   startTime: string;
   endTime: string;
   status: string;
   arena: Arena;
+  services: SlotService[];
 }
 
 type RecurrenceType = "none" | "weekly" | "daily";
 
-const DAY_LABELS = ["S", "P", "A", "T", "K", "P", "Š"]; // Sun=0..Sat=6 => Lithuanian labels
-
 export default function TrainerCalendarPage() {
   const [trainerArenas, setTrainerArenas] = useState<TrainerArenaItem[]>([]);
+  const [trainerServices, setTrainerServices] = useState<TrainerService[]>([]);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [trainerId, setTrainerId] = useState<string | null>(null);
@@ -38,6 +56,7 @@ export default function TrainerCalendarPage() {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -46,7 +65,6 @@ export default function TrainerCalendarPage() {
   const [untilDate, setUntilDate] = useState("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
-  // BookForClientModal state
   const [bookingSlot, setBookingSlot] = useState<AvailabilitySlot | null>(null);
 
   const fetchSlots = useCallback(async (tid: string) => {
@@ -62,15 +80,20 @@ export default function TrainerCalendarPage() {
   useEffect(() => {
     const init = async () => {
       try {
-        const res = await fetch("/api/trainer/profile");
-        if (res.ok) {
-          const data = await res.json();
+        const [profileRes, servicesRes] = await Promise.all([
+          fetch("/api/trainer/profile"),
+          fetch("/api/trainer/services"),
+        ]);
+        if (profileRes.ok) {
+          const data = await profileRes.json();
           setTrainerId(data.id);
           setTrainerArenas(data.arenas || []);
-          if (data.arenas?.length > 0) {
-            setArenaId(data.arenas[0].arenaId);
-          }
+          if (data.arenas?.length > 0) setArenaId(data.arenas[0].arenaId);
           await fetchSlots(data.id);
+        }
+        if (servicesRes.ok) {
+          const svcs = await servicesRes.json();
+          setTrainerServices(Array.isArray(svcs) ? svcs : []);
         }
       } finally {
         setLoading(false);
@@ -79,7 +102,6 @@ export default function TrainerCalendarPage() {
     init();
   }, [fetchSlots]);
 
-  // When date changes and recurrence is weekly, pre-check the day matching the selected date
   useEffect(() => {
     if (recurrenceType === "weekly" && date) {
       const d = new Date(date + "T00:00:00");
@@ -93,19 +115,20 @@ export default function TrainerCalendarPage() {
     );
   };
 
-  // Preview count of slots that would be created
+  const toggleService = (id: string) => {
+    setSelectedServiceIds((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
+  };
+
   const previewCount = useMemo(() => {
     if (recurrenceType === "none" || !date || !untilDate) return 1;
-
     const baseDate = new Date(date + "T00:00:00");
     const until = new Date(untilDate + "T23:59:59");
-
     if (until < baseDate) return 0;
-
     let count = 0;
     const current = new Date(baseDate);
     const dayMs = 24 * 60 * 60 * 1000;
-
     while (current <= until) {
       if (recurrenceType === "daily") {
         count++;
@@ -115,7 +138,6 @@ export default function TrainerCalendarPage() {
       }
       current.setTime(current.getTime() + dayMs);
     }
-
     return Math.min(count, 365);
   }, [recurrenceType, date, untilDate, selectedDays]);
 
@@ -125,7 +147,6 @@ export default function TrainerCalendarPage() {
       setMessage({ type: "error", text: "Užpildykite visus laukus" });
       return;
     }
-
     if (recurrenceType !== "none" && !untilDate) {
       setMessage({ type: "error", text: "Pasirinkite pabaigos datą" });
       return;
@@ -161,6 +182,7 @@ export default function TrainerCalendarPage() {
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
           recurrence,
+          serviceIds: selectedServiceIds,
         }),
       });
 
@@ -178,12 +200,19 @@ export default function TrainerCalendarPage() {
       setUntilDate("");
       setSelectedDays([]);
       setRecurrenceType("none");
+      setSelectedServiceIds([]);
       setMessage({
         type: "success",
         text:
           created === 1
             ? "Laiko tarpas pridėtas!"
-            : `Sukurta ${created} laiko tarp${created % 10 === 1 && created % 100 !== 11 ? "as" : created % 10 >= 2 && created % 10 <= 9 && (created % 100 < 10 || created % 100 >= 20) ? "ai" : "ų"}!`,
+            : `Sukurta ${created} laiko tarp${
+                created % 10 === 1 && created % 100 !== 11
+                  ? "as"
+                  : created % 10 >= 2 && created % 10 <= 9 && (created % 100 < 10 || created % 100 >= 20)
+                  ? "ai"
+                  : "ų"
+              }!`,
       });
       if (trainerId) await fetchSlots(trainerId);
     } catch (err: any) {
@@ -195,7 +224,6 @@ export default function TrainerCalendarPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Ar tikrai norite ištrinti šį laiko tarpą?")) return;
-
     try {
       const res = await fetch(`/api/availability/${id}`, { method: "DELETE" });
       if (!res.ok) {
@@ -209,16 +237,14 @@ export default function TrainerCalendarPage() {
     }
   };
 
-  const formatDateTime = (dt: string) => {
-    const d = new Date(dt);
-    return d.toLocaleString("lt-LT", {
+  const formatDateTime = (dt: string) =>
+    new Date(dt).toLocaleString("lt-LT", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
   const inputCls =
     "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]";
@@ -228,9 +254,7 @@ export default function TrainerCalendarPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-900 text-[#0B5C71]">Kalendorius</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Valdykite savo prieinamumo laiko tarpus
-        </p>
+        <p className="text-gray-500 text-sm mt-1">Valdykite savo prieinamumo laiko tarpus</p>
       </div>
 
       {message && (
@@ -323,6 +347,60 @@ export default function TrainerCalendarPage() {
               </div>
             </div>
 
+            {/* Service picker */}
+            {trainerServices.length > 0 && (
+              <div className="pt-2 border-t border-gray-100">
+                <label className={labelCls}>
+                  Paslaugos šiam laikui{" "}
+                  <span className="text-gray-400 font-400">(neprivaloma — pasirinkus, bookinge bus siūlomos tik jos)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {trainerServices.map((svc) => {
+                    const checked = selectedServiceIds.includes(svc.id);
+                    return (
+                      <button
+                        key={svc.id}
+                        type="button"
+                        onClick={() => toggleService(svc.id)}
+                        className={`text-left p-3 rounded-xl border-2 transition-all flex items-start gap-3 ${
+                          checked
+                            ? "border-[#0B5C71] bg-[#0B5C71]/5"
+                            : "border-gray-200 bg-white hover:border-[#0B5C71]/40"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 mt-0.5 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${
+                            checked
+                              ? "bg-[#0B5C71] border-[#0B5C71]"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {checked && (
+                            <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 10" fill="none">
+                              <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-700 text-[#0B5C71] leading-tight">{svc.name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {svc.durationMinutes} min
+                            {svc.price != null && svc.price !== "" ? ` · ${svc.price} €` : " · nemokama"}
+                            {svc.type === "GROUP" ? " · Grupinė" : ""}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedServiceIds.length > 0 && (
+                  <p className="text-xs text-[#0B5C71] font-600 mt-2">
+                    Pasirinkta: {selectedServiceIds.length} paslaug{selectedServiceIds.length === 1 ? "a" : "os"}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Recurrence */}
             <div className="space-y-3 pt-2 border-t border-gray-100">
               <label className={labelCls}>Pasikartojimas</label>
@@ -377,7 +455,6 @@ export default function TrainerCalendarPage() {
                     <div>
                       <label className={labelCls}>Savaitės dienos</label>
                       <div className="flex gap-2 flex-wrap">
-                        {/* Days: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=0 */}
                         {[
                           { day: 1, label: "P" },
                           { day: 2, label: "A" },
@@ -452,13 +529,13 @@ export default function TrainerCalendarPage() {
             {slots.map((slot) => (
               <div
                 key={slot.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
+                className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
                     <Clock size={18} className="text-green-500" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-700 text-[#0B5C71] text-sm">
                       {formatDateTime(slot.startTime)}{" "}
                       <span className="text-gray-400">–</span>{" "}
@@ -471,9 +548,22 @@ export default function TrainerCalendarPage() {
                       <MapPin size={10} />
                       {slot.arena.name}, {slot.arena.city}
                     </p>
+                    {slot.services && slot.services.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {slot.services.map((svc) => (
+                          <span
+                            key={svc.id}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0B5C71]/10 text-[#0B5C71] text-xs font-600"
+                          >
+                            <Tag size={9} />
+                            {svc.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 ml-3 shrink-0">
                   <span
                     className={`badge text-xs ${
                       slot.status === "AVAILABLE"
@@ -508,11 +598,11 @@ export default function TrainerCalendarPage() {
         )}
       </div>
 
-      {/* BookForClientModal */}
       {bookingSlot && trainerId && (
         <BookForClientModal
           slot={bookingSlot}
           trainerId={trainerId}
+          slotServices={bookingSlot.services}
           onClose={() => setBookingSlot(null)}
           onBooked={async () => {
             setBookingSlot(null);

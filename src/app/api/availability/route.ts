@@ -3,6 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+const SERVICE_SELECT = {
+  id: true,
+  name: true,
+  durationMinutes: true,
+  price: true,
+  type: true,
+  priceType: true,
+  maxParticipants: true,
+  description: true,
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const city = searchParams.get("city");
@@ -24,8 +35,9 @@ export async function GET(req: NextRequest) {
       },
     },
     include: {
-      trainer: { select: { id: true, displayName: true, photoUrl: true, services: true } },
+      trainer: { select: { id: true, displayName: true, photoUrl: true, services: { select: SERVICE_SELECT } } },
       arena: { select: { id: true, name: true, city: true, address: true } },
+      services: { select: SERVICE_SELECT },
     },
     orderBy: { startTime: "asc" },
     take: 200,
@@ -45,7 +57,6 @@ function generateDates(baseStart: Date, baseEnd: Date, recurrence: Recurrence): 
   const endMs = baseEnd.getTime();
   const durationMs = endMs - startMs;
 
-  // Time-of-day offsets relative to midnight UTC of the base date
   const baseDateMidnight = new Date(
     Date.UTC(baseStart.getUTCFullYear(), baseStart.getUTCMonth(), baseStart.getUTCDate())
   );
@@ -53,14 +64,12 @@ function generateDates(baseStart: Date, baseEnd: Date, recurrence: Recurrence): 
   const endOffset = startOffset + durationMs;
 
   const until = new Date(recurrence.until!);
-  // Set until to end of day
   const untilMidnight = new Date(
     Date.UTC(until.getUTCFullYear(), until.getUTCMonth(), until.getUTCDate() + 1)
   );
 
   const results: { start: Date; end: Date }[] = [];
   const dayMs = 24 * 60 * 60 * 1000;
-
   let current = new Date(baseDateMidnight.getTime());
 
   while (current.getTime() < untilMidnight.getTime()) {
@@ -103,7 +112,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { arenaId, startTime, endTime, recurrence } = body;
+  const { arenaId, startTime, endTime, recurrence, serviceIds } = body;
 
   if (!arenaId || !startTime || !endTime) {
     return NextResponse.json({ error: "arenaId, startTime, endTime required" }, { status: 400 });
@@ -118,8 +127,11 @@ export async function POST(req: NextRequest) {
 
   const baseStart = new Date(startTime);
   const baseEnd = new Date(endTime);
+  const serviceConnect = Array.isArray(serviceIds) && serviceIds.length > 0
+    ? { connect: serviceIds.map((id: string) => ({ id })) }
+    : undefined;
 
-  // Single slot (no recurrence)
+  // Single slot
   if (!recurrence || recurrence.type === "none") {
     const slot = await prisma.availabilitySlot.create({
       data: {
@@ -127,7 +139,9 @@ export async function POST(req: NextRequest) {
         arenaId,
         startTime: baseStart,
         endTime: baseEnd,
+        ...(serviceConnect ? { services: serviceConnect } : {}),
       },
+      include: { services: { select: SERVICE_SELECT } },
     });
     return NextResponse.json(slot, { status: 201 });
   }
@@ -150,14 +164,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Nerasta tinkamų datų" }, { status: 400 });
   }
 
-  const result = await prisma.availabilitySlot.createMany({
-    data: dates.map(({ start, end }) => ({
-      trainerId: profile.id,
-      arenaId,
-      startTime: start,
-      endTime: end,
-    })),
-  });
+  // Use individual creates in a transaction so we can attach services
+  const slots = await prisma.$transaction(
+    dates.map(({ start, end }) =>
+      prisma.availabilitySlot.create({
+        data: {
+          trainerId: profile.id,
+          arenaId,
+          startTime: start,
+          endTime: end,
+          ...(serviceConnect ? { services: serviceConnect } : {}),
+        },
+      })
+    )
+  );
 
-  return NextResponse.json({ created: result.count }, { status: 201 });
+  return NextResponse.json({ created: slots.length }, { status: 201 });
 }

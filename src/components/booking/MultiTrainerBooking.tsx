@@ -45,6 +45,7 @@ interface AvailabilitySlot {
     city: string;
     address: string;
   };
+  services: Service[];
 }
 
 function formatPrice(price: string | null) {
@@ -412,55 +413,71 @@ export default function MultiTrainerBooking({
       {/* Service selection + confirm */}
       {selectedSlot && (
         <div className="card p-6">
-          <h3 className="font-800 text-[#0B5C71] mb-4">Pasirinkite paslaugą (nebūtina)</h3>
+          {(() => {
+            const slotSvcs =
+              selectedSlot.services?.length > 0
+                ? selectedSlot.services
+                : selectedSlot.trainer.services;
+            const isSlotSpecific = (selectedSlot.services?.length ?? 0) > 0;
+            return (
+              <>
+                <h3 className="font-800 text-[#0B5C71] mb-1">Pasirinkite paslaugą</h3>
+                <p className="text-xs text-gray-400 mb-4">
+                  {isSlotSpecific
+                    ? "Rodomos tik šiam laikui priskirtos paslaugos"
+                    : "Neprivaloma"}
+                </p>
 
-          {selectedSlot.trainer.services.length > 0 ? (
-            <div className="flex flex-col gap-2 mb-5">
-              <button
-                onClick={() => setSelectedService(null)}
-                className={cn(
-                  "w-full text-left p-3 rounded-xl border-2 transition-all",
-                  !selectedService
-                    ? "border-[#FF5733] bg-[#FF5733]/5"
-                    : "border-gray-200 hover:border-gray-300"
-                )}
-              >
-                <p className="font-600 text-sm text-gray-700">Be konkretios paslaugos</p>
-              </button>
-              {selectedSlot.trainer.services.map((svc) => (
-                <button
-                  key={svc.id}
-                  onClick={() => setSelectedService(svc)}
-                  className={cn(
-                    "w-full text-left p-3 rounded-xl border-2 transition-all",
-                    selectedService?.id === svc.id
-                      ? "border-[#FF5733] bg-[#FF5733]/5"
-                      : "border-gray-200 hover:border-gray-300"
-                  )}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
-                      {svc.description && (
-                        <p className="text-xs text-gray-500 mt-0.5">{svc.description}</p>
+                {slotSvcs.length > 0 ? (
+                  <div className="flex flex-col gap-2 mb-5">
+                    <button
+                      onClick={() => setSelectedService(null)}
+                      className={cn(
+                        "w-full text-left p-3 rounded-xl border-2 transition-all",
+                        !selectedService
+                          ? "border-[#FF5733] bg-[#FF5733]/5"
+                          : "border-gray-200 hover:border-gray-300"
                       )}
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        <Clock size={10} className="inline mr-0.5" />
-                        {svc.durationMinutes} min
-                      </p>
-                    </div>
-                    <span className="font-700 text-sm text-[#FF5733] shrink-0 ml-3">
-                      {formatPrice(svc.price)}
-                    </span>
+                    >
+                      <p className="font-600 text-sm text-gray-700">Be konkretios paslaugos</p>
+                    </button>
+                    {slotSvcs.map((svc) => (
+                      <button
+                        key={svc.id}
+                        onClick={() => setSelectedService(svc)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-xl border-2 transition-all",
+                          selectedService?.id === svc.id
+                            ? "border-[#FF5733] bg-[#FF5733]/5"
+                            : "border-gray-200 hover:border-gray-300"
+                        )}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
+                            {svc.description && (
+                              <p className="text-xs text-gray-500 mt-0.5">{svc.description}</p>
+                            )}
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              <Clock size={10} className="inline mr-0.5" />
+                              {svc.durationMinutes} min
+                            </p>
+                          </div>
+                          <span className="font-700 text-sm text-[#FF5733] shrink-0 ml-3">
+                            {formatPrice(svc.price)}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 mb-5">
-              Treneris šiuo metu neturi nustatytų paslaugų.
-            </p>
-          )}
+                ) : (
+                  <p className="text-sm text-gray-500 mb-5">
+                    Treneris šiuo metu neturi nustatytų paslaugų.
+                  </p>
+                )}
+              </>
+            );
+          })()}
 
           {/* Summary */}
           <div className="bg-gray-50 rounded-xl p-4 mb-4">

@@ -257,6 +257,7 @@ model Service {
   maxParticipants Int?
   priceType       PriceType?
   bookings        Booking[]
+  slots           AvailabilitySlot[]
 }
 
 model TrainerArena {
@@ -279,6 +280,7 @@ model AvailabilitySlot {
   status    SlotStatus     @default(AVAILABLE)
   bookingId String?        @unique
   booking   Booking?       @relation(fields: [bookingId], references: [id])
+  services  Service[]
   createdAt DateTime       @default(now())
 }
 
