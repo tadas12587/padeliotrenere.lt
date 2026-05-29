@@ -16,6 +16,34 @@ interface Props {
   isLoading?: boolean;
 }
 
+const MAX_W = 1200;
+const MAX_H = 1000;
+
+function resizeToBlob(file: File): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX_W || height > MAX_H) {
+        const ratio = Math.min(MAX_W / width, MAX_H / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(null);
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
 export default function GalleryUpload({
   photos,
   onAdd,
@@ -23,6 +51,7 @@ export default function GalleryUpload({
   isLoading,
 }: Props) {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,16 +60,22 @@ export default function GalleryUpload({
     e.target.value = "";
 
     setUploading(true);
+    setError("");
     try {
+      const blob = await resizeToBlob(file);
+      if (!blob) throw new Error("Nepavyko apdoroti nuotraukos");
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", blob, "photo.jpg");
       fd.append("type", "gallery");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Upload failed");
+      }
       const { url } = await res.json();
       onAdd(url);
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : "Klaida įkeliant nuotrauką");
     } finally {
       setUploading(false);
     }
@@ -84,6 +119,12 @@ export default function GalleryUpload({
           )}
         </button>
       </div>
+
+      {error && (
+        <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
 
       <input
         ref={fileInputRef}

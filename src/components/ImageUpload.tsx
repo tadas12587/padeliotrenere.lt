@@ -18,27 +18,46 @@ interface Props {
   placeholder?: string;
 }
 
-function getCroppedBlob(image: HTMLImageElement, crop: Crop): Promise<Blob> {
+const OUTPUT_DIMS: Record<string, { width: number; height: number }> = {
+  profile: { width: 450, height: 600 },
+  logo: { width: 400, height: 400 },
+  banner: { width: 1200, height: 900 },
+  gallery: { width: 1200, height: 1000 },
+};
+
+function getCroppedBlob(
+  image: HTMLImageElement,
+  crop: Crop,
+  outWidth: number,
+  outHeight: number
+): Promise<Blob | null> {
   const canvas = document.createElement("canvas");
+  canvas.width = outWidth;
+  canvas.height = outHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return Promise.resolve(null);
+
   const scaleX = image.naturalWidth / image.width;
   const scaleY = image.naturalHeight / image.height;
-  canvas.width = crop.width * scaleX;
-  canvas.height = crop.height * scaleY;
-  const ctx = canvas.getContext("2d")!;
+
+  const px = crop.unit === "%" ? (crop.x / 100) * image.width : crop.x;
+  const py = crop.unit === "%" ? (crop.y / 100) * image.height : crop.y;
+  const pw = crop.unit === "%" ? (crop.width / 100) * image.width : crop.width;
+  const ph = crop.unit === "%" ? (crop.height / 100) * image.height : crop.height;
+
   ctx.drawImage(
     image,
-    crop.x * scaleX,
-    crop.y * scaleY,
-    crop.width * scaleX,
-    crop.height * scaleY,
+    px * scaleX,
+    py * scaleY,
+    pw * scaleX,
+    ph * scaleY,
     0,
     0,
-    canvas.width,
-    canvas.height
+    outWidth,
+    outHeight
   );
-  return new Promise((res) =>
-    canvas.toBlob((blob) => res(blob!), "image/jpeg", 0.9)
-  );
+
+  return new Promise((res) => canvas.toBlob((blob) => res(blob), "image/jpeg", 0.88));
 }
 
 export default function ImageUpload({
@@ -52,6 +71,7 @@ export default function ImageUpload({
   const [imgSrc, setImgSrc] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -69,6 +89,7 @@ export default function ImageUpload({
       setImgSrc(reader.result as string);
       setShowModal(true);
       setCrop(undefined);
+      setError("");
     };
     reader.readAsDataURL(file);
     e.target.value = "";
@@ -90,18 +111,24 @@ export default function ImageUpload({
   const handleConfirm = async () => {
     if (!imgRef.current || !crop) return;
     setUploading(true);
+    setError("");
     try {
-      const blob = await getCroppedBlob(imgRef.current, crop);
+      const dims = OUTPUT_DIMS[uploadType] || OUTPUT_DIMS.gallery;
+      const blob = await getCroppedBlob(imgRef.current, crop, dims.width, dims.height);
+      if (!blob) throw new Error("Canvas error");
       const fd = new FormData();
       fd.append("file", blob, "crop.jpg");
       fd.append("type", uploadType);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Upload failed");
+      }
       const { url } = await res.json();
       onUploaded(url);
       setShowModal(false);
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : "Klaida įkeliant nuotrauką");
     } finally {
       setUploading(false);
     }
@@ -110,6 +137,7 @@ export default function ImageUpload({
   const handleCancel = () => {
     setShowModal(false);
     setImgSrc("");
+    setError("");
   };
 
   return (
@@ -196,6 +224,12 @@ export default function ImageUpload({
                 />
               </ReactCrop>
             </div>
+
+            {error && (
+              <p className="mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
 
             <div className="flex gap-3 mt-4 justify-end">
               <button
