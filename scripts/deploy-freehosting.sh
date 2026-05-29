@@ -135,7 +135,7 @@ ssh "${SSH_ALIAS}" bash -s -- "$DB_USER" "$DB_PASS" "$DB_NAME" "$PACKAGE" << 'EN
 
   echo "▶ Prisma migracijos (MySQL)"
   for f in /web/prisma/migrations/*/migration.sql; do
-    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$f" 2>/dev/null \
+    mysql --default-character-set=utf8mb4 -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$f" 2>/dev/null \
       && echo "  ✓ $(basename $(dirname $f))" \
       || echo "  ℹ $(basename $(dirname $f)) – jau įvykdyta"
   done

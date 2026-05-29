@@ -2,7 +2,11 @@ import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@/generated/prisma/client";
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL!;
+  const url = process.env.DATABASE_URL!;
+  // Ensure utf8mb4 charset so Lithuanian characters and emojis are returned correctly
+  const connectionString = url.includes("?")
+    ? url + "&charset=utf8mb4"
+    : url + "?charset=utf8mb4";
   const adapter = new PrismaMariaDb(connectionString);
   return new PrismaClient({
     adapter,

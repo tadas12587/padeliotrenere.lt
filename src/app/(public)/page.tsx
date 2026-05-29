@@ -33,21 +33,20 @@ function HeroSection() {
           <div className="inline-flex items-center gap-2 bg-[#FF5733]/15 border border-[#FF5733]/30 rounded-full px-4 py-1.5 mb-6">
             <span className="w-2 h-2 rounded-full bg-[#FF5733] animate-pulse" />
             <span className="text-[#FF5733] text-sm font-700 uppercase tracking-wider">
-              Padelio trenerių platforma
+              Sporto trenerių platforma
             </span>
           </div>
           <h1 className="text-5xl lg:text-7xl font-900 leading-[1.05] mb-6">
             Rask savo{" "}
-            <span className="text-[#FF5733]">padelio trenerį</span>{" "}
+            <span className="text-[#FF5733]">sporto trenerį</span>{" "}
             Lietuvoje
           </h1>
           <p className="text-gray-400 text-lg lg:text-xl max-w-2xl mb-8 leading-relaxed">
-            Profesionalūs padelio treneriai visame šalyje. Pasirink trenerį, areną
-            ir rezervuok laiką – viskas vienoje vietoje.
+            Profesionalūs treneriai visame šalyje – padelis, tenisas, krepšinis ir daugiau. Pasirink trenerį, areną ir rezervuok laiką.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/trainers" className="btn-primary text-base py-4 px-8">
-              🎾 Rasti trenerį
+              🏆 Rasti trenerį
               <ArrowRight size={18} />
             </Link>
             <Link
@@ -363,7 +362,7 @@ function CTASection() {
     <section className="py-20 bg-gradient-to-br from-[#FF5733] to-[#E04520]">
       <div className="container-tight text-center text-white">
         <h2 className="text-4xl lg:text-5xl font-900 mb-4">
-          Pradėk savo padelio kelionę šiandien
+          Pradėk savo sporto kelionę šiandien
         </h2>
         <p className="text-white/80 text-lg max-w-xl mx-auto mb-8">
           Rask geriausią trenerį šalia tavęs ir rezervuok pirmą treniruotę.
@@ -373,7 +372,7 @@ function CTASection() {
             href="/trainers"
             className="inline-flex items-center justify-center gap-2 bg-white text-[#FF5733] font-800 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
           >
-            🎾 Rasti trenerį
+            🏆 Rasti trenerį
           </Link>
           <Link
             href="/auth/register-trainer"

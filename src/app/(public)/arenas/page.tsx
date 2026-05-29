@@ -8,7 +8,7 @@ import { ArenaFilters } from "./ArenaFilters";
 
 export const metadata: Metadata = {
   title: "Arenos",
-  description: "Peržiūrėkite visas padelio arenas ir kortus.",
+  description: "Rask sporto arenas ir kortus šalia tavęs.",
 };
 
 export default async function ArenasPage({
@@ -64,7 +64,7 @@ export default async function ArenasPage({
           </span>
           <h1 className="text-4xl lg:text-5xl font-900 mt-3 mb-4">Arenos</h1>
           <p className="text-gray-400 text-lg max-w-xl">
-            Rask sau artimiausiąją padelio areną. Filtruok pagal miestą.
+            Rask sau artimiausią sporto areną ar kortą. Filtruok pagal sporto šaką ir miestą.
           </p>
         </div>
       </section>

@@ -19,8 +19,8 @@ export default function Footer() {
             </span>
           </Link>
           <p className="text-gray-400 text-sm leading-relaxed mb-5">
-            Rask geriausią padelio trenerį Lietuvoje.
-            Nuo pradedančiųjų iki pažengusių žaidėjų.
+            Rask geriausią sporto trenerį Lietuvoje.
+            Padelis, tenisas, krepšinis ir daugiau.
           </p>
           <div className="flex gap-3">
             <a

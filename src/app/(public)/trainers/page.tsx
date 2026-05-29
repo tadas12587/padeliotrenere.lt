@@ -7,7 +7,7 @@ import { TrainerFilters } from "./TrainerFilters";
 
 export const metadata: Metadata = {
   title: "Treneriai",
-  description: "Peržiūrėkite visus mūsų sertifikuotus padelio trenerius.",
+  description: "Rask sporto trenerį – padelis, tenisas, krepšinis ir daugiau.",
 };
 
 export default async function TrainersPage({
@@ -83,7 +83,7 @@ export default async function TrainersPage({
             Treneriai
           </h1>
           <p className="text-gray-400 text-lg max-w-xl">
-            Rask sau tinkamiausią padelio trenerį. Filtruok pagal miestą arba
+            Rask sau tinkamiausią trenerį. Filtruok pagal sportą, miestą arba
             paslaugos tipą.
           </p>
         </div>

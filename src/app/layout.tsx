@@ -20,17 +20,18 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: {
-    default: "ManoTreniruote.lt | Padelio treneriai Lietuvoje",
+    default: "ManoTreniruote.lt | Sporto treneriai Lietuvoje",
     template: "%s | ManoTreniruote.lt",
   },
   description:
-    "Rask geriausią padelio trenerį Lietuvoje. Individualios ir grupinės treniruotės visiems lygiams. Rezervuok savo laiką dabar!",
+    "Rask geriausią sporto trenerį Lietuvoje. Padelis, tenisas, krepšinis ir daugiau. Individualios ir grupinės treniruotės visiems lygiams.",
   keywords: [
-    "padelis",
+    "sporto treneris",
     "padelio treneris",
-    "padelio treniruotės",
-    "padelis Lietuva",
-    "padelio rezervacija",
+    "teniso treneris",
+    "sporto treniruotės",
+    "treneris Lietuva",
+    "sporto rezervacija",
   ],
   authors: [{ name: "ManoTreniruote.lt" }],
   openGraph: {

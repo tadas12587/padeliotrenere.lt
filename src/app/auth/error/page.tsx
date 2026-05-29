@@ -39,7 +39,7 @@ export default function AuthErrorPage() {
           <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
             <Dumbbell size={22} className="text-white" />
           </span>
-          <span className="text-[#0B5C71]">Padelio<span className="text-[#FF5733]">Treneris</span></span>
+          <span className="font-heading text-[#0B5C71]">Mano<span className="text-[#FF5733]">Treniruote</span><span className="text-[#0B5C71] text-sm font-600">.lt</span></span>
         </Link>
 
         <Suspense
