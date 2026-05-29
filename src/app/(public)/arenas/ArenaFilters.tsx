@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
-import { X } from "lucide-react";
+import FilterBar, { FilterGroup } from "@/components/FilterBar";
 
 interface ArenaFiltersProps {
   initialCity: string;
@@ -21,79 +21,45 @@ export function ArenaFilters({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  function navigate(newCity: string, newSport: string) {
+  function navigate(city: string, sport: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (newCity) params.set("city", newCity); else params.delete("city");
-    if (newSport) params.set("sport", newSport); else params.delete("sport");
+    if (city) params.set("city", city); else params.delete("city");
+    if (sport) params.set("sport", sport); else params.delete("sport");
     startTransition(() => router.push(`/arenas?${params.toString()}`));
   }
 
-  function toggleCity(c: string) {
-    navigate(initialCity === c ? "" : c, initialSport);
-  }
-
-  function toggleSport(s: string) {
-    navigate(initialCity, initialSport === s ? "" : s);
-  }
-
-  const hasFilter = initialCity || initialSport;
+  const groups: FilterGroup[] = [
+    ...(availableSports.length > 0
+      ? [{
+          key: "sport",
+          label: "Sportas",
+          allLabel: "Visi sportai",
+          options: availableSports.map((s) => ({
+            value: s.slug,
+            label: s.name,
+            icon: s.icon ?? undefined,
+          })),
+          value: initialSport,
+          onChange: (v: string) => navigate(initialCity, v),
+        }]
+      : []),
+    ...(availableCities.length > 0
+      ? [{
+          key: "city",
+          label: "Miestas",
+          allLabel: "Visi miestai",
+          options: availableCities.map((c) => ({ value: c, label: c })),
+          value: initialCity,
+          onChange: (v: string) => navigate(v, initialSport),
+        }]
+      : []),
+  ];
 
   return (
-    <div className={`flex flex-col gap-3 ${isPending ? "opacity-60 pointer-events-none" : ""}`}>
-      {availableSports.length > 0 && (
-        <div>
-          <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Sporto šaka</p>
-          <div className="flex flex-wrap gap-2">
-            {availableSports.map((sp) => (
-              <button
-                key={sp.id}
-                type="button"
-                onClick={() => toggleSport(sp.slug)}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                  initialSport === sp.slug
-                    ? "bg-[#0B5C71] text-white border-[#0B5C71]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
-                }`}
-              >
-                {sp.icon ? `${sp.icon} ` : ""}{sp.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {availableCities.length > 0 && (
-        <div>
-          <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Miestas</p>
-          <div className="flex flex-wrap gap-2">
-            {availableCities.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => toggleCity(c)}
-                className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                  initialCity === c
-                    ? "bg-[#0B5C71] text-white border-[#0B5C71]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {hasFilter && (
-        <button
-          type="button"
-          onClick={() => navigate("", "")}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors w-fit"
-        >
-          <X size={14} />
-          Išvalyti filtrus
-        </button>
-      )}
-    </div>
+    <FilterBar
+      groups={groups}
+      onClear={() => navigate("", "")}
+      isPending={isPending}
+    />
   );
 }
