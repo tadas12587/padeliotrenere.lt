@@ -84,9 +84,9 @@ function TrainerAvatar({ slot, size = "md" }: { slot: AvailabilitySlot; size?: "
   );
 }
 
-// ── Bottom Sheet ─────────────────────────────────────────────────────────────
+// ── Modal (bottom sheet on mobile, centered popup on desktop) ────────────────
 
-function BottomSheet({
+function Modal({
   open,
   onClose,
   children,
@@ -95,7 +95,6 @@ function BottomSheet({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  // Prevent body scroll when open
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
@@ -105,22 +104,24 @@ function BottomSheet({
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-300",
+        "fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center transition-opacity duration-300",
         open ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Sheet */}
+      {/* Panel — bottom sheet on mobile, centered card on desktop */}
       <div
         className={cn(
-          "relative bg-white rounded-t-3xl max-h-[88vh] flex flex-col shadow-2xl transition-transform duration-300 ease-out",
-          open ? "translate-y-0" : "translate-y-full"
+          "relative bg-white flex flex-col shadow-2xl max-h-[88vh]",
+          "rounded-t-3xl sm:rounded-3xl sm:w-full sm:max-w-lg sm:max-h-[85vh]",
+          "transition-transform duration-300 ease-out",
+          open ? "translate-y-0" : "translate-y-full sm:translate-y-0"
         )}
       >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
+        {/* Drag handle — mobile only */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
         <div className="overflow-y-auto flex-1 pb-8">
@@ -402,7 +403,7 @@ export default function MultiTrainerBooking({
               <p className="text-sm mt-1">Pasirinkite kitą dieną</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {timeGroups.map((group) => {
                 const count = group.slots.length;
                 const visibleAvatars = group.slots.slice(0, 3);
@@ -412,19 +413,44 @@ export default function MultiTrainerBooking({
                   <button
                     key={group.key}
                     onClick={() => openGroup(group)}
-                    className="relative text-left p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-[#FF5733]/60 hover:shadow-md transition-all group active:scale-[0.98]"
+                    className="relative text-left rounded-2xl border-2 border-gray-100 bg-white hover:border-[#FF5733]/60 hover:shadow-md transition-all group active:scale-[0.98]"
                   >
-                    {/* Time */}
-                    <p className="font-900 text-2xl text-[#0B5C71] leading-none">
-                      {formatTime(group.startTime)}
-                    </p>
-                    <p className="text-xs text-gray-400 font-500 mt-0.5 mb-3">
-                      – {formatTime(group.endTime)}
-                    </p>
+                    {/* Mobile: horizontal row layout */}
+                    <div className="flex items-center gap-3 px-4 py-3 sm:hidden">
+                      <div className="shrink-0 w-16">
+                        <p className="font-900 text-xl text-[#0B5C71] leading-none">{formatTime(group.startTime)}</p>
+                        <p className="text-xs text-gray-400 font-500">– {formatTime(group.endTime)}</p>
+                      </div>
+                      <div className="flex-1 flex items-center gap-2 min-w-0">
+                        <div className="flex -space-x-2 shrink-0">
+                          {visibleAvatars.map((slot) => (
+                            <TrainerAvatar key={slot.id} slot={slot} size="sm" />
+                          ))}
+                          {extra > 0 && (
+                            <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-700 text-gray-500">
+                              +{extra}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-600 text-gray-600">
+                            {count === 1 ? "1 treneris" : `${count} treneriai`}
+                          </p>
+                          {hasGroup && (
+                            <span className="text-xs text-orange-600 font-600">
+                              <Users size={9} className="inline mr-0.5" />grupinė
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight size={14} className="text-gray-300 group-hover:text-[#FF5733] transition-colors shrink-0" />
+                    </div>
 
-                    {/* Trainer avatars stacked */}
-                    <div className="flex items-center mb-2">
-                      <div className="flex -space-x-2">
+                    {/* Desktop: vertical card layout */}
+                    <div className="hidden sm:block p-4">
+                      <p className="font-900 text-2xl text-[#0B5C71] leading-none">{formatTime(group.startTime)}</p>
+                      <p className="text-xs text-gray-400 font-500 mt-0.5 mb-3">– {formatTime(group.endTime)}</p>
+                      <div className="flex -space-x-2 mb-2">
                         {visibleAvatars.map((slot) => (
                           <TrainerAvatar key={slot.id} slot={slot} size="sm" />
                         ))}
@@ -434,21 +460,17 @@ export default function MultiTrainerBooking({
                           </div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Trainer count */}
-                    <p className="text-xs font-600 text-gray-500">
-                      {count === 1 ? "1 treneris" : `${count} treneriai`}
-                    </p>
-
-                    {hasGroup && (
-                      <span className="absolute top-3 right-3 text-xs px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-600 font-600">
-                        <Users size={10} className="inline mr-0.5" />grupinė
-                      </span>
-                    )}
-
-                    <div className="absolute bottom-3 right-3 text-gray-300 group-hover:text-[#FF5733] transition-colors">
-                      <ArrowRight size={14} />
+                      <p className="text-xs font-600 text-gray-500">
+                        {count === 1 ? "1 treneris" : `${count} treneriai`}
+                      </p>
+                      {hasGroup && (
+                        <span className="absolute top-3 right-3 text-xs px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-600 font-600">
+                          <Users size={10} className="inline mr-0.5" />grupinė
+                        </span>
+                      )}
+                      <div className="absolute bottom-3 right-3 text-gray-300 group-hover:text-[#FF5733] transition-colors">
+                        <ArrowRight size={14} />
+                      </div>
                     </div>
                   </button>
                 );
@@ -459,7 +481,7 @@ export default function MultiTrainerBooking({
       )}
 
       {/* ── Sheet 1: Trainer selection ─────────────────────────────────────── */}
-      <BottomSheet open={!!activeGroup && !activeSlot} onClose={closeAll}>
+      <Modal open={!!activeGroup && !activeSlot} onClose={closeAll}>
         {activeGroup && (
           <div className="px-4 pt-2">
             {/* Header */}
@@ -547,10 +569,10 @@ export default function MultiTrainerBooking({
             </div>
           </div>
         )}
-      </BottomSheet>
+      </Modal>
 
       {/* ── Sheet 2: Service selection + Book ─────────────────────────────── */}
-      <BottomSheet open={!!activeSlot} onClose={() => { setActiveSlot(null); setError(""); }}>
+      <Modal open={!!activeSlot} onClose={() => { setActiveSlot(null); setError(""); }}>
         {activeSlot && (() => {
           const slotSvcs = activeSlot.services?.length > 0
             ? activeSlot.services
@@ -689,7 +711,7 @@ export default function MultiTrainerBooking({
             </div>
           );
         })()}
-      </BottomSheet>
+      </Modal>
     </div>
   );
 }
