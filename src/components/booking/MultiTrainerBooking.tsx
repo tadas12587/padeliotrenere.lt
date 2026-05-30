@@ -11,6 +11,8 @@ import {
   Loader2,
   X,
   CheckCircle,
+  ChevronRight as ArrowRight,
+  Users,
 } from "lucide-react";
 import { cn, formatServicePrice } from "@/lib/utils";
 
@@ -52,9 +54,84 @@ interface AvailabilitySlot {
   services: Service[];
 }
 
+interface TimeGroup {
+  key: string;
+  startTime: string;
+  endTime: string;
+  slots: AvailabilitySlot[];
+}
+
 function formatTime(isoStr: string) {
   return format(parseISO(isoStr), "HH:mm");
 }
+
+function TrainerAvatar({ slot, size = "md" }: { slot: AvailabilitySlot; size?: "sm" | "md" }) {
+  const sz = size === "sm" ? "w-7 h-7 text-xs" : "w-9 h-9 text-sm";
+  if (slot.trainer.photoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={slot.trainer.photoUrl}
+        alt={slot.trainer.displayName}
+        className={cn(sz, "rounded-full object-cover border-2 border-white")}
+      />
+    );
+  }
+  return (
+    <div className={cn(sz, "rounded-full bg-[#0B5C71] flex items-center justify-center font-800 text-white border-2 border-white")}>
+      {slot.trainer.displayName[0]}
+    </div>
+  );
+}
+
+// ── Bottom Sheet ─────────────────────────────────────────────────────────────
+
+function BottomSheet({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex flex-col justify-end transition-opacity duration-300",
+        open ? "opacity-100" : "opacity-0 pointer-events-none"
+      )}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Sheet */}
+      <div
+        className={cn(
+          "relative bg-white rounded-t-3xl max-h-[88vh] flex flex-col shadow-2xl transition-transform duration-300 ease-out",
+          open ? "translate-y-0" : "translate-y-full"
+        )}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
+        <div className="overflow-y-auto flex-1 pb-8">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 
 interface Props {
   initialTrainerId?: string;
@@ -75,44 +152,50 @@ export default function MultiTrainerBooking({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
+
+  // Sheet state
+  const [activeGroup, setActiveGroup] = useState<TimeGroup | null>(null); // Sheet 1
+  const [activeSlot, setActiveSlot] = useState<AvailabilitySlot | null>(null); // Sheet 2
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  // Booking state
   const [booking, setBooking] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [bookedSlot, setBookedSlot] = useState<AvailabilitySlot | null>(null);
+  const [bookedService, setBookedService] = useState<Service | null>(null);
   const [error, setError] = useState("");
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const toggleSport = (s: string) => {
-    setSport((prev) => (prev === s ? "" : s));
-    setSelectedDate(null);
-  };
+  // Group slots by start+end time
+  const timeGroups: TimeGroup[] = (() => {
+    const map = new Map<string, AvailabilitySlot[]>();
+    for (const slot of slots) {
+      const key = `${slot.startTime}|${slot.endTime}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(slot);
+    }
+    return Array.from(map.entries())
+      .map(([key, s]) => ({ key, startTime: s[0].startTime, endTime: s[0].endTime, slots: s }))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  })();
 
-  const toggleCity = (c: string) => {
-    setCity((prev) => (prev === c ? "" : c));
-    setSelectedDate(null);
-  };
+  const toggleSport = (s: string) => { setSport((p) => (p === s ? "" : s)); setSelectedDate(null); };
+  const toggleCity = (c: string) => { setCity((p) => (p === c ? "" : c)); setSelectedDate(null); };
 
   const fetchSlots = useCallback(
     (date: Date) => {
       setLoading(true);
       setSlots([]);
-      setSelectedSlot(null);
-      setSelectedService(null);
-
-      const dayStart = new Date(date);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(date);
-      dayEnd.setHours(23, 59, 59, 999);
-
+      const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date); dayEnd.setHours(23, 59, 59, 999);
       const params = new URLSearchParams();
       params.set("from", dayStart.toISOString());
       params.set("to", dayEnd.toISOString());
       if (sport.trim()) params.set("sport", sport.trim());
       if (city.trim()) params.set("city", city.trim());
       if (initialTrainerId) params.set("trainerId", initialTrainerId);
-
       fetch(`/api/availability?${params}`)
         .then((r) => r.json())
         .then((data) => setSlots(Array.isArray(data) ? data : []))
@@ -122,29 +205,47 @@ export default function MultiTrainerBooking({
     [sport, city, initialTrainerId]
   );
 
-  useEffect(() => {
-    if (selectedDate) fetchSlots(selectedDate);
-  }, [selectedDate, fetchSlots]);
+  useEffect(() => { if (selectedDate) fetchSlots(selectedDate); }, [selectedDate, fetchSlots]);
+
+  const openGroup = (group: TimeGroup) => {
+    setActiveGroup(group);
+    setActiveSlot(null);
+    setSelectedService(null);
+    setError("");
+  };
+
+  const openSlot = (slot: AvailabilitySlot) => {
+    setActiveSlot(slot);
+    setSelectedService(null);
+    setError("");
+  };
+
+  const closeAll = () => {
+    setActiveGroup(null);
+    setActiveSlot(null);
+    setSelectedService(null);
+    setError("");
+  };
 
   const handleBook = async () => {
-    if (!selectedSlot) return;
+    if (!activeSlot || !selectedService) return;
     setBooking(true);
     setError("");
-
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        availabilitySlotId: selectedSlot.id,
-        trainerId: selectedSlot.trainer.id,
-        arenaId: selectedSlot.arena.id,
-        ...(selectedService ? { serviceId: selectedService.id } : {}),
+        availabilitySlotId: activeSlot.id,
+        trainerId: activeSlot.trainer.id,
+        arenaId: activeSlot.arena.id,
+        serviceId: selectedService.id,
       }),
     });
-
     setBooking(false);
-
     if (res.ok) {
+      setBookedSlot(activeSlot);
+      setBookedService(selectedService);
+      closeAll();
       setSuccess(true);
     } else {
       const data = await res.json().catch(() => ({}));
@@ -164,22 +265,27 @@ export default function MultiTrainerBooking({
         </div>
         <h2 className="text-3xl font-900 text-[#0B5C71] mb-3">Rezervacija patvirtinta!</h2>
         <p className="text-gray-500 mb-2">Patvirtinimas išsiųstas el. paštu.</p>
-        {selectedSlot && (
-          <div className="mt-4 bg-gray-50 rounded-2xl p-5 text-left">
-            <p className="font-700 text-[#0B5C71]">{selectedSlot.trainer.displayName}</p>
-            <p className="text-sm text-gray-500 mt-1">
+        {bookedSlot && (
+          <div className="mt-4 bg-gray-50 rounded-2xl p-5 text-left space-y-1">
+            <p className="font-700 text-[#0B5C71]">{bookedSlot.trainer.displayName}</p>
+            <p className="text-sm text-gray-500">
               {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })},{" "}
-              {formatTime(selectedSlot.startTime)} – {formatTime(selectedSlot.endTime)}
+              {formatTime(bookedSlot.startTime)} – {formatTime(bookedSlot.endTime)}
             </p>
-            <p className="text-sm text-gray-500 mt-1">
-              📍 {selectedSlot.arena.name}, {selectedSlot.arena.city}
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <MapPin size={13} /> {bookedSlot.arena.name}, {bookedSlot.arena.city}
             </p>
+            {bookedService && (
+              <p className="text-sm text-[#FF5733] font-600">
+                {bookedService.name} · {formatServicePrice(bookedService.price, bookedService.type, bookedService.priceType)}
+              </p>
+            )}
           </div>
         )}
         <div className="flex gap-3 justify-center mt-8">
           <a href="/client/bookings" className="btn-primary">Mano rezervacijos</a>
           <button
-            onClick={() => { setSuccess(false); setSelectedSlot(null); setSelectedDate(null); }}
+            onClick={() => { setSuccess(false); setBookedSlot(null); setSelectedDate(null); }}
             className="btn-secondary"
           >
             Rezervuoti dar
@@ -193,26 +299,6 @@ export default function MultiTrainerBooking({
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Step indicator */}
-      <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-1">
-        {[
-          { n: 1, label: "Filtrai", done: !!(sport || city) },
-          { n: 2, label: "Diena", done: !!selectedDate },
-          { n: 3, label: "Laikas", done: !!selectedSlot },
-          { n: 4, label: "Patvirtinimas", done: false },
-        ].map(({ n, label, done }, i, arr) => (
-          <div key={n} className="flex items-center gap-3 shrink-0">
-            <div className={cn("flex items-center gap-2 text-sm font-700 whitespace-nowrap", done ? "text-[#FF5733]" : "text-gray-400")}>
-              <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-800", done ? "bg-[#FF5733] text-white" : "bg-gray-200 text-gray-500")}>
-                {n}
-              </span>
-              {label}
-            </div>
-            {i < arr.length - 1 && <div className="flex-1 h-0.5 bg-gray-200 min-w-[16px]" />}
-          </div>
-        ))}
-      </div>
-
       {/* Filters */}
       {(availableSports.length > 0 || availableCities.length > 0) && (
         <div className="card p-5 mb-5">
@@ -222,13 +308,9 @@ export default function MultiTrainerBooking({
                 <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Sporto šaka</p>
                 <div className="flex flex-wrap gap-2">
                   {availableSports.map((sp) => (
-                    <button
-                      key={sp.id}
-                      type="button"
-                      onClick={() => toggleSport(sp.slug)}
+                    <button key={sp.id} type="button" onClick={() => toggleSport(sp.slug)}
                       className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                        sport === sp.slug
-                          ? "bg-[#0B5C71] text-white border-[#0B5C71]"
+                        sport === sp.slug ? "bg-[#0B5C71] text-white border-[#0B5C71]"
                           : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
                       }`}
                     >
@@ -238,19 +320,14 @@ export default function MultiTrainerBooking({
                 </div>
               </div>
             )}
-
             {availableCities.length > 0 && (
               <div>
                 <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Miestas</p>
                 <div className="flex flex-wrap gap-2">
                   {availableCities.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => toggleCity(c)}
+                    <button key={c} type="button" onClick={() => toggleCity(c)}
                       className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                        city === c
-                          ? "bg-[#0B5C71] text-white border-[#0B5C71]"
+                        city === c ? "bg-[#0B5C71] text-white border-[#0B5C71]"
                           : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
                       }`}
                     >
@@ -260,15 +337,11 @@ export default function MultiTrainerBooking({
                 </div>
               </div>
             )}
-
             {hasFilter && (
-              <button
-                type="button"
-                onClick={() => { setSport(""); setCity(""); setSelectedDate(null); }}
+              <button type="button" onClick={() => { setSport(""); setCity(""); setSelectedDate(null); }}
                 className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors w-fit"
               >
-                <X size={14} />
-                Išvalyti filtrus
+                <X size={14} /> Išvalyti filtrus
               </button>
             )}
           </div>
@@ -278,46 +351,31 @@ export default function MultiTrainerBooking({
       {/* Calendar */}
       <div className="card p-6 mb-5">
         <div className="flex items-center justify-between mb-5">
-          <button
-            onClick={() => setCurrentDate((d) => addDays(d, -7))}
-            className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
+          <button onClick={() => setCurrentDate((d) => addDays(d, -7))}
+            className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
             <ChevronLeft size={18} />
           </button>
-          <h3 className="font-800 text-[#0B5C71]">
-            {format(weekStart, "MMMM yyyy", { locale: lt })}
-          </h3>
-          <button
-            onClick={() => setCurrentDate((d) => addDays(d, 7))}
-            className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-          >
+          <h3 className="font-800 text-[#0B5C71]">{format(weekStart, "MMMM yyyy", { locale: lt })}</h3>
+          <button onClick={() => setCurrentDate((d) => addDays(d, 7))}
+            className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
             <ChevronRight size={18} />
           </button>
         </div>
-
         <div className="grid grid-cols-7 gap-2">
           {days.map((day) => {
             const past = isPast(day) && !isToday(day);
             const selected = selectedDate && isSameDay(day, selectedDate);
             return (
-              <button
-                key={day.toISOString()}
-                onClick={() => !past && setSelectedDate(day)}
-                disabled={past}
+              <button key={day.toISOString()} onClick={() => !past && setSelectedDate(day)} disabled={past}
                 className={cn(
                   "flex flex-col items-center py-3 px-1 rounded-xl border-2 transition-all text-center",
-                  past
-                    ? "opacity-30 cursor-not-allowed border-transparent"
-                    : selected
-                    ? "border-[#FF5733] bg-[#FF5733] text-white"
-                    : isToday(day)
-                    ? "border-[#FF5733]/40 bg-[#FF5733]/5 text-[#FF5733] hover:border-[#FF5733]"
+                  past ? "opacity-30 cursor-not-allowed border-transparent"
+                    : selected ? "border-[#FF5733] bg-[#FF5733] text-white"
+                    : isToday(day) ? "border-[#FF5733]/40 bg-[#FF5733]/5 text-[#FF5733] hover:border-[#FF5733]"
                     : "border-gray-100 hover:border-[#FF5733]/50 hover:bg-gray-50"
                 )}
               >
-                <span className="text-xs font-600 uppercase opacity-70">
-                  {format(day, "EEE", { locale: lt }).slice(0, 2)}
-                </span>
+                <span className="text-xs font-600 uppercase opacity-70">{format(day, "EEE", { locale: lt }).slice(0, 2)}</span>
                 <span className="font-800 text-lg mt-0.5">{format(day, "d")}</span>
               </button>
             );
@@ -325,98 +383,72 @@ export default function MultiTrainerBooking({
         </div>
       </div>
 
-      {/* Slots */}
+      {/* Time slots */}
       {selectedDate && (
-        <div className="card p-6 mb-5">
+        <div className="card p-6">
           <h3 className="font-800 text-[#0B5C71] mb-4">
             Laisvi laikai:{" "}
-            <span className="text-[#FF5733]">
-              {format(selectedDate, "d MMMM", { locale: lt })}
-            </span>
+            <span className="text-[#FF5733]">{format(selectedDate, "d MMMM", { locale: lt })}</span>
           </h3>
 
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-3 text-gray-400">
-              <Loader2 size={22} className="animate-spin" />
-              <span>Kraunama...</span>
+              <Loader2 size={22} className="animate-spin" /><span>Kraunama...</span>
             </div>
-          ) : slots.length === 0 ? (
+          ) : timeGroups.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
               <p className="text-4xl mb-3">😔</p>
               <p className="font-600">Šią dieną laisvų laikų nėra</p>
               <p className="text-sm mt-1">Pasirinkite kitą dieną</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {slots.map((slot) => {
-                const isSelected = selectedSlot?.id === slot.id;
-                const isFull =
-                  slot.maxParticipants &&
-                  slot.maxParticipants > 0 &&
-                  (slot.currentBookings ?? 0) >= slot.maxParticipants;
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {timeGroups.map((group) => {
+                const count = group.slots.length;
+                const visibleAvatars = group.slots.slice(0, 3);
+                const extra = count - 3;
+                const hasGroup = group.slots.some(s => s.maxParticipants && s.maxParticipants > 0);
                 return (
                   <button
-                    key={slot.id}
-                    onClick={() => { if (!isFull) { setSelectedSlot(slot); setSelectedService(null); } }}
-                    disabled={!!isFull}
-                    className={cn(
-                      "w-full text-left p-4 rounded-xl border-2 transition-all",
-                      isFull
-                        ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
-                        : isSelected
-                        ? "border-[#FF5733] bg-[#FF5733]/5"
-                        : "border-gray-200 hover:border-[#FF5733]/50 hover:bg-gray-50"
-                    )}
+                    key={group.key}
+                    onClick={() => openGroup(group)}
+                    className="relative text-left p-4 rounded-2xl border-2 border-gray-100 bg-white hover:border-[#FF5733]/60 hover:shadow-md transition-all group active:scale-[0.98]"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="shrink-0 text-center min-w-[60px]">
-                        <p className="font-800 text-lg text-[#0B5C71]">
-                          {formatTime(slot.startTime)}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          – {formatTime(slot.endTime)}
-                        </p>
-                      </div>
+                    {/* Time */}
+                    <p className="font-900 text-2xl text-[#0B5C71] leading-none">
+                      {formatTime(group.startTime)}
+                    </p>
+                    <p className="text-xs text-gray-400 font-500 mt-0.5 mb-3">
+                      – {formatTime(group.endTime)}
+                    </p>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {slot.trainer.photoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={slot.trainer.photoUrl}
-                              alt={slot.trainer.displayName}
-                              className="w-7 h-7 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-[#FF5733]/10 flex items-center justify-center text-xs font-800 text-[#FF5733]">
-                              {slot.trainer.displayName[0]}
-                            </div>
-                          )}
-                          <span className="font-700 text-sm text-[#0B5C71]">
-                            {slot.trainer.displayName}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <MapPin size={11} />
-                          {slot.arena.name}, {slot.arena.city}
-                        </p>
-                        {slot.maxParticipants && slot.maxParticipants > 0 && (
-                          <span className={cn(
-                            "badge text-xs mt-1",
-                            isFull
-                              ? "text-red-600 bg-red-50 border-red-200"
-                              : "text-orange-600 bg-orange-50 border-orange-200"
-                          )}>
-                            {isFull
-                              ? "Vietos užimtos"
-                              : `Grupinė · ${slot.currentBookings ?? 0}/${slot.maxParticipants} dalyvių`}
-                          </span>
+                    {/* Trainer avatars stacked */}
+                    <div className="flex items-center mb-2">
+                      <div className="flex -space-x-2">
+                        {visibleAvatars.map((slot) => (
+                          <TrainerAvatar key={slot.id} slot={slot} size="sm" />
+                        ))}
+                        {extra > 0 && (
+                          <div className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs font-700 text-gray-500">
+                            +{extra}
+                          </div>
                         )}
                       </div>
+                    </div>
 
-                      {isSelected && (
-                        <CheckCircle size={20} className="text-[#FF5733] shrink-0" />
-                      )}
+                    {/* Trainer count */}
+                    <p className="text-xs font-600 text-gray-500">
+                      {count === 1 ? "1 treneris" : `${count} treneriai`}
+                    </p>
+
+                    {hasGroup && (
+                      <span className="absolute top-3 right-3 text-xs px-1.5 py-0.5 rounded-md bg-orange-100 text-orange-600 font-600">
+                        <Users size={10} className="inline mr-0.5" />grupinė
+                      </span>
+                    )}
+
+                    <div className="absolute bottom-3 right-3 text-gray-300 group-hover:text-[#FF5733] transition-colors">
+                      <ArrowRight size={14} />
                     </div>
                   </button>
                 );
@@ -426,115 +458,238 @@ export default function MultiTrainerBooking({
         </div>
       )}
 
-      {/* Service selection + confirm */}
-      {selectedSlot && (
-        <div className="card p-6">
-          {(() => {
-            const slotSvcs =
-              selectedSlot.services?.length > 0
-                ? selectedSlot.services
-                : selectedSlot.trainer.services;
-            const isSlotSpecific = (selectedSlot.services?.length ?? 0) > 0;
-            return (
-              <>
-                <h3 className="font-800 text-[#0B5C71] mb-1">
-                  Pasirinkite paslaugą <span className="text-[#FF5733]">*</span>
-                </h3>
-                <p className="text-xs text-gray-400 mb-4">
-                  {isSlotSpecific
-                    ? "Rodomos tik šiam laikui priskirtos paslaugos"
-                    : "Paslauga privaloma norint rezervuoti"}
+      {/* ── Sheet 1: Trainer selection ─────────────────────────────────────── */}
+      <BottomSheet open={!!activeGroup && !activeSlot} onClose={closeAll}>
+        {activeGroup && (
+          <div className="px-4 pt-2">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-5">
+              <div>
+                <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-0.5">
+                  {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })}
+                </p>
+                <p className="font-900 text-3xl text-[#0B5C71]">
+                  {formatTime(activeGroup.startTime)}
+                  <span className="text-gray-400 font-400 text-xl ml-2">– {formatTime(activeGroup.endTime)}</span>
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {activeGroup.slots.length === 1
+                    ? "1 treneris prieinamas"
+                    : `${activeGroup.slots.length} treneriai prieinami`}
+                </p>
+              </div>
+              <button onClick={closeAll}
+                className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors mt-1">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Trainer cards */}
+            <div className="flex flex-col gap-3 pb-2">
+              {activeGroup.slots.map((slot) => {
+                const isGroup = slot.maxParticipants && slot.maxParticipants > 0;
+                const isFull = isGroup && (slot.currentBookings ?? 0) >= slot.maxParticipants!;
+                const spotsLeft = isGroup ? slot.maxParticipants! - (slot.currentBookings ?? 0) : null;
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => !isFull && openSlot(slot)}
+                    disabled={!!isFull}
+                    className={cn(
+                      "w-full text-left p-4 rounded-2xl border-2 transition-all",
+                      isFull
+                        ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                        : "border-gray-100 hover:border-[#FF5733] hover:shadow-md active:scale-[0.99]"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className="shrink-0">
+                        <TrainerAvatar slot={slot} />
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-700 text-[#0B5C71] text-sm">{slot.trainer.displayName}</p>
+                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <MapPin size={10} /> {slot.arena.name}, {slot.arena.city}
+                        </p>
+                        {isGroup && (
+                          <p className={cn(
+                            "text-xs font-600 mt-1",
+                            isFull ? "text-red-500" : spotsLeft && spotsLeft <= 2 ? "text-orange-500" : "text-green-600"
+                          )}>
+                            {isFull
+                              ? "Vietos užimtos"
+                              : `${slot.currentBookings ?? 0}/${slot.maxParticipants} dalyvių · Laisva ${spotsLeft}`}
+                          </p>
+                        )}
+                        {/* Service hint */}
+                        {slot.services.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {slot.services.slice(0, 2).map((svc) => (
+                              <span key={svc.id} className="text-xs px-1.5 py-0.5 bg-[#0B5C71]/10 text-[#0B5C71] rounded font-600">
+                                {svc.name}
+                              </span>
+                            ))}
+                            {slot.services.length > 2 && (
+                              <span className="text-xs text-gray-400">+{slot.services.length - 2}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {!isFull && (
+                        <ArrowRight size={16} className="text-gray-300 shrink-0" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </BottomSheet>
+
+      {/* ── Sheet 2: Service selection + Book ─────────────────────────────── */}
+      <BottomSheet open={!!activeSlot} onClose={() => { setActiveSlot(null); setError(""); }}>
+        {activeSlot && (() => {
+          const slotSvcs = activeSlot.services?.length > 0
+            ? activeSlot.services
+            : activeSlot.trainer.services;
+          const isGroup = activeSlot.maxParticipants && activeSlot.maxParticipants > 0;
+          return (
+            <div className="px-4 pt-2">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <button
+                  onClick={() => { setActiveSlot(null); setError(""); }}
+                  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0B5C71] transition-colors"
+                >
+                  <ChevronLeft size={16} /> Atgal
+                </button>
+                <button onClick={closeAll}
+                  className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Trainer summary */}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl mb-5">
+                <TrainerAvatar slot={activeSlot} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-700 text-[#0B5C71]">{activeSlot.trainer.displayName}</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                    <MapPin size={10} /> {activeSlot.arena.name}, {activeSlot.arena.city}
+                  </p>
+                  <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                    <Clock size={10} />
+                    {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })},{" "}
+                    {formatTime(activeSlot.startTime)} – {formatTime(activeSlot.endTime)}
+                  </p>
+                </div>
+                {isGroup && (
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs font-700 text-orange-600">Grupinė</p>
+                    <p className="text-xs text-gray-400">
+                      {activeSlot.currentBookings ?? 0}/{activeSlot.maxParticipants}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Service selection */}
+              <div className="mb-5">
+                <p className="font-700 text-[#0B5C71] mb-1">
+                  Paslauga <span className="text-[#FF5733]">*</span>
+                </p>
+                <p className="text-xs text-gray-400 mb-3">
+                  {(activeSlot.services?.length ?? 0) > 0
+                    ? "Šiam laikui priskirtos paslaugos"
+                    : "Paslauga privaloma"}
                 </p>
 
                 {slotSvcs.length > 0 ? (
-                  <div className="flex flex-col gap-2 mb-5">
-                    {slotSvcs.map((svc) => (
-                      <button
-                        key={svc.id}
-                        onClick={() => setSelectedService(svc)}
-                        className={cn(
-                          "w-full text-left p-3 rounded-xl border-2 transition-all",
-                          selectedService?.id === svc.id
-                            ? "border-[#FF5733] bg-[#FF5733]/5"
-                            : "border-gray-200 hover:border-gray-300"
-                        )}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
-                            {svc.description && (
-                              <p className="text-xs text-gray-500 mt-0.5">{svc.description}</p>
-                            )}
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              <Clock size={10} className="inline mr-0.5" />
-                              {svc.durationMinutes} min
-                            </p>
+                  <div className="flex flex-col gap-2">
+                    {slotSvcs.map((svc) => {
+                      const active = selectedService?.id === svc.id;
+                      return (
+                        <button
+                          key={svc.id}
+                          onClick={() => setSelectedService(svc)}
+                          className={cn(
+                            "w-full text-left p-3.5 rounded-xl border-2 transition-all",
+                            active
+                              ? "border-[#FF5733] bg-[#FF5733]/5"
+                              : "border-gray-100 hover:border-[#FF5733]/40"
+                          )}
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <div className={cn(
+                                  "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+                                  active ? "border-[#FF5733] bg-[#FF5733]" : "border-gray-300"
+                                )}>
+                                  {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
+                              </div>
+                              {svc.description && (
+                                <p className="text-xs text-gray-500 mt-1 ml-6">{svc.description}</p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-0.5 ml-6 flex items-center gap-1">
+                                <Clock size={10} /> {svc.durationMinutes} min
+                              </p>
+                            </div>
+                            <span className={cn(
+                              "font-800 text-base shrink-0",
+                              active ? "text-[#FF5733]" : "text-[#0B5C71]"
+                            )}>
+                              {formatServicePrice(svc.price, svc.type, svc.priceType)}
+                            </span>
                           </div>
-                          <span className="font-700 text-sm text-[#FF5733] shrink-0 ml-3">
-                            {formatServicePrice(svc.price, svc.type, svc.priceType)}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 mb-5">
+                  <p className="text-sm text-gray-500 p-4 bg-gray-50 rounded-xl">
                     Treneris šiuo metu neturi nustatytų paslaugų.
                   </p>
                 )}
-              </>
-            );
-          })()}
+              </div>
 
-          {/* Summary */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0B5C71]/10 flex items-center justify-center text-xl">
-                🏅
-              </div>
-              <div>
-                <p className="font-700 text-[#0B5C71]">
-                  {selectedSlot.trainer.displayName}
+              {error && (
+                <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+                  {error}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: lt })},{" "}
-                  {formatTime(selectedSlot.startTime)} – {formatTime(selectedSlot.endTime)}
-                </p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <MapPin size={13} />
-              {selectedSlot.arena.name}, {selectedSlot.arena.address}
-            </p>
-            {selectedService && (
-              <p className="text-sm text-[#FF5733] font-600 mt-2">
-                {selectedService.name} – {formatServicePrice(selectedService.price, selectedService.type, selectedService.priceType)}
+              )}
+
+              {/* Book button */}
+              <button
+                onClick={handleBook}
+                disabled={booking || !selectedService}
+                className="btn-primary w-full justify-center text-base py-4 disabled:opacity-60 disabled:cursor-not-allowed rounded-2xl"
+              >
+                {booking ? (
+                  <><Loader2 size={18} className="animate-spin mr-2" />Rezervuojama...</>
+                ) : (
+                  <>
+                    ✅ Rezervuoti
+                    {selectedService && (
+                      <span className="ml-2 font-400 text-sm opacity-80">
+                        · {formatServicePrice(selectedService.price, selectedService.type, selectedService.priceType)}
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-gray-400 text-center mt-3">
+                Reikalinga paskyra. Patvirtinimas el. paštu.
               </p>
-            )}
-          </div>
-
-          {error && (
-            <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={handleBook}
-            disabled={booking || !selectedService}
-            className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {booking ? (
-              <><Loader2 size={18} className="animate-spin" />Rezervuojama...</>
-            ) : (
-              "✅ Rezervuoti treniruotę"
-            )}
-          </button>
-          <p className="text-xs text-gray-400 text-center mt-3">
-            Reikalinga paskyra. Patvirtinimas el. paštu.
-          </p>
-        </div>
-      )}
+            </div>
+          );
+        })()}
+      </BottomSheet>
     </div>
   );
 }
