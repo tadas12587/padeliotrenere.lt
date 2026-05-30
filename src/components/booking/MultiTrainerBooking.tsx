@@ -437,26 +437,17 @@ export default function MultiTrainerBooking({
             const isSlotSpecific = (selectedSlot.services?.length ?? 0) > 0;
             return (
               <>
-                <h3 className="font-800 text-[#0B5C71] mb-1">Pasirinkite paslaugą</h3>
+                <h3 className="font-800 text-[#0B5C71] mb-1">
+                  Pasirinkite paslaugą <span className="text-[#FF5733]">*</span>
+                </h3>
                 <p className="text-xs text-gray-400 mb-4">
                   {isSlotSpecific
                     ? "Rodomos tik šiam laikui priskirtos paslaugos"
-                    : "Neprivaloma"}
+                    : "Paslauga privaloma norint rezervuoti"}
                 </p>
 
                 {slotSvcs.length > 0 ? (
                   <div className="flex flex-col gap-2 mb-5">
-                    <button
-                      onClick={() => setSelectedService(null)}
-                      className={cn(
-                        "w-full text-left p-3 rounded-xl border-2 transition-all",
-                        !selectedService
-                          ? "border-[#FF5733] bg-[#FF5733]/5"
-                          : "border-gray-200 hover:border-gray-300"
-                      )}
-                    >
-                      <p className="font-600 text-sm text-gray-700">Be konkretios paslaugos</p>
-                    </button>
                     {slotSvcs.map((svc) => (
                       <button
                         key={svc.id}
@@ -530,7 +521,7 @@ export default function MultiTrainerBooking({
 
           <button
             onClick={handleBook}
-            disabled={booking}
+            disabled={booking || !selectedService}
             className="btn-primary w-full justify-center text-base py-3.5 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {booking ? (
