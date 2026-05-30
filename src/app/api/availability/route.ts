@@ -21,16 +21,30 @@ export async function GET(req: NextRequest) {
   const trainerId = searchParams.get("trainerId");
   const from = searchParams.get("from");
   const to = searchParams.get("to");
+  const own = searchParams.get("own") === "1"; // trainer fetching their own slots (all statuses)
+
+  // When a trainer requests their own slots (own=1), allow all statuses and skip date floor
+  let statusFilter: any = { status: "AVAILABLE" };
+  let trainerFilter: any = { status: "APPROVED" };
+  if (own) {
+    const session = await getServerSession(authOptions);
+    const role = (session?.user as any)?.role;
+    if (role === "TRAINER" || role === "ADMIN") {
+      statusFilter = {}; // no status filter — return all
+      trainerFilter = {}; // no approval check for own slots
+    }
+  }
 
   const slots = await prisma.availabilitySlot.findMany({
     where: {
-      status: "AVAILABLE",
+      ...statusFilter,
       ...(trainerId ? { trainerId } : {}),
       ...(city ? { arena: { city: { contains: city } } } : {}),
-      ...(from ? { startTime: { gte: new Date(from) } } : { startTime: { gte: new Date() } }),
+      ...(!own && from ? { startTime: { gte: new Date(from) } } : !own ? { startTime: { gte: new Date() } } : {}),
+      ...(from && own ? { startTime: { gte: new Date(from) } } : {}),
       ...(to ? { endTime: { lte: new Date(to) } } : {}),
       trainer: {
-        status: "APPROVED",
+        ...trainerFilter,
         ...(sport ? { sports: { some: { sport: { slug: sport } } } } : {}),
       },
     },
@@ -41,7 +55,7 @@ export async function GET(req: NextRequest) {
       _count: { select: { bookings: { where: { status: { in: ["PENDING", "CONFIRMED"] } } } } },
     },
     orderBy: { startTime: "asc" },
-    take: 200,
+    take: 500,
   });
 
   const result = slots.map(({ _count, ...slot }: { _count: { bookings: number }; [key: string]: any }) => ({

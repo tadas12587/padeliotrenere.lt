@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus, Tag, Users, X } from "lucide-react";
 import BookForClientModal from "@/components/BookForClientModal";
+import { formatServicePrice } from "@/lib/utils";
 
 interface Arena {
   id: string;
@@ -31,6 +32,7 @@ interface TrainerService {
   price: string | number | null;
   type: "INDIVIDUAL" | "GROUP";
   priceType: "TOTAL" | "PER_PERSON" | null;
+  maxParticipants?: number | null;
 }
 
 interface AvailabilitySlot {
@@ -85,7 +87,7 @@ export default function TrainerCalendarPage() {
 
   const fetchSlots = useCallback(async (tid: string) => {
     try {
-      const res = await fetch(`/api/availability?trainerId=${tid}`);
+      const res = await fetch(`/api/availability?trainerId=${tid}&own=1`);
       const data = await res.json();
       setSlots(
         Array.isArray(data)
@@ -139,9 +141,17 @@ export default function TrainerCalendarPage() {
   };
 
   const toggleService = (id: string) => {
-    setSelectedServiceIds((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelectedServiceIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id];
+      // Auto-fill maxParticipants from a GROUP service when field is empty
+      if (!prev.includes(id)) {
+        const svc = trainerServices.find((s) => s.id === id);
+        if (svc?.type === "GROUP" && svc.maxParticipants && !maxParticipants) {
+          setMaxParticipants(String(svc.maxParticipants));
+        }
+      }
+      return next;
+    });
   };
 
   const previewCount = useMemo(() => {
@@ -447,9 +457,8 @@ export default function TrainerCalendarPage() {
                         <div className="min-w-0">
                           <p className="text-sm font-700 text-[#0B5C71] leading-tight">{svc.name}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            {svc.durationMinutes} min
-                            {svc.price != null && svc.price !== "" ? ` · ${svc.price} €` : " · nemokama"}
-                            {svc.type === "GROUP" ? " · Grupinė" : ""}
+                            {svc.durationMinutes} min · {formatServicePrice(svc.price, svc.type, svc.priceType)}
+                            {svc.type === "GROUP" ? ` · Grupinė${svc.maxParticipants ? ` (iki ${svc.maxParticipants} asm.)` : ""}` : ""}
                           </p>
                         </div>
                       </button>
@@ -593,7 +602,14 @@ export default function TrainerCalendarPage() {
 
       {/* Slots list */}
       <div className="card p-6">
-        <h2 className="font-800 text-[#0B5C71] mb-4">Artėjantys laiko tarpai</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-800 text-[#0B5C71]">Visi laiko tarpai</h2>
+          <div className="flex gap-2 text-xs font-600">
+            <span className="flex items-center gap-1 text-green-600"><span className="w-2 h-2 rounded-full bg-green-400 inline-block" />Laisvas</span>
+            <span className="flex items-center gap-1 text-orange-600"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Grupinė (pilna)</span>
+            <span className="flex items-center gap-1 text-blue-600"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />Užimtas</span>
+          </div>
+        </div>
 
         {loading ? (
           <p className="text-sm text-gray-400">Kraunama...</p>
@@ -605,14 +621,28 @@ export default function TrainerCalendarPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {slots.map((slot) => (
+            {slots.map((slot) => {
+              const isGroup = slot.maxParticipants && slot.maxParticipants > 0;
+              const isFull = isGroup && (slot.currentBookings ?? 0) >= slot.maxParticipants!;
+              const cardBg = slot.status === "AVAILABLE"
+                ? isGroup
+                  ? isFull ? "bg-orange-50 border-orange-200" : "bg-green-50 border-green-200"
+                  : "bg-gray-50 border-gray-100"
+                : "bg-blue-50 border-blue-200";
+              const iconBg = slot.status === "AVAILABLE"
+                ? isGroup ? isFull ? "bg-orange-100" : "bg-green-100" : "bg-green-50"
+                : "bg-blue-100";
+              const iconColor = slot.status === "AVAILABLE"
+                ? isGroup ? isFull ? "text-orange-500" : "text-green-500" : "text-green-500"
+                : "text-blue-500";
+              return (
               <div
                 key={slot.id}
-                className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
+                className={`flex items-start justify-between p-4 rounded-xl border ${cardBg}`}
               >
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
-                    <Clock size={18} className="text-green-500" />
+                  <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
+                    <Clock size={18} className={iconColor} />
                   </div>
                   <div className="min-w-0">
                     <p className="font-700 text-[#0B5C71] text-sm">
@@ -640,9 +670,14 @@ export default function TrainerCalendarPage() {
                         ))}
                       </div>
                     )}
-                    {slot.maxParticipants && slot.maxParticipants > 0 && (
-                      <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-1.5">
+                    {isGroup && (
+                      <span className={`badge text-xs mt-1.5 ${
+                        isFull
+                          ? "text-orange-700 bg-orange-100 border-orange-300"
+                          : "text-green-700 bg-green-100 border-green-300"
+                      }`}>
                         Grupinė · {slot.currentBookings ?? 0}/{slot.maxParticipants} dalyvių
+                        {isFull ? " · Pilna" : ` · Laisva ${slot.maxParticipants! - (slot.currentBookings ?? 0)}`}
                       </span>
                     )}
                   </div>
@@ -657,7 +692,7 @@ export default function TrainerCalendarPage() {
                   >
                     {slot.status === "AVAILABLE" ? "Laisvas" : "Užimtas"}
                   </span>
-                  {slot.maxParticipants && slot.maxParticipants > 0 && (
+                  {isGroup && (
                     <button
                       onClick={() => openParticipants(slot)}
                       className="p-2 text-gray-400 hover:text-[#0B5C71] hover:bg-[#0B5C71]/10 rounded-lg transition-colors"
@@ -686,7 +721,8 @@ export default function TrainerCalendarPage() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
