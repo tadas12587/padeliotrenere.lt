@@ -29,6 +29,17 @@ export async function GET(req: NextRequest) {
     include: {
       user: { select: { id: true, name: true, email: true, phone: true } },
       slot: { select: { id: true, date: true, startTime: true, endTime: true } },
+      availabilitySlot: {
+        select: {
+          id: true,
+          startTime: true,
+          endTime: true,
+          maxParticipants: true,
+          arena: { select: { id: true, name: true, city: true } },
+          trainer: { select: { id: true, displayName: true } },
+        },
+      },
+      service: { select: { id: true, name: true, durationMinutes: true } },
       sessionNote: true,
     },
   });

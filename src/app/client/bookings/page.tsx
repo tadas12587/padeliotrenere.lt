@@ -2,17 +2,65 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Calendar, Clock, MessageSquare, X, Loader2 } from "lucide-react";
+import { Calendar, Clock, MapPin, MessageSquare, X, Loader2 } from "lucide-react";
 import { formatDateLT } from "@/lib/utils";
 import { bookingStatusLabel, bookingStatusColor, cn } from "@/lib/utils";
+
+interface LegacySlot {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface AvailabilitySlot {
+  id: string;
+  startTime: string;
+  endTime: string;
+  maxParticipants?: number | null;
+  arena: { id: string; name: string; city: string };
+  trainer: { id: string; displayName: string };
+}
 
 interface Booking {
   id: string;
   status: string;
   clientNotes?: string;
   createdAt: string;
-  slot: { date: string; startTime: string; endTime: string };
+  slot: LegacySlot | null;
+  availabilitySlot: AvailabilitySlot | null;
+  service?: { id: string; name: string; durationMinutes: number } | null;
   sessionNote?: { trainerNote?: string; clientNote?: string } | null;
+}
+
+function getBookingDate(b: Booking): Date {
+  if (b.availabilitySlot) return new Date(b.availabilitySlot.startTime);
+  if (b.slot) return new Date(b.slot.date);
+  return new Date(b.createdAt);
+}
+
+function getBookingTimeLabel(b: Booking): string {
+  if (b.availabilitySlot) {
+    const start = new Date(b.availabilitySlot.startTime);
+    const end = new Date(b.availabilitySlot.endTime);
+    const fmt = (d: Date) =>
+      d.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" });
+    return `${fmt(start)} – ${fmt(end)}`;
+  }
+  if (b.slot) return `${b.slot.startTime} – ${b.slot.endTime}`;
+  return "";
+}
+
+function getBookingDateLabel(b: Booking): string {
+  if (b.availabilitySlot) {
+    return new Date(b.availabilitySlot.startTime).toLocaleDateString("lt-LT", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  if (b.slot) return formatDateLT(b.slot.date);
+  return formatDateLT(b.createdAt);
 }
 
 const tabs = [
@@ -33,13 +81,13 @@ export default function ClientBookingsPage() {
   useEffect(() => {
     fetch("/api/bookings")
       .then((r) => r.json())
-      .then(setBookings)
+      .then((data) => setBookings(Array.isArray(data) ? data : []))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
   const filtered = bookings.filter((b) => {
-    const future = new Date(b.slot.date) >= new Date();
+    const future = getBookingDate(b) >= new Date();
     if (tab === "upcoming") return future && ["PENDING", "CONFIRMED"].includes(b.status);
     if (tab === "past") return !future || ["COMPLETED", "CANCELLED"].includes(b.status);
     return true;
@@ -130,12 +178,29 @@ export default function ClientBookingsPage() {
                   </div>
                   <div>
                     <p className="font-700 text-[#0B5C71]">
-                      {formatDateLT(booking.slot.date)}
+                      {getBookingDateLabel(booking)}
                     </p>
                     <p className="text-gray-500 text-sm flex items-center gap-1 mt-0.5">
                       <Clock size={13} />
-                      {booking.slot.startTime} – {booking.slot.endTime}
+                      {getBookingTimeLabel(booking)}
                     </p>
+                    {booking.availabilitySlot && (
+                      <>
+                        <p className="text-gray-500 text-sm flex items-center gap-1 mt-0.5">
+                          <MapPin size={13} />
+                          {booking.availabilitySlot.arena.name},{" "}
+                          {booking.availabilitySlot.arena.city}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Treneris: {booking.availabilitySlot.trainer.displayName}
+                        </p>
+                      </>
+                    )}
+                    {booking.service && (
+                      <p className="text-xs text-[#FF5733] font-600 mt-1">
+                        {booking.service.name} · {booking.service.durationMinutes} min
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
