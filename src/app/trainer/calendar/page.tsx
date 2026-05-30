@@ -89,13 +89,21 @@ export default function TrainerCalendarPage() {
     try {
       const res = await fetch(`/api/availability?trainerId=${tid}&own=1`);
       const data = await res.json();
+      if (!Array.isArray(data)) { setSlots([]); return; }
+      const now = Date.now();
       setSlots(
-        Array.isArray(data)
-          ? data.map((s: any) => ({
-              ...s,
-              currentBookings: s.currentBookings ?? 0,
-            }))
-          : []
+        data
+          .map((s: any) => ({ ...s, currentBookings: s.currentBookings ?? 0 }))
+          .sort((a: AvailabilitySlot, b: AvailabilitySlot) => {
+            const aMs = new Date(a.startTime).getTime();
+            const bMs = new Date(b.startTime).getTime();
+            const aFuture = aMs >= now;
+            const bFuture = bMs >= now;
+            if (aFuture && !bFuture) return -1;
+            if (!aFuture && bFuture) return 1;
+            // Both future: nearest first; both past: most recent first
+            return aFuture ? aMs - bMs : bMs - aMs;
+          })
       );
     } catch {
       setSlots([]);
