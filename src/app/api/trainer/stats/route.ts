@@ -56,12 +56,14 @@ export async function GET(req: NextRequest) {
   const period = searchParams.get("period") ?? "month";
   const { from, to } = getPeriodRange(period);
 
-  // Fetch all bookings for this trainer in the period (CONFIRMED + PENDING)
+  const now = new Date();
+
+  // Bookings filtered by the slot's startTime within the period (not booking creation date)
   const bookings = await prisma.booking.findMany({
     where: {
       trainerId: profile.id,
       status: { in: ["CONFIRMED", "PENDING"] },
-      createdAt: { gte: from, lte: to },
+      availabilitySlot: { startTime: { gte: from, lte: to } },
     },
     include: {
       user: { select: { id: true } },
@@ -70,47 +72,61 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  // Fetch all slots in the period for this trainer
+  // Slots in the period
   const slots = await prisma.availabilitySlot.findMany({
-    where: {
-      trainerId: profile.id,
-      startTime: { gte: from, lte: to },
-    },
-    include: {
-      bookings: { select: { id: true } },
-    },
+    where: { trainerId: profile.id, startTime: { gte: from, lte: to } },
+    include: { bookings: { where: { status: { in: ["CONFIRMED", "PENDING"] } }, select: { id: true } } },
   });
+
+  // Past = slot already started; future = slot hasn't started yet
+  const pastBookings = bookings.filter(
+    (b) => b.availabilitySlot && new Date(b.availabilitySlot.startTime) < now
+  );
+  const futureBookings = bookings.filter(
+    (b) => b.availabilitySlot && new Date(b.availabilitySlot.startTime) >= now
+  );
 
   // --- Slots stats ---
   const totalSlots = slots.length;
   const filledSlots = slots.filter((s) => s.bookings.length > 0).length;
+  const emptySlots = totalSlots - filledSlots;
   const fillRate = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
 
   // --- Hours stats ---
-  let plannedMinutes = 0;
+  // worked = past slots that had at least one booking; planned = future booked slots
   let workedMinutes = 0;
+  let upcomingBookedMinutes = 0;
+  let totalPlannedMinutes = 0;
   for (const s of slots) {
-    const duration =
-      (new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000;
-    plannedMinutes += duration;
-    if (s.bookings.length > 0) workedMinutes += duration;
-  }
-  const plannedHours = Math.round((plannedMinutes / 60) * 10) / 10;
-  const workedHours = Math.round((workedMinutes / 60) * 10) / 10;
-
-  // --- Revenue stats ---
-  let totalRevenue = 0;
-  for (const b of bookings) {
-    if (b.service?.price != null) {
-      const p = parseFloat(String(b.service.price));
-      if (!isNaN(p)) totalRevenue += p;
+    const duration = (new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000;
+    totalPlannedMinutes += duration;
+    const isPast = new Date(s.startTime) < now;
+    if (s.bookings.length > 0) {
+      if (isPast) workedMinutes += duration;
+      else upcomingBookedMinutes += duration;
     }
   }
-  totalRevenue = Math.round(totalRevenue * 100) / 100;
-  const perSession =
-    bookings.length > 0
-      ? Math.round((totalRevenue / bookings.length) * 10) / 10
-      : 0;
+  const workedHours = Math.round((workedMinutes / 60) * 10) / 10;
+  const upcomingBookedHours = Math.round((upcomingBookedMinutes / 60) * 10) / 10;
+  const totalPlannedHours = Math.round((totalPlannedMinutes / 60) * 10) / 10;
+
+  // --- Revenue stats ---
+  // earned = sessions already happened; planned = reserved but not yet happened
+  function sumRevenue(list: typeof bookings) {
+    let total = 0;
+    for (const b of list) {
+      if (b.service?.price != null) {
+        const p = parseFloat(String(b.service.price));
+        if (!isNaN(p)) total += p;
+      }
+    }
+    return Math.round(total * 100) / 100;
+  }
+  const earnedRevenue = sumRevenue(pastBookings);
+  const plannedRevenue = sumRevenue(futureBookings);
+  const perSession = pastBookings.length > 0
+    ? Math.round((earnedRevenue / pastBookings.length) * 10) / 10
+    : 0;
 
   // --- Clients stats ---
   const uniqueClientIds = new Set(bookings.map((b) => b.user.id));
@@ -167,9 +183,9 @@ export async function GET(req: NextRequest) {
   }));
 
   return NextResponse.json({
-    slots: { total: totalSlots, filled: filledSlots, fillRate },
-    hours: { planned: plannedHours, worked: workedHours },
-    revenue: { total: totalRevenue, perSession },
+    slots: { total: totalSlots, filled: filledSlots, empty: emptySlots, fillRate },
+    hours: { totalPlanned: totalPlannedHours, worked: workedHours, upcomingBooked: upcomingBookedHours },
+    revenue: { earned: earnedRevenue, planned: plannedRevenue, perSession },
     clients: { total: totalClients, new: newClients, returning: returningClients },
     topServices,
     peakDays,
