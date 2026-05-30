@@ -10,6 +10,7 @@ import {
   LogOut,
   Dumbbell,
   Globe,
+  BarChart2,
 } from "lucide-react";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
 
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/trainer/profile", label: "Profilis", icon: User },
   { href: "/trainer/certifications", label: "Sertifikatai", icon: Award },
   { href: "/trainer/calendar", label: "Kalendorius", icon: CalendarDays },
+  { href: "/trainer/stats", label: "Statistika", icon: BarChart2 },
 ];
 
 export default async function TrainerLayout({

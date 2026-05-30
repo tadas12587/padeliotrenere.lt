@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   Menu, X, Dumbbell, Globe, LogOut,
   LayoutDashboard, Calendar, User,
-  Award, CalendarDays,
+  Award, CalendarDays, BarChart2,
   BookOpen, Clock, Users, FileText,
   UserCheck, Building2, Trophy, LayoutList,
 } from "lucide-react";
@@ -32,6 +32,7 @@ const NAV_CONFIG: Record<NavType, {
       { href: "/trainer/profile", label: "Profilis", icon: User },
       { href: "/trainer/certifications", label: "Sertifikatai", icon: Award },
       { href: "/trainer/calendar", label: "Kalendorius", icon: CalendarDays },
+      { href: "/trainer/stats", label: "Statistika", icon: BarChart2 },
     ],
   },
   admin: {
