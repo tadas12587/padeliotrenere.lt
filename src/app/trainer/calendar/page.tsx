@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus, Tag } from "lucide-react";
+import { CalendarDays, Plus, Trash2, Clock, MapPin, UserPlus, Tag, Users, X } from "lucide-react";
 import BookForClientModal from "@/components/BookForClientModal";
 
 interface Arena {
@@ -39,8 +39,17 @@ interface AvailabilitySlot {
   endTime: string;
   status: string;
   maxParticipants: number | null;
+  currentBookings?: number;
   arena: Arena;
   services: SlotService[];
+}
+
+interface SlotParticipant {
+  id: string;
+  status: string;
+  user: { id: string; name: string | null; email: string | null };
+  service: { name: string } | null;
+  createdAt: string;
 }
 
 type RecurrenceType = "none" | "weekly" | "daily";
@@ -69,11 +78,23 @@ export default function TrainerCalendarPage() {
 
   const [bookingSlot, setBookingSlot] = useState<AvailabilitySlot | null>(null);
 
+  // Participants panel state
+  const [participantSlot, setParticipantSlot] = useState<AvailabilitySlot | null>(null);
+  const [participants, setParticipants] = useState<SlotParticipant[]>([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+
   const fetchSlots = useCallback(async (tid: string) => {
     try {
       const res = await fetch(`/api/availability?trainerId=${tid}`);
       const data = await res.json();
-      setSlots(Array.isArray(data) ? data : []);
+      setSlots(
+        Array.isArray(data)
+          ? data.map((s: any) => ({
+              ...s,
+              currentBookings: s.currentBookings ?? 0,
+            }))
+          : []
+      );
     } catch {
       setSlots([]);
     }
@@ -238,6 +259,44 @@ export default function TrainerCalendarPage() {
       setMessage({ type: "success", text: "Laiko tarpas ištrintas." });
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Nepavyko ištrinti." });
+    }
+  };
+
+  const openParticipants = async (slot: AvailabilitySlot) => {
+    setParticipantSlot(slot);
+    setParticipants([]);
+    setLoadingParticipants(true);
+    try {
+      const res = await fetch(`/api/availability/${slot.id}/bookings`);
+      const data = await res.json();
+      setParticipants(Array.isArray(data) ? data : []);
+    } catch {
+      setParticipants([]);
+    } finally {
+      setLoadingParticipants(false);
+    }
+  };
+
+  const removeParticipant = async (slotId: string, bookingId: string) => {
+    if (!confirm("Ar tikrai norite pašalinti šį dalyvį?")) return;
+    try {
+      const res = await fetch(`/api/availability/${slotId}/bookings`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Klaida");
+      }
+      // Refresh participants list
+      const updated = await fetch(`/api/availability/${slotId}/bookings`);
+      const data = await updated.json();
+      setParticipants(Array.isArray(data) ? data : []);
+      // Refresh slots
+      if (trainerId) await fetchSlots(trainerId);
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "Nepavyko pašalinti dalyvio." });
     }
   };
 
@@ -581,9 +640,9 @@ export default function TrainerCalendarPage() {
                         ))}
                       </div>
                     )}
-                    {slot.maxParticipants && (
+                    {slot.maxParticipants && slot.maxParticipants > 0 && (
                       <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-1.5">
-                        Grupinė · max {slot.maxParticipants} dalyvių
+                        Grupinė · {slot.currentBookings ?? 0}/{slot.maxParticipants} dalyvių
                       </span>
                     )}
                   </div>
@@ -598,6 +657,15 @@ export default function TrainerCalendarPage() {
                   >
                     {slot.status === "AVAILABLE" ? "Laisvas" : "Užimtas"}
                   </span>
+                  {slot.maxParticipants && slot.maxParticipants > 0 && (
+                    <button
+                      onClick={() => openParticipants(slot)}
+                      className="p-2 text-gray-400 hover:text-[#0B5C71] hover:bg-[#0B5C71]/10 rounded-lg transition-colors"
+                      title="Dalyviai"
+                    >
+                      <Users size={16} />
+                    </button>
+                  )}
                   {slot.status === "AVAILABLE" && trainerId && (
                     <button
                       onClick={() => setBookingSlot(slot)}
@@ -635,6 +703,95 @@ export default function TrainerCalendarPage() {
             setMessage({ type: "success", text: "Rezervacija sukurta!" });
           }}
         />
+      )}
+
+      {/* Participants panel/drawer */}
+      {participantSlot && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="flex-1 bg-black/40"
+            onClick={() => setParticipantSlot(null)}
+          />
+          {/* Drawer */}
+          <div className="w-full max-w-md bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
+            <div className="p-5 border-b border-gray-100 flex items-start justify-between">
+              <div>
+                <h2 className="font-800 text-[#0B5C71] text-lg">Dalyviai</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {formatDateTime(participantSlot.startTime)} –{" "}
+                  {new Date(participantSlot.endTime).toLocaleTimeString("lt-LT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {participantSlot.arena.name}, {participantSlot.arena.city}
+                </p>
+                <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-2 inline-block">
+                  {participants.length}/{participantSlot.maxParticipants} dalyvių
+                </span>
+              </div>
+              <button
+                onClick={() => setParticipantSlot(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 p-5">
+              {loadingParticipants ? (
+                <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-[#0B5C71] rounded-full animate-spin" />
+                  Kraunama...
+                </div>
+              ) : participants.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Users size={36} className="mx-auto mb-3 opacity-30" />
+                  <p className="font-600">Dalyvių nėra</p>
+                  <p className="text-sm mt-1">Niekas dar neužsiregistravo</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {participants.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-700 text-[#0B5C71] text-sm">
+                          {p.user.name || "—"}
+                        </p>
+                        {p.user.email && (
+                          <p className="text-xs text-gray-500 mt-0.5">{p.user.email}</p>
+                        )}
+                        {p.service && (
+                          <p className="text-xs text-gray-400 mt-0.5">{p.service.name}</p>
+                        )}
+                        <span
+                          className={`badge text-xs mt-1 inline-block ${
+                            p.status === "CONFIRMED"
+                              ? "text-green-600 bg-green-50 border-green-200"
+                              : "text-yellow-600 bg-yellow-50 border-yellow-200"
+                          }`}
+                        >
+                          {p.status === "CONFIRMED" ? "Patvirtinta" : "Laukiama"}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeParticipant(participantSlot.id, p.id)}
+                        className="ml-3 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-700 hover:bg-red-100 transition-colors border border-red-200 shrink-0"
+                      >
+                        Pašalinti
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

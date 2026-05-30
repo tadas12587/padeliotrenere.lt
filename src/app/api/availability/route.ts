@@ -38,12 +38,18 @@ export async function GET(req: NextRequest) {
       trainer: { select: { id: true, displayName: true, photoUrl: true, services: { select: SERVICE_SELECT } } },
       arena: { select: { id: true, name: true, city: true, address: true } },
       services: { select: SERVICE_SELECT },
+      _count: { select: { bookings: { where: { status: { in: ["PENDING", "CONFIRMED"] } } } } },
     },
     orderBy: { startTime: "asc" },
     take: 200,
   });
 
-  return NextResponse.json(slots);
+  const result = slots.map(({ _count, ...slot }: { _count: { bookings: number }; [key: string]: any }) => ({
+    ...slot,
+    currentBookings: _count.bookings,
+  }));
+
+  return NextResponse.json(result);
 }
 
 interface Recurrence {

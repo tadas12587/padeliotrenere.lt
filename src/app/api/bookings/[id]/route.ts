@@ -63,16 +63,45 @@ export async function PATCH(
   const updated = await prisma.booking.update({
     where: { id },
     data: parsed.data,
-    include: { slot: true, user: true },
+    include: { slot: true, user: true, availabilitySlot: true },
   });
 
-  if (parsed.data.status === "CANCELLED" && updated.user.email && updated.slot) {
-    sendBookingCancellation({
-      to: updated.user.email,
-      name: updated.user.name || "Klientas",
-      date: formatDateLT(updated.slot.date),
-      startTime: updated.slot.startTime,
-    }).catch(console.error);
+  if (parsed.data.status === "CANCELLED") {
+    // Handle legacy TimeSlot cancellation email
+    if (updated.user.email && updated.slot) {
+      sendBookingCancellation({
+        to: updated.user.email,
+        name: updated.user.name || "Klientas",
+        date: formatDateLT(updated.slot.date),
+        startTime: updated.slot.startTime,
+      }).catch(console.error);
+    }
+
+    // Handle AvailabilitySlot status revert
+    if (updated.availabilitySlotId && updated.availabilitySlot) {
+      const avSlot = updated.availabilitySlot;
+      if (avSlot.maxParticipants && avSlot.maxParticipants > 0) {
+        // GROUP slot: re-count remaining active bookings
+        const remaining = await prisma.booking.count({
+          where: {
+            availabilitySlotId: avSlot.id,
+            status: { in: ["PENDING", "CONFIRMED"] },
+          },
+        });
+        if (remaining < avSlot.maxParticipants) {
+          await prisma.availabilitySlot.update({
+            where: { id: avSlot.id },
+            data: { status: "AVAILABLE" },
+          });
+        }
+      } else {
+        // INDIVIDUAL slot: revert to AVAILABLE and clear bookingId
+        await prisma.availabilitySlot.update({
+          where: { id: avSlot.id },
+          data: { status: "AVAILABLE", bookingId: null },
+        });
+      }
+    }
   }
 
   return NextResponse.json(updated);

@@ -12,7 +12,7 @@ import {
   X,
   CheckCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatServicePrice } from "@/lib/utils";
 
 interface Sport {
   id: string;
@@ -27,6 +27,8 @@ interface Service {
   durationMinutes: number;
   price: string | null;
   description: string | null;
+  type?: "INDIVIDUAL" | "GROUP" | null;
+  priceType?: "TOTAL" | "PER_PERSON" | null;
 }
 
 interface AvailabilitySlot {
@@ -34,6 +36,7 @@ interface AvailabilitySlot {
   startTime: string;
   endTime: string;
   maxParticipants?: number | null;
+  currentBookings?: number;
   trainer: {
     id: string;
     displayName: string;
@@ -47,13 +50,6 @@ interface AvailabilitySlot {
     address: string;
   };
   services: Service[];
-}
-
-function formatPrice(price: string | null) {
-  if (!price) return "Susitarti";
-  const n = parseFloat(price);
-  if (isNaN(n)) return "Susitarti";
-  return `${n} €`;
 }
 
 function formatTime(isoStr: string) {
@@ -354,13 +350,20 @@ export default function MultiTrainerBooking({
             <div className="flex flex-col gap-3">
               {slots.map((slot) => {
                 const isSelected = selectedSlot?.id === slot.id;
+                const isFull =
+                  slot.maxParticipants &&
+                  slot.maxParticipants > 0 &&
+                  (slot.currentBookings ?? 0) >= slot.maxParticipants;
                 return (
                   <button
                     key={slot.id}
-                    onClick={() => { setSelectedSlot(slot); setSelectedService(null); }}
+                    onClick={() => { if (!isFull) { setSelectedSlot(slot); setSelectedService(null); } }}
+                    disabled={!!isFull}
                     className={cn(
                       "w-full text-left p-4 rounded-xl border-2 transition-all",
-                      isSelected
+                      isFull
+                        ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+                        : isSelected
                         ? "border-[#FF5733] bg-[#FF5733]/5"
                         : "border-gray-200 hover:border-[#FF5733]/50 hover:bg-gray-50"
                     )}
@@ -397,9 +400,16 @@ export default function MultiTrainerBooking({
                           <MapPin size={11} />
                           {slot.arena.name}, {slot.arena.city}
                         </p>
-                        {slot.maxParticipants && (
-                          <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mt-1">
-                            Grupinė · ≤{slot.maxParticipants} dalyvių
+                        {slot.maxParticipants && slot.maxParticipants > 0 && (
+                          <span className={cn(
+                            "badge text-xs mt-1",
+                            isFull
+                              ? "text-red-600 bg-red-50 border-red-200"
+                              : "text-orange-600 bg-orange-50 border-orange-200"
+                          )}>
+                            {isFull
+                              ? "Vietos užimtos"
+                              : `Grupinė · ${slot.currentBookings ?? 0}/${slot.maxParticipants} dalyvių`}
                           </span>
                         )}
                       </div>
@@ -470,7 +480,7 @@ export default function MultiTrainerBooking({
                             </p>
                           </div>
                           <span className="font-700 text-sm text-[#FF5733] shrink-0 ml-3">
-                            {formatPrice(svc.price)}
+                            {formatServicePrice(svc.price, svc.type, svc.priceType)}
                           </span>
                         </div>
                       </button>
@@ -507,7 +517,7 @@ export default function MultiTrainerBooking({
             </p>
             {selectedService && (
               <p className="text-sm text-[#FF5733] font-600 mt-2">
-                {selectedService.name} – {formatPrice(selectedService.price)}
+                {selectedService.name} – {formatServicePrice(selectedService.price, selectedService.type, selectedService.priceType)}
               </p>
             )}
           </div>

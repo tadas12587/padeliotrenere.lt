@@ -1,8 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Clock, Loader2, MessageSquare, Check, X, RotateCcw } from "lucide-react";
-import { formatDateLT, bookingStatusLabel, bookingStatusColor, cn } from "@/lib/utils";
+import { useState, useEffect, useMemo } from "react";
+import { Clock, Loader2, MessageSquare, Check, X } from "lucide-react";
+import { formatDateLT, bookingStatusLabel, bookingStatusColor, cn, formatServicePrice } from "@/lib/utils";
+
+interface AvailabilitySlotInfo {
+  startTime: string;
+  endTime: string;
+  maxParticipants?: number | null;
+  arena: { name: string; city: string };
+  trainer: { displayName: string };
+}
+
+interface ServiceInfo {
+  name: string;
+  price: string | null;
+  priceType: "TOTAL" | "PER_PERSON" | null;
+}
 
 interface Booking {
   id: string;
@@ -10,7 +24,9 @@ interface Booking {
   clientNotes?: string;
   createdAt: string;
   user: { name?: string; email?: string; phone?: string };
-  slot: { date: string; startTime: string; endTime: string };
+  slot?: { date: string; startTime: string; endTime: string } | null;
+  availabilitySlot?: AvailabilitySlotInfo | null;
+  service?: ServiceInfo | null;
   sessionNote?: { trainerNote?: string; clientNote?: string } | null;
 }
 
@@ -26,6 +42,7 @@ export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterTrainer, setFilterTrainer] = useState("");
   const [noteId, setNoteId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
@@ -39,6 +56,23 @@ export default function AdminBookingsPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [filterStatus]);
+
+  const trainerOptions = useMemo(() => {
+    const names = new Set<string>();
+    bookings.forEach((b) => {
+      if (b.availabilitySlot?.trainer?.displayName) {
+        names.add(b.availabilitySlot.trainer.displayName);
+      }
+    });
+    return Array.from(names).sort();
+  }, [bookings]);
+
+  const filteredBookings = useMemo(() => {
+    if (!filterTrainer) return bookings;
+    return bookings.filter(
+      (b) => b.availabilitySlot?.trainer?.displayName === filterTrainer
+    );
+  }, [bookings, filterTrainer]);
 
   const handleStatus = async (id: string, status: string) => {
     const res = await fetch(`/api/bookings/${id}`, {
@@ -74,23 +108,41 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-900 text-[#0B5C71]">Rezervacijos</h1>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
-          {statusOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setFilterStatus(value)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-600 transition-all",
-                filterStatus === value
-                  ? "bg-white text-[#0B5C71] shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Trainer filter */}
+          {trainerOptions.length > 0 && (
+            <select
+              value={filterTrainer}
+              onChange={(e) => setFilterTrainer(e.target.value)}
+              className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-[#FF5733]"
             >
-              {label}
-            </button>
-          ))}
+              <option value="">Visi treneriai</option>
+              {trainerOptions.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          )}
+          {/* Status filter */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
+            {statusOptions.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setFilterStatus(value)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-600 transition-all",
+                  filterStatus === value
+                    ? "bg-white text-[#0B5C71] shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -99,13 +151,13 @@ export default function AdminBookingsPage() {
           <Loader2 size={24} className="animate-spin" />
           Kraunama...
         </div>
-      ) : bookings.length === 0 ? (
+      ) : filteredBookings.length === 0 ? (
         <div className="card p-12 text-center text-gray-400">
           <p className="font-700">Rezervacijų nėra</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {bookings.map((booking) => (
+          {filteredBookings.map((booking) => (
             <div key={booking.id} className="card p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
@@ -124,15 +176,58 @@ export default function AdminBookingsPage() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                  <span className={`badge ${bookingStatusColor(booking.status)}`}>
-                    {bookingStatusLabel(booking.status)}
-                  </span>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <Clock size={13} />
-                    {formatDateLT(booking.slot.date)} · {booking.slot.startTime} – {booking.slot.endTime}
+                  <div className="flex items-center gap-2">
+                    <span className={`badge ${bookingStatusColor(booking.status)}`}>
+                      {bookingStatusLabel(booking.status)}
+                    </span>
+                    {booking.availabilitySlot?.maxParticipants && booking.availabilitySlot.maxParticipants > 0 && (
+                      <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">
+                        Grupinė
+                      </span>
+                    )}
                   </div>
+                  {booking.availabilitySlot ? (
+                    <div className="text-sm text-gray-500 text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        <Clock size={13} />
+                        {new Date(booking.availabilitySlot.startTime).toLocaleDateString("lt-LT", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        })}{" "}
+                        {new Date(booking.availabilitySlot.startTime).toLocaleTimeString("lt-LT", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        –{" "}
+                        {new Date(booking.availabilitySlot.endTime).toLocaleTimeString("lt-LT", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {booking.availabilitySlot.trainer.displayName} ·{" "}
+                        {booking.availabilitySlot.arena.name}, {booking.availabilitySlot.arena.city}
+                      </p>
+                    </div>
+                  ) : booking.slot ? (
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <Clock size={13} />
+                      {formatDateLT(booking.slot.date)} · {booking.slot.startTime} – {booking.slot.endTime}
+                    </div>
+                  ) : null}
                 </div>
               </div>
+
+              {/* Service */}
+              {booking.service && (
+                <div className="mb-3 px-3 py-2 bg-[#0B5C71]/5 rounded-xl text-sm">
+                  <span className="font-600 text-[#0B5C71]">{booking.service.name}</span>
+                  <span className="text-gray-500 ml-2">
+                    {formatServicePrice(booking.service.price, undefined, booking.service.priceType)}
+                  </span>
+                </div>
+              )}
 
               {/* Client notes */}
               {booking.clientNotes && (

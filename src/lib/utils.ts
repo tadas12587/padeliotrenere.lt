@@ -54,6 +54,21 @@ export function bookingStatusLabel(status: string): string {
   return labels[status] || status;
 }
 
+export function formatServicePrice(
+  price: string | number | null | undefined,
+  type?: string | null,
+  priceType?: string | null
+): string {
+  if (price == null || price === "" || price === 0) return "Susitarti";
+  const n = typeof price === "number" ? price : parseFloat(String(price));
+  if (isNaN(n)) return "Susitarti";
+  if (type === "GROUP") {
+    if (priceType === "PER_PERSON") return `${n} €/asm.`;
+    return `${n} € (visa grupė)`;
+  }
+  return `${n} €`;
+}
+
 export function bookingStatusColor(status: string): string {
   const colors: Record<string, string> = {
     PENDING: "text-yellow-600 bg-yellow-50 border-yellow-200",
