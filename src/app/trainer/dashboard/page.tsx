@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Calendar, User, Award, ArrowRight, Clock } from "lucide-react";
+import { Calendar, User, Award, ArrowRight, Clock, MapPin } from "lucide-react";
 import { formatDateLT } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +23,24 @@ export default async function TrainerDashboardPage() {
         where: {
           trainerId: trainerProfile.id,
           status: { in: ["CONFIRMED", "PENDING"] },
-          slot: { date: { gte: today } },
+          OR: [
+            { slot: { date: { gte: today } } },
+            { availabilitySlot: { startTime: { gte: today } } },
+          ],
         },
-        orderBy: { slot: { date: "asc" } },
+        orderBy: { createdAt: "asc" },
         take: 10,
         include: {
           user: { select: { name: true, email: true } },
           slot: { select: { date: true, startTime: true, endTime: true } },
+          availabilitySlot: {
+            select: {
+              startTime: true,
+              endTime: true,
+              maxParticipants: true,
+              arena: { select: { name: true, city: true } },
+            },
+          },
           arena: { select: { name: true, city: true } },
           service: { select: { name: true } },
         },
@@ -153,7 +164,19 @@ export default async function TrainerDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {upcomingBookings.map((b) => (
+                {upcomingBookings.map((b) => {
+                  const avSlot = b.availabilitySlot;
+                  const dateLabel = avSlot
+                    ? new Date(avSlot.startTime).toLocaleDateString("lt-LT", { year: "numeric", month: "2-digit", day: "2-digit" })
+                    : b.slot ? formatDateLT(b.slot.date) : "—";
+                  const timeLabel = avSlot
+                    ? `${new Date(avSlot.startTime).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })} – ${new Date(avSlot.endTime).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}`
+                    : b.slot ? `${b.slot.startTime} – ${b.slot.endTime}` : "—";
+                  const arenaLabel = avSlot?.arena
+                    ? `${avSlot.arena.name}, ${avSlot.arena.city}`
+                    : b.arena ? `${b.arena.name}, ${b.arena.city}` : "—";
+                  const isGroup = avSlot && avSlot.maxParticipants && avSlot.maxParticipants > 0;
+                  return (
                   <tr
                     key={b.id}
                     className="border-b border-gray-50 hover:bg-gray-50/50"
@@ -164,23 +187,26 @@ export default async function TrainerDashboardPage() {
                       </p>
                       <p className="text-xs text-gray-400">{b.user.email}</p>
                     </td>
-                    <td className="py-3 pr-4 text-gray-600">
-                      {b.slot ? formatDateLT(b.slot.date) : "—"}
-                    </td>
+                    <td className="py-3 pr-4 text-gray-600">{dateLabel}</td>
                     <td className="py-3 pr-4 text-gray-600">
                       <span className="flex items-center gap-1">
                         <Clock size={12} />
-                        {b.slot ? `${b.slot.startTime} – ${b.slot.endTime}` : "—"}
+                        {timeLabel}
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-gray-600">
-                      {b.arena ? `${b.arena.name}, ${b.arena.city}` : "—"}
+                      <span className="flex items-center gap-1">
+                        <MapPin size={12} />
+                        {arenaLabel}
+                      </span>
                     </td>
                     <td className="py-3 text-gray-600">
+                      {isGroup && <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200 mr-1">Grupinė</span>}
                       {b.service?.name || "—"}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

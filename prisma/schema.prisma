@@ -141,7 +141,8 @@ model Booking {
   trainerProfile   TrainerProfile?   @relation(fields: [trainerId], references: [id], onDelete: SetNull)
   arena            Arena?            @relation(fields: [arenaId], references: [id], onDelete: SetNull)
   service          Service?          @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  availabilitySlot AvailabilitySlot?
+  availabilitySlot AvailabilitySlot? @relation("BookingToSlot", fields: [availabilitySlotId], references: [id], onDelete: SetNull)
+  ownedBySlot      AvailabilitySlot? @relation("SlotOwnsBooking")
 }
 
 model SessionNote {
@@ -280,7 +281,8 @@ model AvailabilitySlot {
   maxParticipants Int?
   status          SlotStatus     @default(AVAILABLE)
   bookingId       String?        @unique
-  booking         Booking?       @relation(fields: [bookingId], references: [id])
+  booking         Booking?       @relation("SlotOwnsBooking", fields: [bookingId], references: [id])
+  bookings        Booking[]      @relation("BookingToSlot")
   services        Service[]
   createdAt       DateTime       @default(now())
 }
