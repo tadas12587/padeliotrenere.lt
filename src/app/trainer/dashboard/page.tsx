@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Calendar, User, Award, ArrowRight, Clock, MapPin } from "lucide-react";
+import { Calendar, User, Award, ArrowRight, Clock, MapPin, BarChart2, Users } from "lucide-react";
 import { formatDateLT } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,41 @@ export default async function TrainerDashboardPage() {
       })
     : [];
 
+  const clientBookings = trainerProfile
+    ? await prisma.booking.findMany({
+        where: {
+          trainerId: trainerProfile.id,
+          status: { in: ["CONFIRMED", "PENDING"] },
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          availabilitySlot: { select: { startTime: true } },
+          slot: { select: { date: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+
+  const clientMap = new Map<string, { name: string; email: string; count: number; lastDate: Date | null }>();
+  for (const b of clientBookings) {
+    const uid = b.user.id;
+    const date = b.availabilitySlot?.startTime
+      ? new Date(b.availabilitySlot.startTime)
+      : b.slot?.date
+      ? new Date(b.slot.date)
+      : null;
+    if (!clientMap.has(uid)) {
+      clientMap.set(uid, { name: b.user.name || "—", email: b.user.email || "—", count: 1, lastDate: date });
+    } else {
+      const entry = clientMap.get(uid)!;
+      entry.count++;
+      if (date && (!entry.lastDate || date > entry.lastDate)) entry.lastDate = date;
+    }
+  }
+  const clients = Array.from(clientMap.values()).sort(
+    (a, b) => (b.lastDate?.getTime() ?? 0) - (a.lastDate?.getTime() ?? 0)
+  );
+
   const name =
     trainerProfile?.displayName ||
     sessionUser.name?.split(" ")[0] ||
@@ -71,7 +106,7 @@ export default async function TrainerDashboardPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         {[
           {
             href: "/trainer/profile",
@@ -96,6 +131,14 @@ export default async function TrainerDashboardPage() {
             icon: Calendar,
             color: "bg-green-50",
             iconColor: "text-green-500",
+          },
+          {
+            href: "/trainer/stats",
+            label: "Statistika",
+            desc: "Peržiūrėti statistiką",
+            icon: BarChart2,
+            color: "bg-orange-50",
+            iconColor: "text-orange-500",
           },
         ].map(({ href, label, desc, icon: Icon, color, iconColor }) => (
           <Link
@@ -207,6 +250,71 @@ export default async function TrainerDashboardPage() {
                   </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Mano klientai */}
+      <div className="card p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-800 text-[#0B5C71] flex items-center gap-2">
+            <Users size={18} />
+            Mano klientai
+          </h2>
+          <span className="badge text-xs text-[#0B5C71] bg-[#0B5C71]/10 border-[#0B5C71]/20">
+            {clients.length} klientų
+          </span>
+        </div>
+
+        {clients.length === 0 ? (
+          <div className="text-center py-10 text-gray-400">
+            <Users size={40} className="mx-auto mb-3 opacity-30" />
+            <p className="font-600">Klientų nėra</p>
+            <p className="text-sm mt-1">Čia atsiras klientai, kai bus rezervacijų</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left font-700 text-gray-500 py-2 pr-4">Klientas</th>
+                  <th className="text-left font-700 text-gray-500 py-2 pr-4">El. paštas</th>
+                  <th className="text-left font-700 text-gray-500 py-2 pr-4">Sesijų</th>
+                  <th className="text-left font-700 text-gray-500 py-2 pr-4">Paskutinė sesija</th>
+                  <th className="text-left font-700 text-gray-500 py-2">Kontaktas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clients.map((c, i) => (
+                  <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <td className="py-3 pr-4">
+                      <p className="font-600 text-[#0B5C71]">{c.name}</p>
+                    </td>
+                    <td className="py-3 pr-4 text-gray-500 text-xs">{c.email}</td>
+                    <td className="py-3 pr-4">
+                      <span className="badge text-xs text-[#0B5C71] bg-[#0B5C71]/10 border-[#0B5C71]/20">
+                        {c.count}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-gray-600 text-xs">
+                      {c.lastDate
+                        ? c.lastDate.toLocaleDateString("lt-LT", { year: "numeric", month: "2-digit", day: "2-digit" })
+                        : "—"}
+                    </td>
+                    <td className="py-3">
+                      {c.email !== "—" && (
+                        <a
+                          href={`mailto:${c.email}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B5C71]/10 text-[#0B5C71] text-xs font-700 hover:bg-[#0B5C71]/20 transition-colors"
+                        >
+                          Rašyti
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

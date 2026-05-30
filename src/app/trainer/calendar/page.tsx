@@ -79,6 +79,7 @@ export default function TrainerCalendarPage() {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
   const [bookingSlot, setBookingSlot] = useState<AvailabilitySlot | null>(null);
+  const [showPast, setShowPast] = useState(false);
 
   // Participants panel state
   const [participantSlot, setParticipantSlot] = useState<AvailabilitySlot | null>(null);
@@ -627,23 +628,26 @@ export default function TrainerCalendarPage() {
             <p className="font-600">Laiko tarpų nėra</p>
             <p className="text-sm mt-1">Pridėkite laiko tarpus aukščiau</p>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {slots.map((slot) => {
-              const isGroup = slot.maxParticipants && slot.maxParticipants > 0;
-              const isFull = isGroup && (slot.currentBookings ?? 0) >= slot.maxParticipants!;
-              const cardBg = slot.status === "AVAILABLE"
-                ? isGroup
-                  ? isFull ? "bg-orange-50 border-orange-200" : "bg-green-50 border-green-200"
-                  : "bg-gray-50 border-gray-100"
-                : "bg-blue-50 border-blue-200";
-              const iconBg = slot.status === "AVAILABLE"
-                ? isGroup ? isFull ? "bg-orange-100" : "bg-green-100" : "bg-green-50"
-                : "bg-blue-100";
-              const iconColor = slot.status === "AVAILABLE"
-                ? isGroup ? isFull ? "text-orange-500" : "text-green-500" : "text-green-500"
-                : "text-blue-500";
-              return (
+        ) : (() => {
+          const now = new Date();
+          const upcomingSlots = slots.filter((s) => new Date(s.startTime) >= now);
+          const pastSlots = slots.filter((s) => new Date(s.startTime) < now);
+
+          const renderSlot = (slot: AvailabilitySlot) => {
+            const isGroup = slot.maxParticipants && slot.maxParticipants > 0;
+            const isFull = isGroup && (slot.currentBookings ?? 0) >= slot.maxParticipants!;
+            const cardBg = slot.status === "AVAILABLE"
+              ? isGroup
+                ? isFull ? "bg-orange-50 border-orange-200" : "bg-green-50 border-green-200"
+                : "bg-gray-50 border-gray-100"
+              : "bg-blue-50 border-blue-200";
+            const iconBg = slot.status === "AVAILABLE"
+              ? isGroup ? isFull ? "bg-orange-100" : "bg-green-100" : "bg-green-50"
+              : "bg-blue-100";
+            const iconColor = slot.status === "AVAILABLE"
+              ? isGroup ? isFull ? "text-orange-500" : "text-green-500" : "text-green-500"
+              : "text-blue-500";
+            return (
               <div
                 key={slot.id}
                 className={`flex items-start justify-between p-4 rounded-xl border ${cardBg}`}
@@ -729,10 +733,46 @@ export default function TrainerCalendarPage() {
                   )}
                 </div>
               </div>
-              );
-            })}
-          </div>
-        )}
+            );
+          };
+
+          return (
+            <div className="space-y-6">
+              {/* Upcoming slots */}
+              <div>
+                <h3 className="text-sm font-700 text-[#0B5C71] mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+                  Artimiausi laikai
+                  <span className="text-gray-400 font-400">({upcomingSlots.length})</span>
+                </h3>
+                {upcomingSlots.length === 0 ? (
+                  <p className="text-sm text-gray-400 py-4 text-center">Nėra artimesnių laiko tarpų</p>
+                ) : (
+                  <div className="space-y-3">{upcomingSlots.map(renderSlot)}</div>
+                )}
+              </div>
+
+              {/* Past slots */}
+              {pastSlots.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setShowPast((v) => !v)}
+                    className="flex items-center gap-2 text-sm font-700 text-gray-500 hover:text-[#0B5C71] transition-colors mb-3"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-gray-300 inline-block" />
+                    {showPast ? "Slėpti praėjusius" : `Rodyti praėjusius (${pastSlots.length})`}
+                    <span className={`transition-transform ${showPast ? "rotate-180" : ""}`}>▾</span>
+                  </button>
+                  {showPast && (
+                    <div className="space-y-3 opacity-60">
+                      {pastSlots.map(renderSlot)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {bookingSlot && trainerId && (
