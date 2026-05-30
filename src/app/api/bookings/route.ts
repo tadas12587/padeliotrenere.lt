@@ -38,13 +38,13 @@ export async function GET(req: NextRequest) {
 
 // POST /api/bookings – auth required
 const createBookingSchema = z.object({
-  slotId: z.string().cuid().optional(),
+  slotId: z.string().min(1).optional(),
   clientNotes: z.string().max(500).optional(),
-  availabilitySlotId: z.string().cuid().optional(),
-  trainerId: z.string().cuid().optional(),
-  arenaId: z.string().cuid().optional(),
-  serviceId: z.string().cuid().optional(),
-  targetUserId: z.string().cuid().optional(),
+  availabilitySlotId: z.string().min(1).optional(),
+  trainerId: z.string().min(1).optional(),
+  arenaId: z.string().min(1).optional(),
+  serviceId: z.string().min(1).optional(),
+  targetUserId: z.string().min(1).optional(),
 });
 
 export async function POST(req: NextRequest) {
