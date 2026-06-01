@@ -5,6 +5,13 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
 
+function toHttps(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const secure = url.replace(/^http:\/\//i, "https://");
+  // Only allow https — skip anything still not secure
+  return secure.startsWith("https://") ? secure : null;
+}
+
 export default async function Image({
   params,
 }: {
@@ -19,7 +26,7 @@ export default async function Image({
 
   const name = trainer?.displayName ?? "Treneris";
   const city = trainer?.city ?? "";
-  const photoUrl = trainer?.photoUrl;
+  const photoUrl = toHttps(trainer?.photoUrl);
 
   return new ImageResponse(
     (

@@ -5,6 +5,12 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
 
+function toHttps(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const secure = url.replace(/^http:\/\//i, "https://");
+  return secure.startsWith("https://") ? secure : null;
+}
+
 export default async function Image({
   params,
 }: {
@@ -19,7 +25,7 @@ export default async function Image({
 
   const title = article?.title ?? "Straipsnis";
   const excerpt = article?.excerpt ?? "";
-  const coverImage = article?.coverImage;
+  const coverImage = toHttps(article?.coverImage);
 
   return new ImageResponse(
     (

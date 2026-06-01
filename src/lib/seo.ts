@@ -12,6 +12,10 @@ export async function getGlobalSeo() {
   return db.globalSeoSetting.findUnique({ where: { id: "global" } });
 }
 
+function ensureHttps(url: string): string {
+  return url.replace(/^http:\/\//i, "https://");
+}
+
 export function buildMetadata({
   title,
   description,
@@ -32,13 +36,16 @@ export function buildMetadata({
     twitterHandle?: string | null;
   } | null;
 }) {
-  const siteUrl =
+  const siteUrl = ensureHttps(
     global?.siteUrl ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://padeliotrenere.lt";
+    "https://padeliotrenere.lt"
+  );
   const canonicalUrl = path ? `${siteUrl}${path}` : siteUrl;
-  const ogImage =
-    ogImageUrl || global?.defaultOgImage || `${siteUrl}/og-default.jpg`;
+  const rawOgImage = ogImageUrl || global?.defaultOgImage;
+  const ogImage = rawOgImage
+    ? ensureHttps(rawOgImage)
+    : `${siteUrl}/og-default.jpg`;
   const siteName = global?.siteName || "Padėlio Treneris";
 
   return {
