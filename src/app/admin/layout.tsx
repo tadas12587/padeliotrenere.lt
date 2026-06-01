@@ -30,6 +30,7 @@ const navItems = [
   { href: "/admin/arenas", label: "Arenos", icon: Building2 },
   { href: "/admin/sports", label: "Sporto šakos", icon: Trophy },
   { href: "/admin/service-catalog", label: "Paslaugų katalogas", icon: LayoutList },
+  { href: "/admin/seo", label: "SEO", icon: Globe },
 ];
 
 export default async function AdminLayout({
