@@ -20,13 +20,13 @@ export default async function Image({
 
   const arena = await prisma.arena.findUnique({
     where: { id },
-    select: { name: true, city: true, address: true, photoUrl: true },
+    select: { name: true, city: true, address: true, photoUrl: true, bannerUrl: true },
   });
 
   const name = arena?.name ?? "Sporto arena";
   const city = arena?.city ?? "";
   const address = arena?.address ?? "";
-  const photoUrl = toHttps(arena?.photoUrl);
+  const photoUrl = toHttps(arena?.bannerUrl) ?? toHttps(arena?.photoUrl);
 
   return new ImageResponse(
     (
