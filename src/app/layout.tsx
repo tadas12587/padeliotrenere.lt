@@ -19,6 +19,9 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://padeliotrenere.lt"
+  ),
   title: {
     default: "ManoTreniruote.lt | Sporto treneriai Lietuvoje",
     template: "%s | ManoTreniruote.lt",
