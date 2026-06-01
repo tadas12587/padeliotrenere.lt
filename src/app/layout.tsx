@@ -59,6 +59,30 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
       <body className="min-h-full flex flex-col bg-white text-gray-900">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Padėlio Treneris",
+              url:
+                process.env.NEXT_PUBLIC_APP_URL ||
+                "https://padeliotrenere.lt",
+              logo: `${
+                process.env.NEXT_PUBLIC_APP_URL ||
+                "https://padeliotrenere.lt"
+              }/logo.png`,
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "customer service",
+                areaServed: "LT",
+                availableLanguage: "Lithuanian",
+              },
+              sameAs: [],
+            }),
+          }}
+        />
         <Providers>
           <ServiceWorkerRegistration />
           {children}

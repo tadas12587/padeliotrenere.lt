@@ -25,6 +25,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: article.excerpt || undefined,
       images: article.coverImage ? [article.coverImage] : [],
     },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: article.title,
+      description: article.excerpt || undefined,
+      images: article.coverImage ? [article.coverImage] : [],
+    },
   };
 }
 
@@ -38,6 +44,28 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: article.title,
+            description: article.excerpt || undefined,
+            image: article.coverImage || undefined,
+            datePublished: article.createdAt,
+            dateModified: article.updatedAt,
+            author: {
+              "@type": "Organization",
+              name: "Padėlio Treneris",
+            },
+            url: `${
+              process.env.NEXT_PUBLIC_APP_URL ||
+              "https://padeliotrenere.lt"
+            }/blog/${article.slug}`,
+          }),
+        }}
+      />
       {/* Cover */}
       {article.coverImage && (
         <div className="h-72 lg:h-96 overflow-hidden">

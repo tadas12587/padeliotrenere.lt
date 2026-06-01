@@ -348,3 +348,25 @@ model ArenaPhoto {
   createdAt DateTime @default(now())
   arena     Arena    @relation(fields: [arenaId], references: [id], onDelete: Cascade)
 }
+
+model SeoSetting {
+  id          String   @id @default(cuid())
+  pageSlug    String   @unique
+  title       String?
+  description String?  @db.Text
+  ogImageUrl  String?
+  keywords    String?  @db.Text
+  updatedAt   DateTime @updatedAt
+}
+
+model GlobalSeoSetting {
+  id                     String   @id @default("global")
+  siteName               String   @default("Padėlio Treneris")
+  siteUrl                String?
+  defaultOgImage         String?
+  twitterHandle          String?
+  facebookUrl            String?
+  instagramUrl           String?
+  googleSiteVerification String?
+  updatedAt              DateTime @updatedAt
+}

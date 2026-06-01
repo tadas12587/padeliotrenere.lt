@@ -1,5 +1,33 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Padėlio treneriai Lietuvoje – Rezervuokite treniruotę online",
+  description:
+    "Raskite geriausią padelio trenerį Vilniuje, Kaune ar kitame mieste. Individualios ir grupinės padelio treniruotės. Rezervuokite laiką internetu.",
+  keywords: [
+    "padelio treneris",
+    "padel Lietuva",
+    "padelio treniruotės",
+    "padel Vilnius",
+    "padel Kaunas",
+    "sporto treneris",
+  ],
+  openGraph: {
+    title: "Padėlio treneriai Lietuvoje – Rezervuokite treniruotę online",
+    description:
+      "Raskite geriausią padelio trenerį Vilniuje, Kaune ar kitame mieste.",
+    type: "website",
+    locale: "lt_LT",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Padėlio treneriai Lietuvoje",
+    description:
+      "Individualios ir grupinės padelio treniruotės. Rezervuokite laiką internetu.",
+  },
+};
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {

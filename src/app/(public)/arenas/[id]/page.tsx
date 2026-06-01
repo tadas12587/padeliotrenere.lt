@@ -14,12 +14,24 @@ export async function generateMetadata({
   const { id } = await params;
   const arena = await prisma.arena.findUnique({
     where: { id },
-    select: { name: true, city: true },
+    select: { name: true, city: true, photoUrl: true },
   });
   if (!arena) return { title: "Arena nerasta" };
   return {
     title: `${arena.name} – Sporto arena`,
-    description: `${arena.name} sporto arena, ${arena.city}`,
+    description: `${arena.name} sporto arena ${arena.city}. Padelio kortai ir treniruotės.`,
+    openGraph: {
+      title: `${arena.name} – Sporto arena`,
+      description: `${arena.name} sporto arena ${arena.city}. Padelio kortai ir treniruotės.`,
+      type: "website",
+      images: arena.photoUrl
+        ? [{ url: arena.photoUrl, width: 1200, height: 630 }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: `${arena.name} – Sporto arena`,
+    },
   };
 }
 
@@ -83,6 +95,28 @@ export default async function ArenaDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SportsActivityLocation",
+            name: arena.name,
+            description: arena.description || undefined,
+            image: arena.photoUrl || undefined,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: arena.address,
+              addressLocality: arena.city,
+              addressCountry: "LT",
+            },
+            url: `${
+              process.env.NEXT_PUBLIC_APP_URL ||
+              "https://padeliotrenere.lt"
+            }/arenas/${arena.id}`,
+          }),
+        }}
+      />
       <ArenaHero
         name={arena.name}
         city={arena.city}

@@ -12,12 +12,24 @@ export async function generateMetadata({
   const { id } = await params;
   const trainer = await prisma.trainerProfile.findUnique({
     where: { id },
-    select: { displayName: true, city: true },
+    select: { displayName: true, city: true, photoUrl: true },
   });
   if (!trainer) return { title: "Treneris nerastas" };
   return {
     title: `${trainer.displayName} – Padelio treneris`,
-    description: `${trainer.displayName} padelio treneris, ${trainer.city}`,
+    description: `${trainer.displayName} padelio treneris ${trainer.city ? `– ${trainer.city}` : ""}`,
+    openGraph: {
+      title: `${trainer.displayName} – Padelio treneris`,
+      description: `${trainer.displayName} padelio treneris ${trainer.city ? `– ${trainer.city}` : ""}`,
+      type: "profile",
+      images: trainer.photoUrl
+        ? [{ url: trainer.photoUrl, width: 400, height: 400 }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: `${trainer.displayName} – Padelio treneris`,
+    },
   };
 }
 
@@ -147,6 +159,28 @@ export default async function TrainerDetailPage({
 
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Person",
+            name: trainer.displayName,
+            description: trainer.bio || undefined,
+            image: trainer.photoUrl || undefined,
+            jobTitle: "Sporto treneris",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: trainer.city || undefined,
+              addressCountry: "LT",
+            },
+            url: `${
+              process.env.NEXT_PUBLIC_APP_URL ||
+              "https://padeliotrenere.lt"
+            }/trainers/${trainer.id}`,
+          }),
+        }}
+      />
       {/* Header */}
       <section className="bg-[#0B5C71] text-white py-12">
         <div className="container-tight">
