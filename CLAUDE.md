@@ -1,2 +1,3 @@
 @AGENTS.md
 @UI_PATTERNS.md
+@PAGE_PATTERNS.md
