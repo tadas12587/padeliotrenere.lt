@@ -12,23 +12,28 @@ export async function generateMetadata({
   const { id } = await params;
   const trainer = await prisma.trainerProfile.findUnique({
     where: { id },
-    select: { displayName: true, city: true, photoUrl: true },
+    select: { displayName: true, city: true, bio: true },
   });
   if (!trainer) return { title: "Treneris nerastas" };
+
+  const title = `${trainer.displayName} – Padelio treneris`;
+  const description = trainer.bio
+    ? trainer.bio.slice(0, 200)
+    : `${trainer.displayName} – profesionalus padelio treneris${trainer.city ? ` ${trainer.city} mieste` : ""}. Individualios ir grupinės treniruotės. Rezervuokite laiką internetu.`;
+
   return {
-    title: `${trainer.displayName} – Padelio treneris`,
-    description: `${trainer.displayName} padelio treneris ${trainer.city ? `– ${trainer.city}` : ""}`,
+    title,
+    description,
     openGraph: {
-      title: `${trainer.displayName} – Padelio treneris`,
-      description: `${trainer.displayName} padelio treneris ${trainer.city ? `– ${trainer.city}` : ""}`,
+      title,
+      description,
       type: "profile",
-      images: trainer.photoUrl
-        ? [{ url: trainer.photoUrl, width: 400, height: 400 }]
-        : [],
+      // og:image is handled by opengraph-image.tsx (1200×630, HTTPS)
     },
     twitter: {
       card: "summary_large_image" as const,
-      title: `${trainer.displayName} – Padelio treneris`,
+      title,
+      description,
     },
   };
 }

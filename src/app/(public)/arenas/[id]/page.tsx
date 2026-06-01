@@ -14,23 +14,26 @@ export async function generateMetadata({
   const { id } = await params;
   const arena = await prisma.arena.findUnique({
     where: { id },
-    select: { name: true, city: true, photoUrl: true },
+    select: { name: true, city: true, address: true },
   });
   if (!arena) return { title: "Arena nerasta" };
+
+  const title = `${arena.name} – Sporto arena`;
+  const description = `${arena.name} – padelio sporto arena${arena.city ? ` ${arena.city} mieste` : ""}${arena.address ? `, ${arena.address}` : ""}. Rezervuokite kortą arba treniruotę su sertifikuotu treneriu internetu.`;
+
   return {
-    title: `${arena.name} – Sporto arena`,
-    description: `${arena.name} sporto arena ${arena.city}. Padelio kortai ir treniruotės.`,
+    title,
+    description,
     openGraph: {
-      title: `${arena.name} – Sporto arena`,
-      description: `${arena.name} sporto arena ${arena.city}. Padelio kortai ir treniruotės.`,
-      type: "website",
-      images: arena.photoUrl
-        ? [{ url: arena.photoUrl, width: 1200, height: 630 }]
-        : [],
+      title,
+      description,
+      type: "website" as const,
+      // og:image is handled by opengraph-image.tsx (1200×630, HTTPS)
     },
     twitter: {
       card: "summary_large_image" as const,
-      title: `${arena.name} – Sporto arena`,
+      title,
+      description,
     },
   };
 }
