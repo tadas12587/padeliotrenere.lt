@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   const city = searchParams.get("city");
   const sport = searchParams.get("sport");
   const trainerId = searchParams.get("trainerId");
+  const arenaId = searchParams.get("arenaId");
   const from = searchParams.get("from");
   const to = searchParams.get("to");
   const own = searchParams.get("own") === "1"; // trainer fetching their own slots (all statuses)
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     where: {
       ...statusFilter,
       ...(trainerId ? { trainerId } : {}),
-      ...(city ? { arena: { city: { contains: city } } } : {}),
+      ...(arenaId ? { arenaId } : city ? { arena: { city: { contains: city } } } : {}),
       ...(!own && from ? { startTime: { gte: new Date(from) } } : !own ? { startTime: { gte: new Date() } } : {}),
       ...(from && own ? { startTime: { gte: new Date(from) } } : {}),
       ...(to ? { endTime: { lte: new Date(to) } } : {}),

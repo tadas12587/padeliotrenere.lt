@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn, formatServicePrice } from "@/lib/utils";
+import FilterBar, { FilterGroup } from "@/components/FilterBar";
 
 interface Sport {
   id: string;
@@ -137,6 +138,8 @@ function Modal({
 interface Props {
   initialTrainerId?: string;
   initialArenaId?: string;
+  initialTrainerName?: string;
+  initialArenaName?: string;
   availableSports?: Sport[];
   availableCities?: string[];
 }
@@ -144,9 +147,12 @@ interface Props {
 export default function MultiTrainerBooking({
   initialTrainerId = "",
   initialArenaId = "",
+  initialTrainerName = "",
+  initialArenaName = "",
   availableSports = [],
   availableCities = [],
 }: Props) {
+  const isContextMode = !!(initialTrainerId || initialArenaId);
   const [sport, setSport] = useState("");
   const [city, setCity] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -182,9 +188,6 @@ export default function MultiTrainerBooking({
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   })();
 
-  const toggleSport = (s: string) => { setSport((p) => (p === s ? "" : s)); setSelectedDate(null); };
-  const toggleCity = (c: string) => { setCity((p) => (p === c ? "" : c)); setSelectedDate(null); };
-
   const fetchSlots = useCallback(
     (date: Date) => {
       setLoading(true);
@@ -194,16 +197,19 @@ export default function MultiTrainerBooking({
       const params = new URLSearchParams();
       params.set("from", dayStart.toISOString());
       params.set("to", dayEnd.toISOString());
-      if (sport.trim()) params.set("sport", sport.trim());
-      if (city.trim()) params.set("city", city.trim());
       if (initialTrainerId) params.set("trainerId", initialTrainerId);
+      else if (initialArenaId) params.set("arenaId", initialArenaId);
+      else {
+        if (sport.trim()) params.set("sport", sport.trim());
+        if (city.trim()) params.set("city", city.trim());
+      }
       fetch(`/api/availability?${params}`)
         .then((r) => r.json())
         .then((data) => setSlots(Array.isArray(data) ? data : []))
         .catch(console.error)
         .finally(() => setLoading(false));
     },
-    [sport, city, initialTrainerId]
+    [sport, city, initialTrainerId, initialArenaId]
   );
 
   useEffect(() => { if (selectedDate) fetchSlots(selectedDate); }, [selectedDate, fetchSlots]);
@@ -296,56 +302,49 @@ export default function MultiTrainerBooking({
     );
   }
 
-  const hasFilter = sport || city;
+  const filterGroups: FilterGroup[] = isContextMode ? [] : [
+    ...(availableSports.length > 0 ? [{
+      key: "sport",
+      label: "Sportas",
+      allLabel: "Visi sportai",
+      options: availableSports.map((s) => ({ value: s.slug, label: s.name, icon: s.icon ?? undefined })),
+      value: sport,
+      onChange: (v: string) => { setSport(v); setSelectedDate(null); },
+    }] : []),
+    ...(availableCities.length > 0 ? [{
+      key: "city",
+      label: "Miestas",
+      allLabel: "Visi miestai",
+      options: availableCities.map((c) => ({ value: c, label: c })),
+      value: city,
+      onChange: (v: string) => { setCity(v); setSelectedDate(null); },
+    }] : []),
+  ];
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Filters */}
-      {(availableSports.length > 0 || availableCities.length > 0) && (
-        <div className="card p-5 mb-5">
-          <div className="flex flex-col gap-4">
-            {availableSports.length > 0 && (
-              <div>
-                <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Sporto šaka</p>
-                <div className="flex flex-wrap gap-2">
-                  {availableSports.map((sp) => (
-                    <button key={sp.id} type="button" onClick={() => toggleSport(sp.slug)}
-                      className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                        sport === sp.slug ? "bg-[#0B5C71] text-white border-[#0B5C71]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
-                      }`}
-                    >
-                      {sp.icon ? `${sp.icon} ` : ""}{sp.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {availableCities.length > 0 && (
-              <div>
-                <p className="text-xs font-600 text-gray-400 uppercase tracking-wider mb-2">Miestas</p>
-                <div className="flex flex-wrap gap-2">
-                  {availableCities.map((c) => (
-                    <button key={c} type="button" onClick={() => toggleCity(c)}
-                      className={`px-3.5 py-1.5 rounded-full text-sm font-600 border transition-all ${
-                        city === c ? "bg-[#0B5C71] text-white border-[#0B5C71]"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-[#0B5C71] hover:text-[#0B5C71]"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {hasFilter && (
-              <button type="button" onClick={() => { setSport(""); setCity(""); setSelectedDate(null); }}
-                className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FF5733] transition-colors w-fit"
-              >
-                <X size={14} /> Išvalyti filtrus
-              </button>
-            )}
-          </div>
+      {/* Context banner — when arriving from trainer/arena page */}
+      {isContextMode ? (
+        <div className="flex items-center gap-3 px-4 py-3 bg-[#0B5C71]/5 border border-[#0B5C71]/15 rounded-2xl mb-5">
+          <div className="w-2 h-2 rounded-full bg-[#0B5C71] shrink-0" />
+          <p className="text-sm font-600 text-[#0B5C71] flex-1 min-w-0 truncate">
+            {initialTrainerName
+              ? `Rodomi laikai: ${initialTrainerName}`
+              : `Rodoma arena: ${initialArenaName}`}
+          </p>
+          <a
+            href="/booking"
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#FF5733] transition-colors shrink-0 font-600"
+          >
+            <X size={13} /> Visi laikai
+          </a>
+        </div>
+      ) : filterGroups.length > 0 && (
+        <div className="mb-5">
+          <FilterBar
+            groups={filterGroups}
+            onClear={() => { setSport(""); setCity(""); setSelectedDate(null); }}
+          />
         </div>
       )}
 

@@ -17,7 +17,7 @@ interface Props {
 export default async function BookingPage({ searchParams }: Props) {
   const { trainerId, arenaId } = await searchParams;
 
-  const [rawSports, rawCities] = await Promise.all([
+  const [rawSports, rawCities, contextTrainer, contextArena] = await Promise.all([
     prisma.sport.findMany({
       where: { trainers: { some: { trainer: { status: "APPROVED" } } } },
       orderBy: { name: "asc" },
@@ -28,11 +28,17 @@ export default async function BookingPage({ searchParams }: Props) {
       distinct: ["city"],
       orderBy: { city: "asc" },
     }),
+    trainerId
+      ? prisma.trainerProfile.findUnique({ where: { id: trainerId }, select: { displayName: true } })
+      : null,
+    arenaId
+      ? prisma.arena.findUnique({ where: { id: arenaId }, select: { name: true, city: true } })
+      : null,
   ]);
 
-  const availableCities = rawCities
-    .map((t) => t.city)
-    .filter((c): c is string => !!c);
+  const availableCities = rawCities.map((t) => t.city).filter((c): c is string => !!c);
+  const contextTrainerName = contextTrainer?.displayName ?? "";
+  const contextArenaName = contextArena ? `${contextArena.name}, ${contextArena.city}` : "";
 
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
@@ -41,10 +47,17 @@ export default async function BookingPage({ searchParams }: Props) {
           <span className="text-[#FF5733] font-700 uppercase tracking-widest text-sm">
             Rezervacija
           </span>
-          <h1 className="text-4xl font-900 mt-2 mb-3">Rezervuokite treniruotę</h1>
+          <h1 className="text-4xl font-900 mt-2 mb-3">
+            {contextTrainerName
+              ? `Rezervuoti su ${contextTrainerName}`
+              : contextArenaName
+              ? `Rezervuoti – ${contextArenaName}`
+              : "Rezervuokite treniruotę"}
+          </h1>
           <p className="text-gray-400 max-w-lg mx-auto">
-            Pasirinkite sporto šaką, miestą, dieną ir laiką – rezervuokite treniruotę su
-            bet kuriuo mūsų treneriu.
+            {contextTrainerName || contextArenaName
+              ? "Pasirinkite dieną ir laiką – rezervuokite treniruotę."
+              : "Pasirinkite sporto šaką, miestą, dieną ir laiką – rezervuokite treniruotę su bet kuriuo mūsų treneriu."}
           </p>
         </div>
       </div>
@@ -52,6 +65,8 @@ export default async function BookingPage({ searchParams }: Props) {
         <MultiTrainerBooking
           initialTrainerId={trainerId ?? ""}
           initialArenaId={arenaId ?? ""}
+          initialTrainerName={contextTrainerName}
+          initialArenaName={contextArenaName}
           availableSports={rawSports}
           availableCities={availableCities}
         />
