@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Pencil, Trash2, Check, X } from "lucide-react";
+import ImageUpload from "@/components/ImageUpload";
 
 interface Sport {
   id: string;
@@ -194,18 +195,15 @@ export default function SportsCRUD({ initialSports }: Props) {
             </div>
             <div>
               <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
-                Ikona — paveikslėlio URL (neprivaloma)
+                Ikona — paveikslėlis (neprivaloma)
               </label>
-              <input
-                type="url"
-                value={addIconUrl}
-                onChange={(e) => setAddIconUrl(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
-                placeholder="https://..."
+              <ImageUpload
+                currentUrl={addIconUrl || undefined}
+                onUploaded={(url) => setAddIconUrl(url)}
+                aspectRatio={1}
+                uploadType="logo"
+                label=""
               />
-              {addIconUrl && (
-                <img src={addIconUrl} alt="preview" className="mt-2 w-10 h-10 object-contain rounded border border-gray-200" />
-              )}
             </div>
             <div>
               <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
@@ -272,17 +270,14 @@ export default function SportsCRUD({ initialSports }: Props) {
                                 className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#FF5733]"
                               />
                             </div>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="url"
-                                value={editIconUrl}
-                                onChange={(e) => setEditIconUrl(e.target.value)}
-                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#FF5733] w-48"
-                                placeholder="Paveikslėlio URL"
+                            <div className="flex items-center gap-3">
+                              <ImageUpload
+                                currentUrl={editIconUrl || undefined}
+                                onUploaded={(url) => setEditIconUrl(url)}
+                                aspectRatio={1}
+                                uploadType="logo"
+                                label=""
                               />
-                              {editIconUrl && (
-                                <img src={editIconUrl} alt="preview" className="w-7 h-7 object-contain rounded border border-gray-200" />
-                              )}
                               <input
                                 type="text"
                                 value={editIcon}
