@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Save, CheckCircle, AlertTriangle } from "lucide-react";
-import ImageUpload from "@/components/ImageUpload";
+import { useState, useRef } from "react";
+import { Save, CheckCircle, AlertTriangle, Upload, Loader2 } from "lucide-react";
 
 interface Settings {
   logoUrl: string | null;
@@ -18,6 +17,98 @@ interface Settings {
   heroSubtitle: string | null;
   maintenanceMode: boolean;
   maintenanceMsg: string | null;
+}
+
+// Simple upload without crop — preserves original aspect ratio, resizes if too large
+function SimpleImageUpload({
+  currentUrl,
+  onUploaded,
+  hint,
+  maxDim = 800,
+  uploadType = "logo",
+}: {
+  currentUrl?: string | null;
+  onUploaded: (url: string) => void;
+  hint?: string;
+  maxDim?: number;
+  uploadType?: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const ref = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    try {
+      const blob = await resizeImage(file, maxDim);
+      const ext = file.type === "image/png" ? "png" : file.type === "image/svg+xml" ? "svg" : "jpg";
+      const fd = new FormData();
+      fd.append("file", blob, `upload.${ext}`);
+      fd.append("type", uploadType);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Upload failed");
+      const { url } = await res.json();
+      onUploaded(url);
+    } catch (err: any) {
+      setError(err.message || "Klaida įkeliant");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      {currentUrl && (
+        <div className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gray-50 p-3 w-fit max-w-[200px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentUrl} alt="Preview" className="max-h-16 max-w-full object-contain" />
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => ref.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-gray-300 text-sm font-600 text-gray-600 hover:border-[#FF5733] hover:text-[#FF5733] transition-colors disabled:opacity-60"
+        >
+          {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+          {uploading ? "Keliama..." : currentUrl ? "Pakeisti" : "Įkelti"}
+        </button>
+        {hint && <p className="text-xs text-gray-400">{hint}</p>}
+      </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
+
+function resizeImage(file: File, maxDim: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    if (file.type === "image/svg+xml") { resolve(file); return; }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const r = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * r);
+        height = Math.round(height * r);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+      const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+      canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas failed")), mime, 0.92);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Load failed")); };
+    img.src = url;
+  });
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -128,35 +219,35 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
       {/* Brand */}
       <Section title="Logotipas ir prekės ženklas">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Field label="Svetainės logotipas" hint="Rekomenduojamas dydis: kvadratas, PNG su skaidriu fonu">
-            <ImageUpload
-              currentUrl={logoUrl || undefined}
+          <Field label="Svetainės logotipas" hint="PNG, SVG arba JPG — bet kokių proporcijų">
+            <SimpleImageUpload
+              currentUrl={logoUrl}
               onUploaded={setLogoUrl}
-              aspectRatio={1}
+              maxDim={1200}
               uploadType="logo"
             />
             {logoUrl && (
               <button
                 type="button"
                 onClick={() => setLogoUrl("")}
-                className="text-xs text-red-500 hover:underline mt-1 text-left"
+                className="text-xs text-red-500 hover:underline"
               >
                 Pašalinti logotipą
               </button>
             )}
           </Field>
-          <Field label="Favicon (naršyklės kortelės ikona)" hint="Rekomenduojama: 32×32 arba 64×64 PNG">
-            <ImageUpload
-              currentUrl={faviconUrl || undefined}
+          <Field label="Favicon (naršyklės kortelės ikona)" hint="PNG, ICO — rekomenduojama ≥ 32×32">
+            <SimpleImageUpload
+              currentUrl={faviconUrl}
               onUploaded={setFaviconUrl}
-              aspectRatio={1}
+              maxDim={256}
               uploadType="logo"
             />
             {faviconUrl && (
               <button
                 type="button"
                 onClick={() => setFaviconUrl("")}
-                className="text-xs text-red-500 hover:underline mt-1 text-left"
+                className="text-xs text-red-500 hover:underline"
               >
                 Pašalinti favicon
               </button>
