@@ -3,7 +3,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Dumbbell, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import AuthLogo from "@/components/AuthLogo";
 
 const errorMessages: Record<string, string> = {
   Configuration: "Serverio konfigūracijos klaida.",
@@ -35,12 +36,7 @@ export default function AuthErrorPage() {
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
-        <Link href="/" className="inline-flex items-center gap-2 font-black text-xl mb-8">
-          <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
-            <Dumbbell size={22} className="text-white" />
-          </span>
-          <span className="font-heading text-[#0B5C71]">Mano<span className="text-[#FF5733]">Treniruote</span><span className="text-[#0B5C71] text-sm font-600">.lt</span></span>
-        </Link>
+        <AuthLogo />
 
         <Suspense
           fallback={

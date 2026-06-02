@@ -57,9 +57,10 @@ const NAV_CONFIG: Record<NavType, {
 interface Props {
   type: NavType;
   email: string;
+  logoUrl?: string | null;
 }
 
-export default function DashboardMobileNav({ type, email }: Props) {
+export default function DashboardMobileNav({ type, email, logoUrl }: Props) {
   const [open, setOpen] = useState(false);
   const { title, items } = NAV_CONFIG[type];
 
@@ -68,9 +69,14 @@ export default function DashboardMobileNav({ type, email }: Props) {
       {/* Top bar */}
       <div className="px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center shrink-0">
-            <Dumbbell size={14} className="text-white" />
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" className="h-7 w-auto object-contain" />
+          ) : (
+            <span className="w-7 h-7 rounded-lg bg-[#FF5733] flex items-center justify-center shrink-0">
+              <Dumbbell size={14} className="text-white" />
+            </span>
+          )}
           <span className="font-black text-sm">{title}</span>
         </div>
         <button

@@ -11,6 +11,7 @@ import {
   Globe,
 } from "lucide-react";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
+import { getSiteSettings } from "@/lib/settings";
 
 const navItems = [
   { href: "/client/dashboard", label: "Mano paskyra", icon: LayoutDashboard },
@@ -23,7 +24,10 @@ export default async function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const [session, { logoUrl }] = await Promise.all([
+    getServerSession(authOptions),
+    getSiteSettings(),
+  ]);
   if (!session) {
     redirect("/auth/login?callbackUrl=/client/dashboard");
   }
@@ -38,9 +42,14 @@ export default async function ClientLayout({
       <aside className="w-64 bg-[#0B5C71] text-white hidden lg:flex flex-col shrink-0">
         <div className="px-6 py-5 border-b border-white/10">
           <Link href="/client/dashboard" className="flex items-center gap-2 font-black text-lg">
-            <span className="w-8 h-8 rounded-lg bg-[#FF5733] flex items-center justify-center">
-              <Dumbbell size={16} className="text-white" />
-            </span>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="" className="h-8 w-auto object-contain" />
+            ) : (
+              <span className="w-8 h-8 rounded-lg bg-[#FF5733] flex items-center justify-center">
+                <Dumbbell size={16} className="text-white" />
+              </span>
+            )}
             <span>Mano paskyra</span>
           </Link>
         </div>
@@ -80,7 +89,7 @@ export default async function ClientLayout({
         </div>
       </aside>
 
-      <DashboardMobileNav type="client" email={email} />
+      <DashboardMobileNav type="client" email={email} logoUrl={logoUrl} />
 
       {/* Main content */}
       <main className="flex-1 overflow-auto p-4 pt-18 lg:pt-0 lg:p-8">

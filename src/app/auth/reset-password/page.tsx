@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Dumbbell, Lock, Loader2, Eye, EyeOff, CheckCircle } from "lucide-react";
+import AuthLogo from "@/components/AuthLogo";
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -148,17 +149,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 font-black text-xl">
-            <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
-              <Dumbbell size={22} className="text-white" />
-            </span>
-            <span className="font-heading text-[#0B5C71]">
-              Mano<span className="text-[#FF5733]">Treniruote</span>
-              <span className="text-sm font-600">.lt</span>
-            </span>
-          </Link>
-        </div>
+        <AuthLogo />
 
         <Suspense fallback={
           <div className="card p-8 flex items-center justify-center min-h-[200px]">

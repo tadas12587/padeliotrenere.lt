@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Dumbbell, Mail, Loader2, CheckCircle } from "lucide-react";
+import AuthLogo from "@/components/AuthLogo";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -34,17 +35,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 font-black text-xl">
-            <span className="w-10 h-10 rounded-xl bg-[#FF5733] flex items-center justify-center">
-              <Dumbbell size={22} className="text-white" />
-            </span>
-            <span className="font-heading text-[#0B5C71]">
-              Mano<span className="text-[#FF5733]">Treniruote</span>
-              <span className="text-sm font-600">.lt</span>
-            </span>
-          </Link>
-        </div>
+        <AuthLogo />
 
         <div className="card p-8">
           {sent ? (
