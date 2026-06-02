@@ -156,7 +156,7 @@ export default function MultiTrainerBooking({
   const [sport, setSport] = useState("");
   const [city, setCity] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(false);
 
