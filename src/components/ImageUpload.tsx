@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import ReactCrop, {
   type Crop,
   centerCrop,
@@ -72,16 +73,22 @@ function CropModal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center transition-opacity duration-300",
+        "fixed inset-0 z-[9999] flex flex-col justify-end sm:items-center sm:justify-center transition-opacity duration-300",
         open ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
     >
@@ -101,7 +108,8 @@ function CropModal({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
