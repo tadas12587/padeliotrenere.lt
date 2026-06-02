@@ -32,7 +32,7 @@ export default async function TrainerLayout({
     getServerSession(authOptions),
     getSiteSettings(),
   ]);
-  const logoUrl = settings.logoUrlDark ?? settings.logoUrl;
+  const logoUrl = settings.logoSquareDark ?? settings.logoUrlDark ?? settings.logoUrl;
 
   if (!session) {
     redirect("/auth/login");

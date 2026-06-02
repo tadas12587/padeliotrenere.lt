@@ -45,7 +45,7 @@ export default async function AdminLayout({
     getServerSession(authOptions),
     getSiteSettings(),
   ]);
-  const logoUrl = settings.logoUrlDark ?? settings.logoUrl;
+  const logoUrl = settings.logoSquareDark ?? settings.logoUrlDark ?? settings.logoUrl;
   if (!session || (session.user as any)?.role !== "ADMIN") {
     redirect("/auth/login");
   }

@@ -5,7 +5,9 @@ import { Save, CheckCircle, AlertTriangle, Upload, Loader2 } from "lucide-react"
 
 interface Settings {
   logoUrl: string | null;
+  logoSquare: string | null;
   logoUrlDark: string | null;
+  logoSquareDark: string | null;
   faviconUrl: string | null;
   tagline: string | null;
   phone: string | null;
@@ -169,7 +171,9 @@ function Textarea({
 
 export default function SettingsForm({ initial }: { initial: Settings }) {
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl ?? "");
+  const [logoSquare, setLogoSquare] = useState(initial.logoSquare ?? "");
   const [logoUrlDark, setLogoUrlDark] = useState(initial.logoUrlDark ?? "");
+  const [logoSquareDark, setLogoSquareDark] = useState(initial.logoSquareDark ?? "");
   const [faviconUrl, setFaviconUrl] = useState(initial.faviconUrl ?? "");
   const [tagline, setTagline] = useState(initial.tagline ?? "");
   const [phone, setPhone] = useState(initial.phone ?? "");
@@ -196,7 +200,9 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           logoUrl: logoUrl || null,
+          logoSquare: logoSquare || null,
           logoUrlDark: logoUrlDark || null,
+          logoSquareDark: logoSquareDark || null,
           faviconUrl: faviconUrl || null,
           tagline: tagline || null,
           phone: phone || null,
@@ -225,31 +231,65 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
     <div className="flex flex-col gap-6">
       {/* Brand */}
       <Section title="Logotipas ir prekės ženklas">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Field label="Logotipas (šviesiam fonui)" hint="Navbar, prisijungimo formos">
-            <div className="rounded-xl border border-gray-200 bg-white p-3 flex items-center justify-center min-h-[72px]">
-              <SimpleImageUpload currentUrl={logoUrl} onUploaded={setLogoUrl} maxDim={1200} uploadType="logo" />
-            </div>
-            {logoUrl && (
-              <button type="button" onClick={() => setLogoUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
-            )}
-          </Field>
-          <Field label="Logotipas (tamsiam fonui)" hint="Sidebar, footer, mobilė navigacija">
-            <div className="rounded-xl border border-[#0B5C71]/30 bg-[#0B5C71] p-3 flex items-center justify-center min-h-[72px]">
-              <SimpleImageUpload currentUrl={logoUrlDark} onUploaded={setLogoUrlDark} maxDim={1200} uploadType="logo" dark />
-            </div>
-            {logoUrlDark && (
-              <button type="button" onClick={() => setLogoUrlDark("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
-            )}
-          </Field>
-          <Field label="Favicon (naršyklės kortelė)" hint="PNG, ICO — rekomenduojama ≥ 32×32">
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex items-center justify-center min-h-[72px]">
-              <SimpleImageUpload currentUrl={faviconUrl} onUploaded={setFaviconUrl} maxDim={256} uploadType="logo" />
-            </div>
-            {faviconUrl && (
-              <button type="button" onClick={() => setFaviconUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
-            )}
-          </Field>
+        {/* Light bg logos */}
+        <div>
+          <p className="text-xs font-700 uppercase tracking-widest text-gray-400 mb-3">Šviesus fonas — Navbar, auth puslapiai</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Gulščias (landscape)" hint="Pagrindinis — plačiose vietose">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 flex items-center justify-center min-h-[72px]">
+                <SimpleImageUpload currentUrl={logoUrl} onUploaded={setLogoUrl} maxDim={1200} uploadType="logo" />
+              </div>
+              {logoUrl && (
+                <button type="button" onClick={() => setLogoUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+              )}
+            </Field>
+            <Field label="Kvadratas 1×1" hint="Kompaktinėse vietose (ateičiai)">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 flex items-center justify-center min-h-[72px]">
+                <SimpleImageUpload currentUrl={logoSquare} onUploaded={setLogoSquare} maxDim={512} uploadType="logo" />
+              </div>
+              {logoSquare && (
+                <button type="button" onClick={() => setLogoSquare("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+              )}
+            </Field>
+          </div>
+        </div>
+
+        {/* Dark bg logos */}
+        <div>
+          <p className="text-xs font-700 uppercase tracking-widest text-gray-400 mb-3">Tamsus fonas — Sidebar, footer, mobilė navigacija</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Gulščias (landscape)" hint="Footer — plačioje juostoje">
+              <div className="rounded-xl border border-[#0B5C71]/30 bg-[#0B5C71] p-3 flex items-center justify-center min-h-[72px]">
+                <SimpleImageUpload currentUrl={logoUrlDark} onUploaded={setLogoUrlDark} maxDim={1200} uploadType="logo" dark />
+              </div>
+              {logoUrlDark && (
+                <button type="button" onClick={() => setLogoUrlDark("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+              )}
+            </Field>
+            <Field label="Kvadratas 1×1" hint="Sidebar ir mobilė navigacija (prie teksto)">
+              <div className="rounded-xl border border-[#0B5C71]/30 bg-[#0B5C71] p-3 flex items-center justify-center min-h-[72px]">
+                <SimpleImageUpload currentUrl={logoSquareDark} onUploaded={setLogoSquareDark} maxDim={512} uploadType="logo" dark />
+              </div>
+              {logoSquareDark && (
+                <button type="button" onClick={() => setLogoSquareDark("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+              )}
+            </Field>
+          </div>
+        </div>
+
+        {/* Favicon */}
+        <div className="pt-2 border-t border-gray-100">
+          <p className="text-xs font-700 uppercase tracking-widest text-gray-400 mb-3">Favicon</p>
+          <div className="max-w-[220px]">
+            <Field label="Naršyklės kortelė" hint="PNG, ICO — rekomenduojama ≥ 32×32">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex items-center justify-center min-h-[72px]">
+                <SimpleImageUpload currentUrl={faviconUrl} onUploaded={setFaviconUrl} maxDim={256} uploadType="logo" />
+              </div>
+              {faviconUrl && (
+                <button type="button" onClick={() => setFaviconUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+              )}
+            </Field>
+          </div>
         </div>
         <Field label="Šūkis (tagline)" hint="Rodomas footer'yje po logotipu">
           <Input
