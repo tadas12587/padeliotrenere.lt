@@ -4,6 +4,10 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Star, MapPin, Clock, CheckCircle, Calendar } from "lucide-react";
 import SportBadge from "@/components/SportBadge";
+import TrainerHero from "./TrainerHero";
+import { formatServicePrice } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -57,32 +61,6 @@ function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   );
 }
 
-function InitialsAvatar({
-  name,
-  size = "lg",
-}: {
-  name: string;
-  size?: "sm" | "lg";
-}) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const cls =
-    size === "lg"
-      ? "w-32 h-32 text-4xl rounded-full"
-      : "w-10 h-10 text-base rounded-full";
-  return (
-    <div
-      className={`${cls} bg-[#FF5733]/20 border-2 border-[#FF5733]/40 flex items-center justify-center font-900 text-white shrink-0`}
-    >
-      {initials}
-    </div>
-  );
-}
-
 function formatDate(d: Date) {
   return new Intl.DateTimeFormat("lt-LT", {
     year: "numeric",
@@ -121,6 +99,7 @@ export default async function TrainerDetailPage({
       user: true,
       services: true,
       certifications: true,
+      gallery: { orderBy: { order: "asc" } },
       arenas: {
         include: { arena: true },
       },
@@ -137,7 +116,7 @@ export default async function TrainerDetailPage({
           startTime: { gte: new Date() },
         },
         orderBy: { startTime: "asc" },
-        take: 30,
+        take: 5,
         include: { arena: true },
       },
     },
@@ -187,69 +166,23 @@ export default async function TrainerDetailPage({
           }),
         }}
       />
-      {/* Header */}
-      <section className="bg-[#0B5C71] text-white py-12">
-        <div className="container-tight">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            {/* Photo / Avatar */}
-            <div className="shrink-0">
-              {trainer.photoUrl ? (
-                <img
-                  src={trainer.photoUrl}
-                  alt={trainer.displayName}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-[#FF5733]/40"
-                />
-              ) : (
-                <InitialsAvatar name={trainer.displayName} size="lg" />
-              )}
-            </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-3 mb-1">
-                <h1 className="text-3xl lg:text-4xl font-900 leading-tight">
-                  {trainer.displayName}
-                </h1>
-                <span className="bg-green-500/20 text-green-400 border border-green-500/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
-                  Patvirtintas
-                </span>
-                {trainer.isFeatured && (
-                  <span className="bg-[#FF5733]/20 text-[#FF5733] border border-[#FF5733]/30 text-xs font-700 px-3 py-1 rounded-full uppercase tracking-wider">
-                    Rekomenduojamas
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 text-gray-400 mb-3">
-                <MapPin size={15} />
-                <span>{trainer.city}</span>
-              </div>
-
-              {avgRating !== null && (
-                <div className="flex items-center gap-2">
-                  <StarRating rating={avgRating} />
-                  <span className="font-700 text-[#FF5733]">
-                    {avgRating.toFixed(1)}
-                  </span>
-                  <span className="text-gray-400 text-sm">
-                    ({trainer.reviews.length} atsiliepimų)
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* CTA */}
-            <div className="shrink-0">
-              <Link
-                href={`/booking?trainerId=${trainer.id}`}
-                className="btn-primary py-3 px-7"
-              >
-                Rezervuoti
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero banner */}
+      <TrainerHero
+        displayName={trainer.displayName}
+        city={trainer.city}
+        photoUrl={trainer.photoUrl}
+        gallery={trainer.gallery}
+        avgRating={avgRating}
+        reviewCount={trainer.reviews.length}
+        isFeatured={trainer.isFeatured}
+        trainerId={trainer.id}
+        instagramUrl={trainer.instagramUrl}
+        facebookUrl={trainer.facebookUrl}
+        youtubeUrl={trainer.youtubeUrl}
+        tiktokUrl={trainer.tiktokUrl}
+        websiteUrl={trainer.websiteUrl}
+      />
 
       <div className="container-tight py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left column */}
@@ -305,9 +238,25 @@ export default async function TrainerDetailPage({
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-700 text-[#0B5C71]">
-                          {service.name}
-                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="font-700 text-[#0B5C71]">
+                            {service.name}
+                          </h3>
+                          {service.type === "GROUP" ? (
+                            <span className="bg-[#0B5C71]/10 text-[#0B5C71] text-xs font-700 px-2 py-0.5 rounded-full">
+                              Grupinė
+                            </span>
+                          ) : (
+                            <span className="bg-[#FF5733]/10 text-[#FF5733] text-xs font-700 px-2 py-0.5 rounded-full">
+                              Individuali
+                            </span>
+                          )}
+                          {service.maxParticipants && service.type === "GROUP" && (
+                            <span className="text-gray-400 text-xs">
+                              iki {service.maxParticipants} asmenų
+                            </span>
+                          )}
+                        </div>
                         {service.description && (
                           <p className="text-gray-500 text-sm mt-1 leading-relaxed">
                             {service.description}
@@ -316,9 +265,11 @@ export default async function TrainerDetailPage({
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="font-800 text-[#FF5733]">
-                          {service.price
-                            ? `${service.price.toString()} €`
-                            : "Nemokama"}
+                          {formatServicePrice(
+                            service.price,
+                            service.type,
+                            service.priceType ?? undefined
+                          )}
                         </p>
                       </div>
                     </div>
@@ -463,14 +414,12 @@ export default async function TrainerDetailPage({
               </div>
             )}
 
-            <div className="mt-5 pt-5 border-t border-gray-100">
-              <Link
-                href={`/booking?trainerId=${trainer.id}`}
-                className="btn-primary w-full text-center text-sm py-3"
-              >
-                Rezervuoti laiką
-              </Link>
-            </div>
+            <Link
+              href={`/booking?trainerId=${trainer.id}`}
+              className="btn-primary w-full text-center text-sm py-3 mt-4 block"
+            >
+              {trainer.slots.length >= 5 ? "Peržiūrėti visus laikus" : "Rezervuoti laiką"}
+            </Link>
           </div>
         </div>
       </div>

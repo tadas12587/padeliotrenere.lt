@@ -45,7 +45,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json();
-  const { displayName, bio, photoUrl, city, phone, isFeatured, arenaIds, sportIds } = body;
+  const { displayName, bio, photoUrl, city, phone, isFeatured, arenaIds, sportIds,
+    instagramUrl, facebookUrl, youtubeUrl, tiktokUrl, websiteUrl } = body;
 
   const updated = await prisma.trainerProfile.update({
     where: { id },
@@ -56,6 +57,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(city !== undefined && { city }),
       ...(phone !== undefined && { phone }),
       ...(role === "ADMIN" && isFeatured !== undefined && { isFeatured }),
+      ...(instagramUrl !== undefined && { instagramUrl: instagramUrl || null }),
+      ...(facebookUrl !== undefined && { facebookUrl: facebookUrl || null }),
+      ...(youtubeUrl !== undefined && { youtubeUrl: youtubeUrl || null }),
+      ...(tiktokUrl !== undefined && { tiktokUrl: tiktokUrl || null }),
+      ...(websiteUrl !== undefined && { websiteUrl: websiteUrl || null }),
     },
   });
 

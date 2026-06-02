@@ -32,6 +32,11 @@ interface ProfileData {
   phone: string;
   arenaIds: string[];
   sportIds: string[];
+  instagramUrl: string;
+  facebookUrl: string;
+  youtubeUrl: string;
+  tiktokUrl: string;
+  websiteUrl: string;
 }
 
 interface Props {
@@ -53,6 +58,11 @@ export default function TrainerProfileForm({ profile, arenas, sports, gallery: i
   const [selectedSportIds, setSelectedSportIds] = useState<string[]>(
     profile?.sportIds ?? []
   );
+  const [instagramUrl, setInstagramUrl] = useState(profile?.instagramUrl ?? "");
+  const [facebookUrl, setFacebookUrl] = useState(profile?.facebookUrl ?? "");
+  const [youtubeUrl, setYoutubeUrl] = useState(profile?.youtubeUrl ?? "");
+  const [tiktokUrl, setTiktokUrl] = useState(profile?.tiktokUrl ?? "");
+  const [websiteUrl, setWebsiteUrl] = useState(profile?.websiteUrl ?? "");
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>(initialGallery);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -116,6 +126,11 @@ export default function TrainerProfileForm({ profile, arenas, sports, gallery: i
           phone,
           arenaIds: selectedArenaIds,
           sportIds: selectedSportIds,
+          instagramUrl,
+          facebookUrl,
+          youtubeUrl,
+          tiktokUrl,
+          websiteUrl,
         }),
       });
 
@@ -303,6 +318,31 @@ export default function TrainerProfileForm({ profile, arenas, sports, gallery: i
           onRemove={handleGalleryRemove}
           uploadType="gallery"
         />
+      </div>
+
+      {/* Social media */}
+      <div className="card p-6">
+        <h3 className="text-base font-700 text-[#0B5C71] mb-4">Socialiniai tinklai</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[
+            { key: "instagramUrl", label: "Instagram", placeholder: "https://instagram.com/...", value: instagramUrl, setter: setInstagramUrl },
+            { key: "facebookUrl", label: "Facebook", placeholder: "https://facebook.com/...", value: facebookUrl, setter: setFacebookUrl },
+            { key: "youtubeUrl", label: "YouTube", placeholder: "https://youtube.com/...", value: youtubeUrl, setter: setYoutubeUrl },
+            { key: "tiktokUrl", label: "TikTok", placeholder: "https://tiktok.com/@...", value: tiktokUrl, setter: setTiktokUrl },
+            { key: "websiteUrl", label: "Svetainė", placeholder: "https://...", value: websiteUrl, setter: setWebsiteUrl },
+          ].map(({ key, label, placeholder, value, setter }) => (
+            <div key={key}>
+              <label className="block text-sm font-600 text-gray-700 mb-1">{label}</label>
+              <input
+                type="url"
+                value={value}
+                onChange={(e) => setter(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733]"
+                placeholder={placeholder}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-end">

@@ -189,6 +189,11 @@ model TrainerProfile {
   photoUrl     String?       @db.VarChar(500)
   city         String        @db.VarChar(191)
   phone        String?       @db.VarChar(50)
+  instagramUrl String?       @db.VarChar(500)
+  facebookUrl  String?       @db.VarChar(500)
+  youtubeUrl   String?       @db.VarChar(500)
+  tiktokUrl    String?       @db.VarChar(500)
+  websiteUrl   String?       @db.VarChar(500)
   status       TrainerStatus @default(PENDING)
   isFeatured   Boolean       @default(false)
   certifications Certification[]
