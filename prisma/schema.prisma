@@ -375,6 +375,7 @@ model GlobalSeoSetting {
   instagramUrl           String?
   googleSiteVerification String?
   logoUrl                String?  @db.VarChar(500)
+  logoUrlDark            String?  @db.VarChar(500)
   faviconUrl             String?  @db.VarChar(500)
   tagline                String?  @db.VarChar(300)
   phone                  String?  @db.VarChar(50)

@@ -41,10 +41,11 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [session, { logoUrl }] = await Promise.all([
+  const [session, settings] = await Promise.all([
     getServerSession(authOptions),
     getSiteSettings(),
   ]);
+  const logoUrl = settings.logoUrlDark ?? settings.logoUrl;
   if (!session || (session.user as any)?.role !== "ADMIN") {
     redirect("/auth/login");
   }

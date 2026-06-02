@@ -12,7 +12,7 @@ export default function AuthLogo() {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((d) => {
-        setLogoUrl(d.logoUrl ?? null);
+        setLogoUrl(d.logoUrl ?? null);   // light bg logo for auth pages
         setSiteName(d.siteName ?? null);
       })
       .catch(() => {});

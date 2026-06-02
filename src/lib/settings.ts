@@ -4,6 +4,7 @@ export type SiteSettings = {
   siteName: string;
   tagline: string;
   logoUrl: string | null;
+  logoUrlDark: string | null;
   faviconUrl: string | null;
   phone: string | null;
   email: string | null;
@@ -21,6 +22,7 @@ const DEFAULTS: SiteSettings = {
   siteName: "ManoTreniruote.lt",
   tagline: "Rask geriausią sporto trenerį Lietuvoje",
   logoUrl: null,
+  logoUrlDark: null,
   faviconUrl: null,
   phone: "+370 600 00000",
   email: "info@padeliotrenere.lt",
@@ -44,6 +46,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       siteName: row.siteName ?? DEFAULTS.siteName,
       tagline: row.tagline ?? DEFAULTS.tagline,
       logoUrl: row.logoUrl ?? null,
+      logoUrlDark: row.logoUrlDark ?? null,
       faviconUrl: row.faviconUrl ?? null,
       phone: row.phone ?? DEFAULTS.phone,
       email: row.email ?? DEFAULTS.email,

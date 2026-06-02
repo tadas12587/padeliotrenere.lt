@@ -5,6 +5,7 @@ import { Save, CheckCircle, AlertTriangle, Upload, Loader2 } from "lucide-react"
 
 interface Settings {
   logoUrl: string | null;
+  logoUrlDark: string | null;
   faviconUrl: string | null;
   tagline: string | null;
   phone: string | null;
@@ -26,12 +27,14 @@ function SimpleImageUpload({
   hint,
   maxDim = 800,
   uploadType = "logo",
+  dark = false,
 }: {
   currentUrl?: string | null;
   onUploaded: (url: string) => void;
   hint?: string;
   maxDim?: number;
   uploadType?: string;
+  dark?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -63,22 +66,24 @@ function SimpleImageUpload({
   return (
     <div className="flex flex-col gap-2">
       {currentUrl && (
-        <div className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gray-50 p-3 w-fit max-w-[200px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={currentUrl} alt="Preview" className="max-h-16 max-w-full object-contain" />
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={currentUrl} alt="Preview" className="max-h-12 max-w-full object-contain" />
       )}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => ref.current?.click()}
           disabled={uploading}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-gray-300 text-sm font-600 text-gray-600 hover:border-[#FF5733] hover:text-[#FF5733] transition-colors disabled:opacity-60"
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed text-sm font-600 transition-colors disabled:opacity-60 ${
+            dark
+              ? "border-white/40 text-white hover:border-white"
+              : "border-gray-300 text-gray-600 hover:border-[#FF5733] hover:text-[#FF5733]"
+          }`}
         >
           {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
           {uploading ? "Keliama..." : currentUrl ? "Pakeisti" : "Įkelti"}
         </button>
-        {hint && <p className="text-xs text-gray-400">{hint}</p>}
+        {hint && <p className={`text-xs ${dark ? "text-white/60" : "text-gray-400"}`}>{hint}</p>}
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
       <input ref={ref} type="file" accept="image/*" className="hidden" onChange={handleFile} />
@@ -164,6 +169,7 @@ function Textarea({
 
 export default function SettingsForm({ initial }: { initial: Settings }) {
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl ?? "");
+  const [logoUrlDark, setLogoUrlDark] = useState(initial.logoUrlDark ?? "");
   const [faviconUrl, setFaviconUrl] = useState(initial.faviconUrl ?? "");
   const [tagline, setTagline] = useState(initial.tagline ?? "");
   const [phone, setPhone] = useState(initial.phone ?? "");
@@ -190,6 +196,7 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           logoUrl: logoUrl || null,
+          logoUrlDark: logoUrlDark || null,
           faviconUrl: faviconUrl || null,
           tagline: tagline || null,
           phone: phone || null,
@@ -218,39 +225,29 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
     <div className="flex flex-col gap-6">
       {/* Brand */}
       <Section title="Logotipas ir prekės ženklas">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <Field label="Svetainės logotipas" hint="PNG, SVG arba JPG — bet kokių proporcijų">
-            <SimpleImageUpload
-              currentUrl={logoUrl}
-              onUploaded={setLogoUrl}
-              maxDim={1200}
-              uploadType="logo"
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Field label="Logotipas (šviesiam fonui)" hint="Navbar, prisijungimo formos">
+            <div className="rounded-xl border border-gray-200 bg-white p-3 flex items-center justify-center min-h-[72px]">
+              <SimpleImageUpload currentUrl={logoUrl} onUploaded={setLogoUrl} maxDim={1200} uploadType="logo" />
+            </div>
             {logoUrl && (
-              <button
-                type="button"
-                onClick={() => setLogoUrl("")}
-                className="text-xs text-red-500 hover:underline"
-              >
-                Pašalinti logotipą
-              </button>
+              <button type="button" onClick={() => setLogoUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
             )}
           </Field>
-          <Field label="Favicon (naršyklės kortelės ikona)" hint="PNG, ICO — rekomenduojama ≥ 32×32">
-            <SimpleImageUpload
-              currentUrl={faviconUrl}
-              onUploaded={setFaviconUrl}
-              maxDim={256}
-              uploadType="logo"
-            />
+          <Field label="Logotipas (tamsiam fonui)" hint="Sidebar, footer, mobilė navigacija">
+            <div className="rounded-xl border border-[#0B5C71]/30 bg-[#0B5C71] p-3 flex items-center justify-center min-h-[72px]">
+              <SimpleImageUpload currentUrl={logoUrlDark} onUploaded={setLogoUrlDark} maxDim={1200} uploadType="logo" dark />
+            </div>
+            {logoUrlDark && (
+              <button type="button" onClick={() => setLogoUrlDark("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
+            )}
+          </Field>
+          <Field label="Favicon (naršyklės kortelė)" hint="PNG, ICO — rekomenduojama ≥ 32×32">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 flex items-center justify-center min-h-[72px]">
+              <SimpleImageUpload currentUrl={faviconUrl} onUploaded={setFaviconUrl} maxDim={256} uploadType="logo" />
+            </div>
             {faviconUrl && (
-              <button
-                type="button"
-                onClick={() => setFaviconUrl("")}
-                className="text-xs text-red-500 hover:underline"
-              >
-                Pašalinti favicon
-              </button>
+              <button type="button" onClick={() => setFaviconUrl("")} className="text-xs text-red-500 hover:underline">Pašalinti</button>
             )}
           </Field>
         </div>

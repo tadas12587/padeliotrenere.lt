@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json();
   const allowed = [
-    "logoUrl", "faviconUrl", "tagline", "phone", "email", "address",
+    "logoUrl", "logoUrlDark", "faviconUrl", "tagline", "phone", "email", "address",
     "instagramUrl", "facebookUrl", "youtubeUrl",
     "heroTitle", "heroSubtitle",
     "maintenanceMode", "maintenanceMsg",

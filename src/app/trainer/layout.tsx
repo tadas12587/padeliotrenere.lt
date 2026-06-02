@@ -28,10 +28,11 @@ export default async function TrainerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [session, { logoUrl }] = await Promise.all([
+  const [session, settings] = await Promise.all([
     getServerSession(authOptions),
     getSiteSettings(),
   ]);
+  const logoUrl = settings.logoUrlDark ?? settings.logoUrl;
 
   if (!session) {
     redirect("/auth/login");

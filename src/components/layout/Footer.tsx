@@ -26,7 +26,8 @@ function IconYoutube({ size = 18 }: { size?: number }) {
 
 export default function Footer({ settings }: { settings: SiteSettings }) {
   const year = new Date().getFullYear();
-  const { siteName, tagline, logoUrl, phone, email, address, instagramUrl, facebookUrl, youtubeUrl } = settings;
+  const { siteName, tagline, logoUrl, logoUrlDark, phone, email, address, instagramUrl, facebookUrl, youtubeUrl } = settings;
+  const footerLogo = logoUrlDark ?? logoUrl;
 
   const socials = [
     instagramUrl && { href: instagramUrl, label: "Instagram", Icon: IconInstagram },
@@ -40,9 +41,9 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
         {/* Brand */}
         <div>
           <Link href="/" className="flex items-center gap-2 font-black text-xl mb-4">
-            {logoUrl ? (
+            {footerLogo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={siteName} className="h-9 w-auto object-contain" />
+              <img src={footerLogo} alt={siteName} className="h-9 w-auto object-contain" />
             ) : (
               <>
                 <span className="w-9 h-9 rounded-lg bg-[#FF5733] flex items-center justify-center">
