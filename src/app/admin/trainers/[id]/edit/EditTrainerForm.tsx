@@ -10,6 +10,7 @@ interface SportItem {
   id: string;
   name: string;
   icon: string | null;
+  iconUrl: string | null;
 }
 
 interface GalleryPhoto {

@@ -9,6 +9,7 @@ interface Sport {
   name: string;
   slug: string;
   icon: string | null;
+  iconUrl: string | null;
 }
 
 interface Props {
