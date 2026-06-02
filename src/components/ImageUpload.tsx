@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ReactCrop, {
   type Crop,
   centerCrop,
@@ -8,6 +8,7 @@ import ReactCrop, {
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { Camera, Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   currentUrl?: string;
@@ -60,6 +61,48 @@ function getCroppedBlob(
 
   const quality = mimeType === "image/png" ? undefined : 0.88;
   return new Promise((res) => canvas.toBlob((blob) => res(blob), mimeType, quality));
+}
+
+function CropModal({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex flex-col justify-end sm:items-center sm:justify-center transition-opacity duration-300",
+        open ? "opacity-100" : "opacity-0 pointer-events-none"
+      )}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className={cn(
+          "relative bg-white flex flex-col shadow-2xl max-h-[88vh]",
+          "rounded-t-3xl sm:rounded-3xl sm:w-full sm:max-w-lg sm:max-h-[85vh]",
+          "transition-transform duration-300 ease-out",
+          open ? "translate-y-0" : "translate-y-full sm:translate-y-0"
+        )}
+      >
+        <div className="sm:hidden flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
+        <div className="overflow-y-auto flex-1 pb-8">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ImageUpload({
@@ -204,9 +247,9 @@ export default function ImageUpload({
         onChange={handleFileSelect}
       />
 
-      {showModal && imgSrc && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-5 max-w-lg w-full max-h-[90vh] overflow-auto">
+      <CropModal open={showModal} onClose={handleCancel}>
+        {imgSrc && (
+          <div className="px-5 pt-2 pb-2">
             <h3 className="font-700 text-[#0B5C71] text-lg mb-4">
               Apkarpyti nuotrauką
             </h3>
@@ -225,7 +268,7 @@ export default function ImageUpload({
                   src={imgSrc}
                   alt="Crop"
                   onLoad={onImageLoad}
-                  className="max-h-[60vh] max-w-full"
+                  className="max-h-[55vh] max-w-full"
                 />
               </ReactCrop>
             </div>
@@ -262,8 +305,8 @@ export default function ImageUpload({
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </CropModal>
     </div>
   );
 }
