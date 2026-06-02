@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader2 } from "lucide-react";
 
 interface Photo {
   id: string;
@@ -16,15 +16,16 @@ interface Props {
   isLoading?: boolean;
 }
 
-const MAX_W = 1200;
-const MAX_H = 1000;
+const MAX_W = 2400;
+const MAX_H = 1600;
+const QUALITY = 0.92;
 
 function resizeToBlob(file: File): Promise<Blob | null> {
   return new Promise((resolve) => {
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(objectUrl);
       let { width, height } = img;
       if (width > MAX_W || height > MAX_H) {
         const ratio = Math.min(MAX_W / width, MAX_H / height);
@@ -37,49 +38,65 @@ function resizeToBlob(file: File): Promise<Blob | null> {
       const ctx = canvas.getContext("2d");
       if (!ctx) return resolve(null);
       ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.85);
+      const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+      const q = mime === "image/png" ? undefined : QUALITY;
+      canvas.toBlob((blob) => resolve(blob), mime, q);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
-    img.src = url;
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(null); };
+    img.src = objectUrl;
   });
 }
 
-export default function GalleryUpload({
-  photos,
-  onAdd,
-  onRemove,
-  isLoading,
-}: Props) {
-  const [uploading, setUploading] = useState(false);
+async function uploadBlob(blob: Blob, filename: string): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", blob, filename);
+  fd.append("type", "gallery");
+  const res = await fetch("/api/upload", { method: "POST", body: fd });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Upload failed");
+  }
+  const { url } = await res.json();
+  return url;
+}
+
+export default function GalleryUpload({ photos, onAdd, onRemove, isLoading }: Props) {
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
+    if (files.length === 0) return;
 
-    setUploading(true);
     setError("");
-    try {
-      const blob = await resizeToBlob(file);
-      if (!blob) throw new Error("Nepavyko apdoroti nuotraukos");
-      const fd = new FormData();
-      fd.append("file", blob, "photo.jpg");
-      fd.append("type", "gallery");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Upload failed");
+    setProgress({ done: 0, total: files.length });
+
+    let done = 0;
+    const errors: string[] = [];
+
+    for (const file of files) {
+      try {
+        const blob = await resizeToBlob(file);
+        if (!blob) throw new Error("Nepavyko apdoroti");
+        const ext = file.type === "image/png" ? "png" : "jpg";
+        const url = await uploadBlob(blob, `photo.${ext}`);
+        onAdd(url);
+      } catch (err) {
+        errors.push(file.name);
       }
-      const { url } = await res.json();
-      onAdd(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Klaida įkeliant nuotrauką");
-    } finally {
-      setUploading(false);
+      done++;
+      setProgress({ done, total: files.length });
+    }
+
+    setProgress(null);
+    if (errors.length > 0) {
+      setError(`Nepavyko įkelti: ${errors.join(", ")}`);
     }
   };
+
+  const uploading = progress !== null;
 
   return (
     <div>
@@ -87,15 +104,11 @@ export default function GalleryUpload({
         {photos.map((photo) => (
           <div key={photo.id} className="aspect-square rounded-lg overflow-hidden relative group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photo.url}
-              alt="Gallery"
-              className="w-full h-full object-cover"
-            />
+            <img src={photo.url} alt="Gallery" className="w-full h-full object-cover" />
             <button
               type="button"
               onClick={() => onRemove(photo.id)}
-              disabled={isLoading}
+              disabled={isLoading || uploading}
               className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 disabled:opacity-40"
             >
               <X size={12} />
@@ -110,7 +123,10 @@ export default function GalleryUpload({
           className="aspect-square rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-1 text-gray-400 hover:bg-gray-100 hover:border-gray-400 transition-colors disabled:opacity-60"
         >
           {uploading ? (
-            <span className="w-5 h-5 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              <span className="text-xs">{progress!.done}/{progress!.total}</span>
+            </>
           ) : (
             <>
               <Plus size={20} />
@@ -121,15 +137,14 @@ export default function GalleryUpload({
       </div>
 
       {error && (
-        <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-          {error}
-        </p>
+        <p className="mt-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
       )}
 
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleFileSelect}
       />

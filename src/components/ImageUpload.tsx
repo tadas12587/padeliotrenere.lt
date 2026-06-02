@@ -20,10 +20,10 @@ interface Props {
 }
 
 const OUTPUT_DIMS: Record<string, { width: number; height: number }> = {
-  profile: { width: 450, height: 600 },
-  logo: { width: 400, height: 400 },
-  banner: { width: 1200, height: 900 },
-  gallery: { width: 1200, height: 1000 },
+  profile: { width: 900, height: 1200 },
+  logo:    { width: 600, height: 600 },
+  banner:  { width: 2400, height: 1350 },
+  gallery: { width: 2400, height: 1600 },
 };
 
 function getCroppedBlob(
@@ -59,7 +59,7 @@ function getCroppedBlob(
     outHeight
   );
 
-  const quality = mimeType === "image/png" ? undefined : 0.88;
+  const quality = mimeType === "image/png" ? undefined : 0.92;
   return new Promise((res) => canvas.toBlob((blob) => res(blob), mimeType, quality));
 }
 
