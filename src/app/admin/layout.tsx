@@ -16,6 +16,7 @@ import {
   Trophy,
   Globe,
   LayoutList,
+  Settings,
 } from "lucide-react";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
 
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/admin/sports", label: "Sporto šakos", icon: Trophy },
   { href: "/admin/service-catalog", label: "Paslaugų katalogas", icon: LayoutList },
   { href: "/admin/seo", label: "SEO", icon: Globe },
+  { href: "/admin/settings", label: "Nustatymai", icon: Settings },
 ];
 
 export default async function AdminLayout({

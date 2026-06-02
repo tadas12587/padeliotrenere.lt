@@ -374,5 +374,16 @@ model GlobalSeoSetting {
   facebookUrl            String?
   instagramUrl           String?
   googleSiteVerification String?
+  logoUrl                String?  @db.VarChar(500)
+  faviconUrl             String?  @db.VarChar(500)
+  tagline                String?  @db.VarChar(300)
+  phone                  String?  @db.VarChar(50)
+  email                  String?  @db.VarChar(200)
+  address                String?  @db.VarChar(300)
+  youtubeUrl             String?  @db.VarChar(500)
+  heroTitle              String?  @db.VarChar(200)
+  heroSubtitle           String?  @db.VarChar(500)
+  maintenanceMode        Boolean  @default(false)
+  maintenanceMsg         String?  @db.VarChar(500)
   updatedAt              DateTime @updatedAt
 }

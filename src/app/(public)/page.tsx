@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 };
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getSiteSettings } from "@/lib/settings";
 import {
   Star,
   MapPin,
@@ -41,7 +42,7 @@ import HeroBanner from "./HeroBanner";
 
 // ── Hero Section ──────────────────────────────────────────────────────────────
 async function HeroSection() {
-  const [galleryPhotos, bannerArenas] = await Promise.all([
+  const [galleryPhotos, bannerArenas, settings] = await Promise.all([
     prisma.arenaPhoto.findMany({
       where: { arena: { status: "APPROVED" } },
       select: { id: true, url: true },
@@ -51,6 +52,7 @@ async function HeroSection() {
       where: { status: "APPROVED", bannerUrl: { not: null } },
       select: { id: true, bannerUrl: true },
     }),
+    getSiteSettings(),
   ]);
 
   const all = [
@@ -61,7 +63,13 @@ async function HeroSection() {
   // Shuffle and cap at 12
   const photos = [...all].sort(() => Math.random() - 0.5).slice(0, 12);
 
-  return <HeroBanner photos={photos} />;
+  return (
+    <HeroBanner
+      photos={photos}
+      heroTitle={settings.heroTitle}
+      heroSubtitle={settings.heroSubtitle}
+    />
+  );
 }
 
 // ── Featured Trainers ─────────────────────────────────────────────────────────

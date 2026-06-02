@@ -11,9 +11,11 @@ interface Photo {
 
 interface Props {
   photos: Photo[];
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
 }
 
-export default function HeroBanner({ photos }: Props) {
+export default function HeroBanner({ photos, heroTitle, heroSubtitle }: Props) {
   const hasBg = photos.length > 0;
   const [currentIdx, setCurrentIdx] = useState(0);
 
@@ -82,13 +84,12 @@ export default function HeroBanner({ photos }: Props) {
             </span>
           </div>
           <h1 className="text-5xl lg:text-7xl font-900 leading-[1.05] mb-6 drop-shadow-lg">
-            Rask savo{" "}
-            <span className="text-[#FF5733]">sporto trenerį</span>{" "}
-            Lietuvoje
+            {heroTitle ?? (
+              <>Rask savo{" "}<span className="text-[#FF5733]">sporto trenerį</span>{" "}Lietuvoje</>
+            )}
           </h1>
           <p className="text-gray-300 text-lg lg:text-xl max-w-2xl mb-8 leading-relaxed">
-            Profesionalūs treneriai visame šalyje – padelis, tenisas, krepšinis ir daugiau.
-            Pasirink trenerį, areną ir rezervuok laiką.
+            {heroSubtitle ?? "Profesionalūs treneriai visame šalyje – padelis, tenisas, krepšinis ir daugiau. Pasirink trenerį, areną ir rezervuok laiką."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link href="/trainers" className="btn-primary text-base py-4 px-8 inline-flex items-center gap-2">

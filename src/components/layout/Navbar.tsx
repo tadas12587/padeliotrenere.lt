@@ -23,7 +23,13 @@ function getDashboardLink(role: string, trainerStatus: string | null | undefined
   return { href: "/client/dashboard", label: "Mano sritis" };
 }
 
-export default function Navbar() {
+export default function Navbar({
+  logoUrl,
+  siteName,
+}: {
+  logoUrl?: string | null;
+  siteName?: string | null;
+}) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -45,13 +51,21 @@ export default function Navbar() {
           className="flex items-center gap-2 font-black text-xl tracking-tight hover:opacity-90 transition-opacity"
           onClick={() => setOpen(false)}
         >
-          <span className="w-9 h-9 rounded-lg bg-[#FF5733] flex items-center justify-center">
-            <Dumbbell size={20} className="text-white" />
-          </span>
-          <span className="font-heading text-[#0B5C71]">
-            Mano<span className="text-[#FF5733]">Treniruote</span>
-            <span className="text-[#0B5C71] text-sm font-600">.lt</span>
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={siteName ?? "Logo"} className="h-9 w-auto object-contain" />
+          ) : (
+            <>
+              <span className="w-9 h-9 rounded-lg bg-[#FF5733] flex items-center justify-center">
+                <Dumbbell size={20} className="text-white" />
+              </span>
+              <span className="font-heading text-[#0B5C71]">
+                {siteName ?? (
+                  <>Mano<span className="text-[#FF5733]">Treniruote</span><span className="text-[#0B5C71] text-sm font-600">.lt</span></>
+                )}
+              </span>
+            </>
+          )}
         </Link>
 
         {/* Desktop nav */}

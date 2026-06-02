@@ -57,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="lt" className={`${poppins.variable} ${roboto.variable} h-full antialiased`}>
       <head>
+        <link rel="icon" href="/api/favicon" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#FF5733" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
