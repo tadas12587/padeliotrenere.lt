@@ -29,6 +29,7 @@ export default async function TrainerProfilePage() {
     }),
   ]);
 
+  const tp = trainerProfile as any;
   const profileData = trainerProfile
     ? {
         id: trainerProfile.id,
@@ -39,6 +40,11 @@ export default async function TrainerProfilePage() {
         phone: trainerProfile.phone ?? "",
         arenaIds: trainerProfile.arenas.map((ta) => ta.arenaId),
         sportIds: trainerProfile.sports.map((ts) => ts.sportId),
+        instagramUrl: tp.instagramUrl ?? "",
+        facebookUrl: tp.facebookUrl ?? "",
+        youtubeUrl: tp.youtubeUrl ?? "",
+        tiktokUrl: tp.tiktokUrl ?? "",
+        websiteUrl: tp.websiteUrl ?? "",
       }
     : null;
 
@@ -53,7 +59,7 @@ export default async function TrainerProfilePage() {
       <TrainerProfileForm
         profile={profileData}
         arenas={allArenas}
-        sports={allSports}
+        sports={allSports as any[]}
         gallery={trainerProfile?.gallery ?? []}
       />
       {trainerProfile && (

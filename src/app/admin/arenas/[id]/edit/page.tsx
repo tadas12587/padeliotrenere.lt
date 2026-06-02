@@ -61,7 +61,7 @@ export default async function EditArenaPage({ params }: Props) {
           sportIds: arena.sports.map((as) => as.sportId),
           photos: arena.photos,
         }}
-        allSports={allSports}
+        allSports={allSports as any[]}
       />
     </div>
   );

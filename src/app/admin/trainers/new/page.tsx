@@ -27,7 +27,7 @@ export default async function NewTrainerPage() {
         </p>
       </div>
 
-      <CreateTrainerForm sports={sports} />
+      <CreateTrainerForm sports={sports as any[]} />
     </div>
   );
 }

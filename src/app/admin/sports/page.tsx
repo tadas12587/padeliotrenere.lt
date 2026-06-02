@@ -22,7 +22,7 @@ export default async function AdminSportsPage() {
         </p>
       </div>
 
-      <SportsCRUD initialSports={sports} />
+      <SportsCRUD initialSports={sports as any[]} />
     </div>
   );
 }

@@ -168,6 +168,8 @@ export default async function TrainerDetailPage({
       />
 
       {/* Hero banner */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {(() => { const t = trainer as any; return (
       <TrainerHero
         displayName={trainer.displayName}
         city={trainer.city}
@@ -177,12 +179,13 @@ export default async function TrainerDetailPage({
         reviewCount={trainer.reviews.length}
         isFeatured={trainer.isFeatured}
         trainerId={trainer.id}
-        instagramUrl={trainer.instagramUrl}
-        facebookUrl={trainer.facebookUrl}
-        youtubeUrl={trainer.youtubeUrl}
-        tiktokUrl={trainer.tiktokUrl}
-        websiteUrl={trainer.websiteUrl}
+        instagramUrl={t.instagramUrl ?? null}
+        facebookUrl={t.facebookUrl ?? null}
+        youtubeUrl={t.youtubeUrl ?? null}
+        tiktokUrl={t.tiktokUrl ?? null}
+        websiteUrl={t.websiteUrl ?? null}
       />
+      ); })()}
 
       <div className="container-tight py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left column */}
@@ -266,7 +269,7 @@ export default async function TrainerDetailPage({
                       <div className="shrink-0 text-right">
                         <p className="font-800 text-[#FF5733]">
                           {formatServicePrice(
-                            service.price,
+                            service.price?.toString() ?? null,
                             service.type,
                             service.priceType ?? undefined
                           )}
@@ -339,7 +342,7 @@ export default async function TrainerDetailPage({
               </h2>
               <div className="flex flex-wrap gap-2">
                 {trainer.sports.map(({ sport }) => (
-                  <SportBadge key={sport.id} name={sport.name} icon={sport.icon} iconUrl={sport.iconUrl} />
+                  <SportBadge key={sport.id} name={sport.name} icon={sport.icon} iconUrl={(sport as any).iconUrl ?? null} />
                 ))}
               </div>
             </div>

@@ -8,5 +8,5 @@ export default async function RegisterTrainerPage() {
     orderBy: { name: "asc" },
   });
 
-  return <RegisterTrainerForm sports={sports} />;
+  return <RegisterTrainerForm sports={sports as any[]} />;
 }

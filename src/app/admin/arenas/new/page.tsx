@@ -27,7 +27,7 @@ export default async function NewArenaPage() {
         </p>
       </div>
 
-      <CreateArenaForm sports={sports} />
+      <CreateArenaForm sports={sports as any[]} />
     </div>
   );
 }

@@ -168,8 +168,8 @@ export default async function TrainersPage({
                               key={sport.id}
                               className="bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1"
                             >
-                              {sport.iconUrl ? (
-                                <img src={sport.iconUrl} alt={sport.name} className="w-3.5 h-3.5 object-contain rounded-sm" />
+                              {(sport as any).iconUrl ? (
+                                <img src={(sport as any).iconUrl} alt={sport.name} className="w-3.5 h-3.5 object-contain rounded-sm" />
                               ) : sport.icon ? (
                                 <span>{sport.icon}</span>
                               ) : null}

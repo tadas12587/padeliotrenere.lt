@@ -17,7 +17,7 @@ export async function PATCH(
   const { name, slug, icon, iconUrl } = body;
 
   try {
-    const sport = await prisma.sport.update({
+    const sport = await (prisma.sport.update as any)({
       where: { id },
       data: {
         ...(name !== undefined && { name }),

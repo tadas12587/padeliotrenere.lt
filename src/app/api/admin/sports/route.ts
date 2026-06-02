@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const sport = await prisma.sport.create({
+    const sport = await (prisma.sport.create as any)({
       data: {
         name,
         slug,

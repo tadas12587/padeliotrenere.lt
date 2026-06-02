@@ -59,7 +59,7 @@ export default async function EditTrainerPage({ params }: Props) {
           sportIds: trainer.sports.map((ts) => ts.sportId),
           gallery: trainer.gallery,
         }}
-        allSports={allSports}
+        allSports={allSports as any[]}
       />
 
       <ServicesManager
