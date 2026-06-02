@@ -29,7 +29,8 @@ function getCroppedBlob(
   image: HTMLImageElement,
   crop: Crop,
   outWidth: number,
-  outHeight: number
+  outHeight: number,
+  mimeType: string = "image/jpeg"
 ): Promise<Blob | null> {
   const canvas = document.createElement("canvas");
   canvas.width = outWidth;
@@ -57,7 +58,8 @@ function getCroppedBlob(
     outHeight
   );
 
-  return new Promise((res) => canvas.toBlob((blob) => res(blob), "image/jpeg", 0.88));
+  const quality = mimeType === "image/png" ? undefined : 0.88;
+  return new Promise((res) => canvas.toBlob((blob) => res(blob), mimeType, quality));
 }
 
 export default function ImageUpload({
@@ -69,6 +71,7 @@ export default function ImageUpload({
 }: Props) {
   const [crop, setCrop] = useState<Crop>();
   const [imgSrc, setImgSrc] = useState<string>("");
+  const [imgMime, setImgMime] = useState<string>("image/jpeg");
   const [showModal, setShowModal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -87,6 +90,7 @@ export default function ImageUpload({
     const reader = new FileReader();
     reader.onload = () => {
       setImgSrc(reader.result as string);
+      setImgMime(file.type === "image/png" ? "image/png" : "image/jpeg");
       setShowModal(true);
       setCrop(undefined);
       setError("");
@@ -114,10 +118,11 @@ export default function ImageUpload({
     setError("");
     try {
       const dims = OUTPUT_DIMS[uploadType] || OUTPUT_DIMS.gallery;
-      const blob = await getCroppedBlob(imgRef.current, crop, dims.width, dims.height);
+      const blob = await getCroppedBlob(imgRef.current, crop, dims.width, dims.height, imgMime);
       if (!blob) throw new Error("Canvas error");
+      const ext = imgMime === "image/png" ? "png" : "jpg";
       const fd = new FormData();
-      fd.append("file", blob, "crop.jpg");
+      fd.append("file", blob, `crop.${ext}`);
       fd.append("type", uploadType);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       if (!res.ok) {
