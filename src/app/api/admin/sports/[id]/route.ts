@@ -14,7 +14,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  const { name, slug, icon } = body;
+  const { name, slug, icon, iconUrl } = body;
 
   try {
     const sport = await prisma.sport.update({
@@ -23,6 +23,7 @@ export async function PATCH(
         ...(name !== undefined && { name }),
         ...(slug !== undefined && { slug }),
         ...(icon !== undefined && { icon }),
+        ...(iconUrl !== undefined && { iconUrl }),
       },
     });
     return NextResponse.json(sport);

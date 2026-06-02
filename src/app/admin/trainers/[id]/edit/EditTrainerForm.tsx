@@ -241,7 +241,11 @@ export default function EditTrainerForm({ trainer, allSports }: Props) {
                     className="w-4 h-4 accent-[#FF5733]"
                   />
                   <div className="flex items-center gap-2">
-                    {sport.icon && <span className="text-lg">{sport.icon}</span>}
+                    {sport.iconUrl ? (
+                      <img src={sport.iconUrl} alt={sport.name} className="w-5 h-5 object-contain rounded" />
+                    ) : sport.icon ? (
+                      <span className="text-lg">{sport.icon}</span>
+                    ) : null}
                     <p className="text-sm font-700 text-[#0B5C71]">{sport.name}</p>
                   </div>
                 </label>

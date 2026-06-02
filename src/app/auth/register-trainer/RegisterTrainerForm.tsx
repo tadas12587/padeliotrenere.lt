@@ -202,7 +202,11 @@ export default function RegisterTrainerForm({ sports }: Props) {
                         onChange={() => toggleSport(sport.id)}
                         className="w-4 h-4 accent-[#FF5733]"
                       />
-                      {sport.icon && <span>{sport.icon}</span>}
+                      {sport.iconUrl ? (
+                        <img src={sport.iconUrl} alt={sport.name} className="w-4 h-4 object-contain rounded" />
+                      ) : sport.icon ? (
+                        <span>{sport.icon}</span>
+                      ) : null}
                       <span className="font-600 text-[#0B5C71]">{sport.name}</span>
                     </label>
                   );

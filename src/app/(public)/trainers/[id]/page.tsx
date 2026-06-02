@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { Star, MapPin, Clock, CheckCircle, Calendar } from "lucide-react";
+import SportBadge from "@/components/SportBadge";
 
 export async function generateMetadata({
   params,
@@ -387,13 +388,7 @@ export default async function TrainerDetailPage({
               </h2>
               <div className="flex flex-wrap gap-2">
                 {trainer.sports.map(({ sport }) => (
-                  <span
-                    key={sport.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-600 bg-[#0B5C71]/10 text-[#0B5C71] border border-[#0B5C71]/20"
-                  >
-                    {sport.icon && <span>{sport.icon}</span>}
-                    {sport.name}
-                  </span>
+                  <SportBadge key={sport.id} name={sport.name} icon={sport.icon} iconUrl={sport.iconUrl} />
                 ))}
               </div>
             </div>

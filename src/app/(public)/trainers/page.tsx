@@ -166,9 +166,14 @@ export default async function TrainersPage({
                           {trainer.sports.slice(0, 2).map(({ sport }) => (
                             <span
                               key={sport.id}
-                              className="bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-700 px-2 py-0.5 rounded-full"
+                              className="bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-700 px-2 py-0.5 rounded-full inline-flex items-center gap-1"
                             >
-                              {sport.icon ? `${sport.icon} ` : ""}{sport.name}
+                              {sport.iconUrl ? (
+                                <img src={sport.iconUrl} alt={sport.name} className="w-3.5 h-3.5 object-contain rounded-sm" />
+                              ) : sport.icon ? (
+                                <span>{sport.icon}</span>
+                              ) : null}
+                              {sport.name}
                             </span>
                           ))}
                           {trainer.sports.length > 2 && (

@@ -9,6 +9,7 @@ interface Sport {
   name: string;
   slug: string;
   icon: string | null;
+  iconUrl: string | null;
   _count: {
     trainers: number;
     arenas: number;
@@ -42,6 +43,7 @@ export default function SportsCRUD({ initialSports }: Props) {
   const [addName, setAddName] = useState("");
   const [addSlug, setAddSlug] = useState("");
   const [addIcon, setAddIcon] = useState("");
+  const [addIconUrl, setAddIconUrl] = useState("");
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -51,6 +53,7 @@ export default function SportsCRUD({ initialSports }: Props) {
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
   const [editIcon, setEditIcon] = useState("");
+  const [editIconUrl, setEditIconUrl] = useState("");
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState("");
 
@@ -65,7 +68,7 @@ export default function SportsCRUD({ initialSports }: Props) {
       const res = await fetch("/api/admin/sports", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: addName, slug: addSlug, icon: addIcon || undefined }),
+        body: JSON.stringify({ name: addName, slug: addSlug, icon: addIcon || undefined, iconUrl: addIconUrl || undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -75,6 +78,7 @@ export default function SportsCRUD({ initialSports }: Props) {
       setAddName("");
       setAddSlug("");
       setAddIcon("");
+      setAddIconUrl("");
       setShowAddForm(false);
       router.refresh();
     } catch {
@@ -89,6 +93,7 @@ export default function SportsCRUD({ initialSports }: Props) {
     setEditName(sport.name);
     setEditSlug(sport.slug);
     setEditIcon(sport.icon ?? "");
+    setEditIconUrl(sport.iconUrl ?? "");
     setEditError("");
   }
 
@@ -104,7 +109,7 @@ export default function SportsCRUD({ initialSports }: Props) {
       const res = await fetch(`/api/admin/sports/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, slug: editSlug, icon: editIcon || null }),
+        body: JSON.stringify({ name: editName, slug: editSlug, icon: editIcon || null, iconUrl: editIconUrl || null }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -189,7 +194,22 @@ export default function SportsCRUD({ initialSports }: Props) {
             </div>
             <div>
               <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
-                Ikona (emoji, neprivaloma)
+                Ikona — paveikslėlio URL (neprivaloma)
+              </label>
+              <input
+                type="url"
+                value={addIconUrl}
+                onChange={(e) => setAddIconUrl(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
+                placeholder="https://..."
+              />
+              {addIconUrl && (
+                <img src={addIconUrl} alt="preview" className="mt-2 w-10 h-10 object-contain rounded border border-gray-200" />
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-700 text-gray-500 mb-1.5 uppercase tracking-wide">
+                Emoji (jei nėra paveikslėlio)
               </label>
               <input
                 type="text"
@@ -243,21 +263,35 @@ export default function SportsCRUD({ initialSports }: Props) {
                     {editingId === sport.id ? (
                       <>
                         <td className="py-3 px-5">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={editIcon}
-                              onChange={(e) => setEditIcon(e.target.value)}
-                              className="w-12 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#FF5733]"
-                              placeholder="🎾"
-                              maxLength={4}
-                            />
-                            <input
-                              type="text"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#FF5733]"
-                            />
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#FF5733]"
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="url"
+                                value={editIconUrl}
+                                onChange={(e) => setEditIconUrl(e.target.value)}
+                                className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#FF5733] w-48"
+                                placeholder="Paveikslėlio URL"
+                              />
+                              {editIconUrl && (
+                                <img src={editIconUrl} alt="preview" className="w-7 h-7 object-contain rounded border border-gray-200" />
+                              )}
+                              <input
+                                type="text"
+                                value={editIcon}
+                                onChange={(e) => setEditIcon(e.target.value)}
+                                className="w-12 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-[#FF5733]"
+                                placeholder="🎾"
+                                maxLength={4}
+                              />
+                            </div>
                           </div>
                           {editError && (
                             <p className="text-red-600 text-xs mt-1">{editError}</p>
@@ -315,9 +349,11 @@ export default function SportsCRUD({ initialSports }: Props) {
                       <>
                         <td className="py-3 px-5">
                           <div className="flex items-center gap-2">
-                            {sport.icon && (
+                            {sport.iconUrl ? (
+                              <img src={sport.iconUrl} alt={sport.name} className="w-6 h-6 object-contain rounded" />
+                            ) : sport.icon ? (
                               <span className="text-lg">{sport.icon}</span>
-                            )}
+                            ) : null}
                             <span className="font-700 text-[#0B5C71]">{sport.name}</span>
                           </div>
                         </td>

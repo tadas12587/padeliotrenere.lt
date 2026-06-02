@@ -303,6 +303,7 @@ model Sport {
   name     String  @unique @db.VarChar(191)
   slug     String  @unique @db.VarChar(191)
   icon     String? @db.VarChar(10)
+  iconUrl  String? @db.VarChar(500)
   trainers TrainerSport[]
   arenas   ArenaSport[]
 }

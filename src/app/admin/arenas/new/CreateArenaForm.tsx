@@ -167,7 +167,11 @@ export default function CreateArenaForm({ sports }: Props) {
                     onChange={() => toggleSport(sport.id)}
                     className="accent-[#0B5C71]"
                   />
-                  {sport.icon && <span>{sport.icon}</span>}
+                  {sport.iconUrl ? (
+                    <img src={sport.iconUrl} alt={sport.name} className="w-4 h-4 object-contain rounded" />
+                  ) : sport.icon ? (
+                    <span>{sport.icon}</span>
+                  ) : null}
                   <span className="text-gray-700">{sport.name}</span>
                 </label>
               ))}

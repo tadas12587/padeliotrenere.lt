@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, slug, icon } = body;
+  const { name, slug, icon, iconUrl } = body;
 
   if (!name || !slug) {
     return NextResponse.json(
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         name,
         slug,
         icon: icon ?? null,
+        iconUrl: iconUrl ?? null,
       },
     });
     return NextResponse.json(sport, { status: 201 });
