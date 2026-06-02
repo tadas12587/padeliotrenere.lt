@@ -56,12 +56,6 @@ export default async function TrainerProfilePage() {
           Redaguokite savo viešą trenerio profilį
         </p>
       </div>
-      <TrainerProfileForm
-        profile={profileData}
-        arenas={allArenas}
-        sports={allSports as any[]}
-        gallery={trainerProfile?.gallery ?? []}
-      />
       {trainerProfile && (
         <ServicesManager
           trainerId={trainerProfile.id}
@@ -72,6 +66,12 @@ export default async function TrainerProfilePage() {
           }))}
         />
       )}
+      <TrainerProfileForm
+        profile={profileData}
+        arenas={allArenas}
+        sports={allSports as any[]}
+        gallery={trainerProfile?.gallery ?? []}
+      />
     </div>
   );
 }

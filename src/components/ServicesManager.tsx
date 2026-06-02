@@ -213,6 +213,7 @@ function ServiceFormFields({
 
 export default function ServicesManager({ trainerId, isAdmin, initialServices }: Props) {
   const [services, setServices] = useState<Service[]>(initialServices);
+  const [search, setSearch] = useState("");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [addTab, setAddTab] = useState<"catalog" | "custom">("catalog");
@@ -485,7 +486,20 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices }:
         </p>
       ) : (
         <div className="space-y-3">
-          {services.map((svc) => (
+          {services.length > 4 && (
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Ieškoti paslaugų..."
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
+            />
+          )}
+          {services.filter((s) =>
+            search.trim() === "" ||
+            s.name.toLowerCase().includes(search.toLowerCase()) ||
+            (s.description ?? "").toLowerCase().includes(search.toLowerCase())
+          ).map((svc) => (
             <div key={svc.id}>
               {editingId === svc.id ? (
                 <form
