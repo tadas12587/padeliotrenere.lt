@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Clock, MapPin, MessageSquare, X, Loader2 } from "lucide-react";
 import { formatDateLT } from "@/lib/utils";
@@ -69,10 +70,11 @@ const tabs = [
   { key: "all", label: "Visos" },
 ];
 
-export default function ClientBookingsPage() {
+function ClientBookingsContent() {
+  const searchParams = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("upcoming");
+  const [tab, setTab] = useState(searchParams.get("tab") || "upcoming");
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [noteBookingId, setNoteBookingId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
@@ -203,7 +205,10 @@ export default function ClientBookingsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                  {booking.availabilitySlot?.maxParticipants && booking.availabilitySlot.maxParticipants > 0 && (
+                    <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">Grupinė</span>
+                  )}
                   <span className={`badge ${bookingStatusColor(booking.status)}`}>
                     {bookingStatusLabel(booking.status)}
                   </span>
@@ -296,5 +301,13 @@ export default function ClientBookingsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ClientBookingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ClientBookingsContent />
+    </Suspense>
   );
 }
