@@ -207,35 +207,69 @@ export default async function ClientDashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {past.map((b) => (
-              <div key={b.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-700 text-sm text-[#0B5C71]">
-                      {getDateLabel(b)}
-                      {getTimeLabel(b) && ` · ${getTimeLabel(b)}`}
-                    </p>
-                    {(b.availabilitySlot as any)?.maxParticipants > 0 && (
-                      <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">Grupinė</span>
+            {past.map((b) => {
+              const trainer = (b.availabilitySlot as any)?.trainer;
+              return (
+                <div key={b.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="flex items-start gap-3">
+                    {/* Trainer avatar */}
+                    {trainer?.photoUrl ? (
+                      <img
+                        src={trainer.photoUrl}
+                        alt={trainer.displayName}
+                        className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-white shadow"
+                      />
+                    ) : trainer ? (
+                      <div className="w-10 h-10 rounded-full bg-[#0B5C71] flex items-center justify-center font-800 text-white text-sm shrink-0 border-2 border-white shadow">
+                        {trainer.displayName[0]}
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-[#FF5733]/10 flex items-center justify-center shrink-0 text-lg">
+                        🎾
+                      </div>
                     )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between flex-wrap gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-700 text-sm text-[#0B5C71]">
+                            {getDateLabel(b)}
+                            {getTimeLabel(b) && ` · ${getTimeLabel(b)}`}
+                          </p>
+                          {(b.availabilitySlot as any)?.maxParticipants > 0 && (
+                            <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">Grupinė</span>
+                          )}
+                        </div>
+                        <span className={`badge ${bookingStatusColor(b.status)}`}>
+                          {bookingStatusLabel(b.status)}
+                        </span>
+                      </div>
+                      {trainer && (
+                        <p className="text-sm font-600 text-[#0B5C71]">
+                          {trainer.displayName}
+                          {(b.availabilitySlot as any)?.arena?.name && (
+                            <span className="text-gray-400 font-400"> · {(b.availabilitySlot as any).arena.name}</span>
+                          )}
+                        </p>
+                      )}
+                      {(b.sessionNote as any)?.trainerNote && (
+                        <div className="mt-2 p-2 bg-white rounded-lg border border-gray-100">
+                          <p className="text-xs font-700 text-[#FF5733] mb-1">💬 Trenerio komentaras:</p>
+                          <p className="text-sm text-gray-600">{(b.sessionNote as any).trainerNote}</p>
+                        </div>
+                      )}
+                      {trainer && (
+                        <Link
+                          href={`/booking?trainerId=${trainer.id}`}
+                          className="inline-flex items-center gap-1 text-xs text-[#FF5733] font-600 mt-2 hover:underline"
+                        >
+                          Rezervuoti vėl <ArrowRight size={11} />
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <span className={`badge ${bookingStatusColor(b.status)}`}>
-                    {bookingStatusLabel(b.status)}
-                  </span>
                 </div>
-                {b.availabilitySlot && (
-                  <p className="text-xs text-gray-400 mb-1">
-                    {(b.availabilitySlot as any).trainer.displayName} · {(b.availabilitySlot as any).arena.name}
-                  </p>
-                )}
-                {(b.sessionNote as any)?.trainerNote && (
-                  <div className="mt-2 p-3 bg-white rounded-lg border border-gray-100">
-                    <p className="text-xs font-700 text-[#FF5733] mb-1">💬 Trenerio komentaras:</p>
-                    <p className="text-sm text-gray-600">{(b.sessionNote as any).trainerNote}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

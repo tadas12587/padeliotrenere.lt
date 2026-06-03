@@ -11,6 +11,7 @@ import {
   Dumbbell,
   Globe,
   BarChart2,
+  Star,
 } from "lucide-react";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { getSiteSettings } from "@/lib/settings";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/trainer/certifications", label: "Sertifikatai", icon: Award },
   { href: "/trainer/calendar", label: "Kalendorius", icon: CalendarDays },
   { href: "/trainer/stats", label: "Statistika", icon: BarChart2 },
+  { href: "/trainer/reviews", label: "Atsiliepimai", icon: Star },
 ];
 
 export default async function TrainerLayout({

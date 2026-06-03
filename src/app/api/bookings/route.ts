@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
           endTime: true,
           maxParticipants: true,
           arena: { select: { id: true, name: true, city: true } },
-          trainer: { select: { id: true, displayName: true } },
+          trainer: { select: { id: true, displayName: true, photoUrl: true } },
         },
       },
       service: { select: { id: true, name: true, durationMinutes: true } },
