@@ -112,10 +112,10 @@ export default async function ClientDashboardPage() {
       {/* Welcome */}
       <div className="rounded-2xl p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white shadow-sm">
         <h1 className="text-2xl font-900">
-          Sveiki, {user.name?.split(" ")[0] || "sportininke"}! 🎾
+          Sveiki, {user.name?.split(" ")[0] || "sportininke"}!
         </h1>
         <p className="text-gray-400 mt-1 text-sm">
-          Jūsų asmeninė padelio treniruočių zona
+          Jūsų asmeninė treniruočių zona
         </p>
         <div className="flex gap-6 mt-5 pt-5 border-t border-white/10">
           <div>

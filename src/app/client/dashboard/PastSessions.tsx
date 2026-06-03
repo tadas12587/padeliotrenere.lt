@@ -83,15 +83,6 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-function StarDisplay({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={13} className={n <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"} />
-      ))}
-    </div>
-  );
-}
 
 export default function PastSessions({ bookings }: { bookings: PastBooking[] }) {
   const [myReviews, setMyReviews] = useState<Record<string, MyReview>>({});
@@ -214,13 +205,7 @@ export default function PastSessions({ bookings }: { bookings: PastBooking[] }) 
                 {trainer && (
                   <div className="mt-2">
                     {alreadyReviewed ? (
-                      <div className="p-2.5 bg-yellow-50 border border-yellow-100 rounded-xl">
-                        <p className="text-xs font-700 text-yellow-600 mb-1">⭐ Jūsų atsiliepimas:</p>
-                        <StarDisplay rating={alreadyReviewed.rating} />
-                        {alreadyReviewed.comment && (
-                          <p className="text-xs text-gray-600 mt-1">{alreadyReviewed.comment}</p>
-                        )}
-                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">Jūs jau įvertinote trenerį</p>
                     ) : reviewBookingId === b.id ? (
                       <div className="p-3 bg-white border border-gray-200 rounded-xl space-y-2">
                         <p className="text-xs font-700 text-[#0B5C71]">

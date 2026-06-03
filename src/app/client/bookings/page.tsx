@@ -114,22 +114,6 @@ function StarPicker({
   );
 }
 
-function StarDisplay({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star
-          key={n}
-          size={14}
-          className={
-            n <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300 fill-gray-300"
-          }
-        />
-      ))}
-    </div>
-  );
-}
-
 function TrainerAvatar({
   displayName,
   photoUrl,
@@ -493,17 +477,7 @@ function ClientBookingsContent() {
                 {past && trainer && (
                   <div className="mt-3">
                     {alreadyReviewed ? (
-                      <div className="p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
-                        <p className="text-xs font-700 text-yellow-600 mb-1.5">
-                          ⭐ Jūsų atsiliepimas:
-                        </p>
-                        <StarDisplay rating={alreadyReviewed.rating} />
-                        {alreadyReviewed.comment && (
-                          <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
-                            {alreadyReviewed.comment}
-                          </p>
-                        )}
-                      </div>
+                      <p className="text-xs text-gray-400">Jūs jau įvertinote trenerį</p>
                     ) : reviewBookingId === booking.id ? (
                       <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
                         <p className="text-sm font-700 text-[#0B5C71]">
