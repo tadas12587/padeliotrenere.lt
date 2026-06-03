@@ -9,7 +9,7 @@ import {
   Award, CalendarDays, BarChart2,
   BookOpen, Clock, Users, FileText,
   UserCheck, Building2, Trophy, LayoutList,
-  Search, Star,
+  Search, Star, Layers,
 } from "lucide-react";
 
 type NavType = "client" | "trainer" | "admin";
@@ -31,6 +31,7 @@ const NAV_CONFIG: Record<NavType, {
     items: [
       { href: "/trainer/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/trainer/profile", label: "Profilis", icon: User },
+      { href: "/trainer/services", label: "Paslaugos", icon: Layers },
       { href: "/trainer/certifications", label: "Sertifikatai", icon: Award },
       { href: "/trainer/calendar", label: "Kalendorius", icon: CalendarDays },
       { href: "/trainer/stats", label: "Statistika", icon: BarChart2 },

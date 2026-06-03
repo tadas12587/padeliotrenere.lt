@@ -12,6 +12,7 @@ import {
   Globe,
   BarChart2,
   Star,
+  Layers,
 } from "lucide-react";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { getSiteSettings } from "@/lib/settings";
@@ -19,6 +20,7 @@ import { getSiteSettings } from "@/lib/settings";
 const navItems = [
   { href: "/trainer/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/trainer/profile", label: "Profilis", icon: User },
+  { href: "/trainer/services", label: "Paslaugos", icon: Layers },
   { href: "/trainer/certifications", label: "Sertifikatai", icon: Award },
   { href: "/trainer/calendar", label: "Kalendorius", icon: CalendarDays },
   { href: "/trainer/stats", label: "Statistika", icon: BarChart2 },
