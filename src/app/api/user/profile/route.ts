@@ -7,7 +7,7 @@ import { z } from "zod";
 const updateProfileSchema = z.object({
   name: z.string().max(100).optional(),
   phone: z.string().max(30).optional(),
-  image: z.string().url().max(500).nullable().optional(),
+  image: z.string().max(500).nullable().optional(),
 });
 
 export async function GET() {

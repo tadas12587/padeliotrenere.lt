@@ -127,17 +127,23 @@ ssh "${SSH_ALIAS}" bash -s -- "$DB_USER" "$DB_PASS" "$DB_NAME" "$PACKAGE" << 'EN
   tar -xzf ~/$PACKAGE
   rm ~/$PACKAGE
 
-  echo "▶ _next statiniai failai (nginx reikalavimas)"
+  echo "▶ _next statiniai failai (nginx)"
   rm -rf /web/_next
   mkdir -p /web/_next
   cp -r /web/.next/static /web/_next/
   echo "  ✓ /web/_next/static/ sukurtas"
 
-  echo "▶ Uploads direktorija (nginx root /web/)"
-  # Remove symlink from previous deploy attempts, create real directory
+  echo "▶ Uploads direktorija"
   [ -L /web/uploads ] && rm /web/uploads || true
   mkdir -p /web/uploads
-  echo "  ✓ /web/uploads/ katalgas sukurtas"
+  echo "  ✓ /web/uploads/ sukurtas"
+
+  echo "▶ Public failai (nginx static)"
+  # Next.js standalone does NOT serve public/ — nginx must serve them directly
+  [ -f /web/public/sw.js ] && cp /web/public/sw.js /web/sw.js && echo "  ✓ sw.js" || true
+  [ -d /web/public/icons ] && { rm -rf /web/icons; cp -r /web/public/icons /web/icons; echo "  ✓ icons/"; } || true
+  [ -f /web/public/manifest.json ] && cp /web/public/manifest.json /web/manifest.json && echo "  ✓ manifest.json" || true
+  [ -f /web/public/robots.txt ] && cp /web/public/robots.txt /web/robots.txt && echo "  ✓ robots.txt" || true
 
   echo "▶ Prisma migracijos (MySQL)"
   for f in /web/prisma/migrations/*/migration.sql; do
