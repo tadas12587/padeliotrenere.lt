@@ -79,6 +79,7 @@ async function FeaturedTrainersSection() {
     include: {
       services: true,
       reviews: { select: { rating: true } },
+      sports: { include: { sport: true } },
     },
     orderBy: [{ isFeatured: "desc" }, { createdAt: "asc" }],
     take: 8,
@@ -153,6 +154,26 @@ async function FeaturedTrainersSection() {
                       {trainer.city}
                     </p>
                   </div>
+
+                  {/* Sports */}
+                  {trainer.sports.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {trainer.sports.slice(0, 2).map(({ sport }) => (
+                        <span
+                          key={sport.id}
+                          className="inline-flex items-center gap-1 bg-[#0B5C71] text-white text-xs font-700 px-2 py-0.5 rounded-full"
+                        >
+                          {sport.icon && <span className="leading-none">{sport.icon}</span>}
+                          {sport.name}
+                        </span>
+                      ))}
+                      {trainer.sports.length > 2 && (
+                        <span className="inline-flex items-center bg-[#0B5C71]/15 text-[#0B5C71] text-xs font-700 px-2 py-0.5 rounded-full">
+                          +{trainer.sports.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-3 text-sm">
                     {avgRating !== null ? (
