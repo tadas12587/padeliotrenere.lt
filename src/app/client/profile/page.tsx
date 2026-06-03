@@ -107,7 +107,19 @@ export default function ClientProfilePage() {
     setSaving(false);
   };
 
+  const getSwRegistration = (): Promise<ServiceWorkerRegistration> =>
+    Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Service worker neaktyvus — pabandykite perkrauti puslapį")), 8000)
+      ),
+    ]);
+
   const handlePushToggle = async () => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      alert("Jūsų naršyklė nepalaiko push pranešimų.");
+      return;
+    }
     setPushLoading(true);
     try {
       if (!pushEnabled) {
@@ -117,7 +129,7 @@ export default function ClientProfilePage() {
           setPushLoading(false);
           return;
         }
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await getSwRegistration();
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
@@ -129,7 +141,7 @@ export default function ClientProfilePage() {
         });
         setPushEnabled(true);
       } else {
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await getSwRegistration();
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
           await sub.unsubscribe();
@@ -141,8 +153,9 @@ export default function ClientProfilePage() {
         }
         setPushEnabled(false);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      alert(err?.message || "Klaida įjungiant pranešimus.");
     }
     setPushLoading(false);
   };

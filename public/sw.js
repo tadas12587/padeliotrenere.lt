@@ -3,8 +3,11 @@ const CACHE_NAME = "padeliotrenere-v1";
 const STATIC_ASSETS = ["/", "/booking", "/about", "/blog", "/contact"];
 
 self.addEventListener("install", (event) => {
+  // Cache individually — one failure must not block SW activation
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(url)))
+    )
   );
   self.skipWaiting();
 });
