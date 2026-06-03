@@ -157,6 +157,29 @@ export default async function TrainersPage({
                           ⭐ Top
                         </div>
                       )}
+
+                      {/* Sport labels — bottom of photo */}
+                      {trainer.sports.length > 0 && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 px-2.5 pb-2.5 pt-6 flex flex-wrap gap-1"
+                          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)" }}
+                        >
+                          {trainer.sports.slice(0, 2).map(({ sport }) => (
+                            <span
+                              key={sport.id}
+                              className="inline-flex items-center gap-1 bg-white/95 text-[#0B5C71] text-xs font-800 px-2 py-0.5 rounded-full shadow-sm"
+                            >
+                              {sport.icon && <span className="leading-none">{sport.icon}</span>}
+                              {sport.name}
+                            </span>
+                          ))}
+                          {trainer.sports.length > 2 && (
+                            <span className="inline-flex items-center bg-white/95 text-[#0B5C71] text-xs font-800 px-2 py-0.5 rounded-full shadow-sm">
+                              +{trainer.sports.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Info */}
@@ -170,26 +193,6 @@ export default async function TrainersPage({
                           {trainer.city}
                         </p>
                       </div>
-
-                      {/* Sports */}
-                      {trainer.sports.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {trainer.sports.slice(0, 2).map(({ sport }) => (
-                            <span
-                              key={sport.id}
-                              className="inline-flex items-center gap-1 bg-[#0B5C71] text-white text-xs font-700 px-2 py-0.5 rounded-full"
-                            >
-                              {sport.icon && <span className="leading-none">{sport.icon}</span>}
-                              {sport.name}
-                            </span>
-                          ))}
-                          {trainer.sports.length > 2 && (
-                            <span className="inline-flex items-center bg-[#0B5C71]/15 text-[#0B5C71] text-xs font-700 px-2 py-0.5 rounded-full">
-                              +{trainer.sports.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      )}
 
                       {/* Rating */}
                       {avgRating !== null && (
