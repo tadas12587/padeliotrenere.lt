@@ -85,15 +85,31 @@ export default async function ClientDashboardPage() {
   });
   const past = pastRaw.slice(0, 3);
 
-  const totalBookings = await prisma.booking.count({ where: { userId: user.id } });
-  const completedCount = await prisma.booking.count({
-    where: { userId: user.id, status: "COMPLETED" },
+  const upcomingCount = await prisma.booking.count({
+    where: {
+      userId: user.id,
+      status: { in: ["PENDING", "CONFIRMED"] },
+      OR: [
+        { slot: { date: { gte: now } } },
+        { availabilitySlot: { startTime: { gte: now } } },
+      ],
+    },
+  });
+  const pastCount = await prisma.booking.count({
+    where: {
+      userId: user.id,
+      OR: [
+        { status: { in: ["COMPLETED", "CANCELLED"] } },
+        { slot: { date: { lt: now } } },
+        { availabilitySlot: { startTime: { lt: now } } },
+      ],
+    },
   });
 
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div className="card p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white">
+      <div className="rounded-2xl p-6 bg-gradient-to-br from-[#0B5C71] to-[#083d4e] text-white shadow-sm">
         <h1 className="text-2xl font-900">
           Sveiki, {user.name?.split(" ")[0] || "sportininke"}! 🎾
         </h1>
@@ -102,12 +118,12 @@ export default async function ClientDashboardPage() {
         </p>
         <div className="flex gap-6 mt-5 pt-5 border-t border-white/10">
           <div>
-            <p className="text-2xl font-900 text-[#FF5733]">{totalBookings}</p>
-            <p className="text-xs text-gray-400">Iš viso rezervacijų</p>
+            <p className="text-2xl font-900 text-[#FF5733]">{upcomingCount}</p>
+            <p className="text-xs text-white/50">Artėjančios</p>
           </div>
           <div>
-            <p className="text-2xl font-900 text-[#FF5733]">{completedCount}</p>
-            <p className="text-xs text-gray-400">Treniruočių įvykdyta</p>
+            <p className="text-2xl font-900 text-[#FF5733]">{pastCount}</p>
+            <p className="text-xs text-white/50">Praėjusios</p>
           </div>
         </div>
       </div>
