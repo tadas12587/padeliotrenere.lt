@@ -49,7 +49,7 @@ interface AvailabilitySlot {
 interface SlotParticipant {
   id: string;
   status: string;
-  user: { id: string; name: string | null; email: string | null };
+  user: { id: string; name: string | null; email: string | null; image?: string | null };
   service: { name: string } | null;
   createdAt: string;
 }
@@ -843,7 +843,17 @@ export default function TrainerCalendarPage() {
                       key={p.id}
                       className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100"
                     >
-                      <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+                          {p.user.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.user.image} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-[#0B5C71] flex items-center justify-center text-white font-800 text-sm">
+                              {(p.user.name || p.user.email || "?")[0].toUpperCase()}
+                            </div>
+                          )}
+                        </div>
                         <p className="font-700 text-[#0B5C71] text-sm">
                           {p.user.name || "—"}
                         </p>
@@ -862,6 +872,7 @@ export default function TrainerCalendarPage() {
                         >
                           {p.status === "CONFIRMED" ? "Patvirtinta" : "Laukiama"}
                         </span>
+                        </div>
                       </div>
                       <button
                         onClick={() => removeParticipant(participantSlot.id, p.id)}

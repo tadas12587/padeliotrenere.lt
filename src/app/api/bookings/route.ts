@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     where,
     orderBy: { createdAt: "desc" },
     include: {
-      user: { select: { id: true, name: true, email: true, phone: true } },
+      user: { select: { id: true, name: true, email: true, phone: true, image: true } },
       slot: { select: { id: true, date: true, startTime: true, endTime: true } },
       availabilitySlot: {
         select: {

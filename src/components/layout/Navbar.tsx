@@ -95,8 +95,15 @@ export default function Navbar({
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-600 text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                <div className="w-7 h-7 rounded-full bg-[#FF5733]/15 flex items-center justify-center text-[#FF5733] font-800 text-xs">
-                  {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U"}
+                <div className="w-7 h-7 rounded-full overflow-hidden shrink-0">
+                  {user?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={user.image} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-[#FF5733]/15 flex items-center justify-center text-[#FF5733] font-800 text-xs">
+                      {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U"}
+                    </div>
+                  )}
                 </div>
                 <span className="max-w-[120px] truncate">{user?.name ?? user?.email}</span>
                 <ChevronDown size={14} />

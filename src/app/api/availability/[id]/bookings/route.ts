@@ -40,7 +40,7 @@ export async function GET(
       id: true,
       status: true,
       createdAt: true,
-      user: { select: { id: true, name: true, email: true } },
+      user: { select: { id: true, name: true, email: true, image: true } },
       service: { select: { name: true } },
     },
     orderBy: { createdAt: "asc" },

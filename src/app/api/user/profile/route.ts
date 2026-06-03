@@ -7,7 +7,21 @@ import { z } from "zod";
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   phone: z.string().max(20).optional(),
+  image: z.string().url().max(500).nullable().optional(),
 });
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const user = session.user as any;
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { id: true, name: true, email: true, phone: true, image: true },
+  });
+
+  return NextResponse.json(dbUser ?? {});
+}
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);

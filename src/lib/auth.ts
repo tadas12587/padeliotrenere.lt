@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
@@ -70,6 +70,13 @@ export const authOptions: NextAuthOptions = {
         }
         token.id = user.id;
         token.trainerStatus = dbUser?.trainerProfile?.status ?? null;
+        token.image = dbUser?.image ?? null;
+      } else if (trigger === "update") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { image: true },
+        });
+        if (dbUser) token.image = dbUser.image ?? null;
       }
       return token;
     },
@@ -78,6 +85,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
         (session.user as any).trainerStatus = token.trainerStatus;
+        (session.user as any).image = token.image ?? session.user.image ?? null;
       }
       return session;
     },

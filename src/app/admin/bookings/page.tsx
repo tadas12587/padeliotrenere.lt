@@ -23,7 +23,7 @@ interface Booking {
   status: string;
   clientNotes?: string;
   createdAt: string;
-  user: { name?: string; email?: string; phone?: string };
+  user: { name?: string; email?: string; phone?: string; image?: string | null };
   slot?: { date: string; startTime: string; endTime: string } | null;
   availabilitySlot?: AvailabilitySlotInfo | null;
   service?: ServiceInfo | null;
@@ -161,8 +161,15 @@ export default function AdminBookingsPage() {
             <div key={booking.id} className="card p-6">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-[#0B5C71] flex items-center justify-center text-white font-900 shrink-0">
-                    {(booking.user.name || booking.user.email || "?")[0].toUpperCase()}
+                  <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0">
+                    {booking.user.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={booking.user.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#0B5C71] flex items-center justify-center text-white font-900">
+                        {(booking.user.name || booking.user.email || "?")[0].toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="font-700 text-[#0B5C71]">
