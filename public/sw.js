@@ -1,4 +1,4 @@
-// Service Worker – Padelio Treneris
+// Service Worker - Padelio Treneris
 const CACHE_NAME = "padeliotrenere-v1";
 const STATIC_ASSETS = ["/", "/booking", "/about", "/blog", "/contact"];
 
@@ -51,8 +51,8 @@ self.addEventListener("push", (event) => {
     data: { url: data.url || "/" },
     vibrate: [200, 100, 200],
     actions: [
-      { action: "open", title: "Atidaryti" },
-      { action: "close", title: "Uždaryti" },
+      { action: "open", title: "Open" },
+      { action: "close", title: "Uzdaryti" },
     ],
   };
 

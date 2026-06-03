@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export function GET() {
   try {
     const swPath = path.join(process.cwd(), "public", "sw.js");
-    const content = fs.readFileSync(swPath, "utf-8");
+    const content = fs.readFileSync(swPath); // Buffer — no re-encoding
     return new NextResponse(content, {
       headers: {
         "Content-Type": "application/javascript; charset=utf-8",
