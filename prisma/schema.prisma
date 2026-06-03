@@ -245,6 +245,8 @@ model ServiceTemplate {
   id          String    @id @default(cuid())
   name        String    @db.VarChar(191)
   description String?   @db.Text
+  sportId     String?   @db.VarChar(191)
+  sport       Sport?    @relation(fields: [sportId], references: [id], onDelete: SetNull)
   services    Service[]
   createdAt   DateTime  @default(now())
 }
@@ -311,9 +313,10 @@ model Sport {
   slug     String  @unique @db.VarChar(191)
   icon     String? @db.VarChar(10)
   iconUrl  String? @db.VarChar(500)
-  trainers TrainerSport[]
-  arenas   ArenaSport[]
-  services Service[]
+  trainers         TrainerSport[]
+  arenas           ArenaSport[]
+  services         Service[]
+  serviceTemplates ServiceTemplate[]
 }
 
 model TrainerSport {

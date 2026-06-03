@@ -10,14 +10,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const { name, description } = await req.json();
+  const { name, description, sportId } = await req.json();
   if (!name?.trim()) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
   }
 
   const template = await prisma.serviceTemplate.update({
     where: { id },
-    data: { name: name.trim(), description: description || null },
+    data: { name: name.trim(), description: description || null, sportId: sportId || null },
+    include: { sport: { select: { id: true, name: true, icon: true, iconUrl: true } } },
   });
 
   return NextResponse.json(template);

@@ -4,9 +4,13 @@ import ServiceCatalogCRUD from "./ServiceCatalogCRUD";
 export const dynamic = "force-dynamic";
 
 export default async function AdminServiceCatalogPage() {
-  const templates = await prisma.serviceTemplate.findMany({
-    orderBy: { name: "asc" },
-  });
+  const [templates, sports] = await Promise.all([
+    prisma.serviceTemplate.findMany({
+      orderBy: { name: "asc" },
+      include: { sport: { select: { id: true, name: true, icon: true, iconUrl: true } } },
+    }),
+    prisma.sport.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -21,7 +25,9 @@ export default async function AdminServiceCatalogPage() {
         initialTemplates={templates.map((t) => ({
           ...t,
           createdAt: t.createdAt.toISOString(),
+          sport: t.sport ?? null,
         }))}
+        sports={sports}
       />
     </div>
   );

@@ -3,15 +3,25 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 
+interface SportOption {
+  id: string;
+  name: string;
+  icon: string | null;
+  iconUrl: string | null;
+}
+
 interface ServiceTemplate {
   id: string;
   name: string;
   description: string | null;
+  sportId: string | null;
+  sport: SportOption | null;
   createdAt: string;
 }
 
 interface Props {
   initialTemplates: ServiceTemplate[];
+  sports: SportOption[];
 }
 
 const inputCls =
@@ -21,11 +31,12 @@ const labelCls = "block text-sm font-700 text-gray-700 mb-1.5";
 interface FormState {
   name: string;
   description: string;
+  sportId: string;
 }
 
-const emptyForm = (): FormState => ({ name: "", description: "" });
+const emptyForm = (): FormState => ({ name: "", description: "", sportId: "" });
 
-export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
+export default function ServiceCatalogCRUD({ initialTemplates, sports }: Props) {
   const [templates, setTemplates] = useState<ServiceTemplate[]>(initialTemplates);
 
   const [showAdd, setShowAdd] = useState(false);
@@ -54,7 +65,11 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
       const res = await fetch("/api/service-templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: addForm.name, description: addForm.description || null }),
+        body: JSON.stringify({
+          name: addForm.name,
+          description: addForm.description || null,
+          sportId: addForm.sportId || null,
+        }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -74,7 +89,7 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
 
   const startEdit = (tpl: ServiceTemplate) => {
     setEditingId(tpl.id);
-    setEditForm({ name: tpl.name, description: tpl.description ?? "" });
+    setEditForm({ name: tpl.name, description: tpl.description ?? "", sportId: tpl.sportId ?? "" });
     setEditError(null);
   };
 
@@ -86,7 +101,11 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
       const res = await fetch(`/api/service-templates/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editForm.name, description: editForm.description || null }),
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description || null,
+          sportId: editForm.sportId || null,
+        }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -122,6 +141,59 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
       setDeletingId(null);
     }
   };
+
+  function TemplateForm({
+    form,
+    onChange,
+  }: {
+    form: FormState;
+    onChange: (updates: Partial<FormState>) => void;
+  }) {
+    return (
+      <>
+        {sports.length > 0 && (
+          <div>
+            <label className={labelCls}>Sporto šaka</label>
+            <select
+              value={form.sportId}
+              onChange={(e) => onChange({ sportId: e.target.value })}
+              className={inputCls}
+            >
+              <option value="">— Visos sporto šakos —</option>
+              {sports.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.icon ? `${s.icon} ` : ""}{s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        <div>
+          <label className={labelCls}>
+            Pavadinimas <span className="text-[#FF5733]">*</span>
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            required
+            className={inputCls}
+            placeholder="pvz. Treniruotė pradedantiesiems"
+          />
+        </div>
+        <div>
+          <label className={labelCls}>Aprašymas</label>
+          <textarea
+            value={form.description}
+            onChange={(e) => onChange({ description: e.target.value })}
+            rows={3}
+            className={`${inputCls} resize-none`}
+            placeholder="Bendras šablono aprašymas (treneriai gali koreguoti)"
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="card p-6 max-w-3xl">
@@ -164,29 +236,7 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
               {addError}
             </p>
           )}
-          <div>
-            <label className={labelCls}>
-              Pavadinimas <span className="text-[#FF5733]">*</span>
-            </label>
-            <input
-              type="text"
-              value={addForm.name}
-              onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
-              required
-              className={inputCls}
-              placeholder="pvz. Padel treniruotė pradedantiesiems"
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Aprašymas</label>
-            <textarea
-              value={addForm.description}
-              onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
-              rows={3}
-              className={`${inputCls} resize-none`}
-              placeholder="Bendras šablono aprašymas (treneriai gali koreguoti)"
-            />
-          </div>
+          <TemplateForm form={addForm} onChange={(u) => setAddForm((f) => ({ ...f, ...u }))} />
           <div className="flex items-center gap-3">
             <button
               type="submit"
@@ -226,27 +276,7 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
                       {editError}
                     </p>
                   )}
-                  <div>
-                    <label className={labelCls}>
-                      Pavadinimas <span className="text-[#FF5733]">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.name}
-                      onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                      required
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Aprašymas</label>
-                    <textarea
-                      value={editForm.description}
-                      onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
-                      rows={3}
-                      className={`${inputCls} resize-none`}
-                    />
-                  </div>
+                  <TemplateForm form={editForm} onChange={(u) => setEditForm((f) => ({ ...f, ...u }))} />
                   <div className="flex items-center gap-3">
                     <button
                       type="submit"
@@ -269,7 +299,15 @@ export default function ServiceCatalogCRUD({ initialTemplates }: Props) {
               ) : (
                 <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                   <div className="flex-1 min-w-0">
-                    <p className="font-700 text-[#0B5C71] text-sm">{tpl.name}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-700 text-[#0B5C71] text-sm">{tpl.name}</p>
+                      {tpl.sport && (
+                        <span className="badge text-xs text-purple-600 bg-purple-50 border-purple-200">
+                          {tpl.sport.icon && <span className="mr-0.5">{tpl.sport.icon}</span>}
+                          {tpl.sport.name}
+                        </span>
+                      )}
+                    </div>
                     {tpl.description && (
                       <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{tpl.description}</p>
                     )}

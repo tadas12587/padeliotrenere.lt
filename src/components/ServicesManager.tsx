@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Check, X, BookOpen, Sparkles, Users, User } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Users, User } from "lucide-react";
 
 export interface Service {
   id: string;
@@ -22,6 +22,7 @@ interface ServiceTemplate {
   id: string;
   name: string;
   description: string | null;
+  sportId: string | null;
 }
 
 interface SportOption {
@@ -96,20 +97,26 @@ function ServiceFormFields({
   onChange,
   mode,
   sports,
+  templates,
+  templatesLoading,
 }: {
   form: FormState;
   onChange: (updates: Partial<FormState>) => void;
   mode: "add" | "edit";
   sports: SportOption[];
+  templates?: ServiceTemplate[];
+  templatesLoading?: boolean;
 }) {
   return (
     <>
       {sports.length > 0 && (
         <div>
-          <label className={labelCls}>Sporto šaka <span className="text-[#FF5733]">*</span></label>
+          <label className={labelCls}>
+            Sporto šaka <span className="text-[#FF5733]">*</span>
+          </label>
           <select
             value={form.sportId}
-            onChange={(e) => onChange({ sportId: e.target.value })}
+            onChange={(e) => onChange({ sportId: e.target.value, templateId: null, name: "", description: "" })}
             className={inputCls}
             required
           >
@@ -123,6 +130,46 @@ function ServiceFormFields({
         </div>
       )}
 
+      {/* Template quick-pick — only in add mode, only when sport selected */}
+      {mode === "add" && form.sportId && templates !== undefined && (
+        <div>
+          {templatesLoading ? (
+            <p className="text-xs text-gray-400 py-1">Kraunami šablonai...</p>
+          ) : templates.length > 0 ? (
+            <div>
+              <p className="text-xs font-700 text-gray-500 mb-2">Pasirinkite šabloną (neprivaloma)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                {templates.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() =>
+                      onChange(
+                        form.templateId === tpl.id
+                          ? { templateId: null, name: "", description: "" }
+                          : { templateId: tpl.id, name: tpl.name, description: tpl.description ?? "" }
+                      )
+                    }
+                    className={`text-left p-3 rounded-xl border-2 transition-all ${
+                      form.templateId === tpl.id
+                        ? "border-[#0B5C71] bg-[#0B5C71]/5"
+                        : "border-gray-200 bg-white hover:border-[#0B5C71]/40 hover:bg-[#0B5C71]/5"
+                    }`}
+                  >
+                    <p className="font-700 text-sm text-[#0B5C71] leading-tight">{tpl.name}</p>
+                    {tpl.description && (
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                        {tpl.description}
+                      </p>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      )}
+
       <div>
         <label className={labelCls}>
           Pavadinimas <span className="text-[#FF5733]">*</span>
@@ -133,6 +180,7 @@ function ServiceFormFields({
           onChange={(e) => onChange({ name: e.target.value })}
           required
           className={inputCls}
+          placeholder="Paslaugos pavadinimas"
         />
       </div>
 
@@ -250,12 +298,12 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
   const [search, setSearch] = useState("");
 
   const [showAddForm, setShowAddForm] = useState(false);
-  const [addTab, setAddTab] = useState<"catalog" | "custom">("catalog");
   const [addForm, setAddForm] = useState<FormState>(emptyForm());
   const [addSaving, setAddSaving] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
-  const [templates, setTemplates] = useState<ServiceTemplate[]>([]);
+  // Templates keyed by sportId; null key = already fetched but empty
+  const [templatesBySport, setTemplatesBySport] = useState<Record<string, ServiceTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -275,20 +323,28 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
     setTimeout(() => setMessage(null), 4000);
   };
 
+  // Fetch templates for a sport when sport changes in add form
   useEffect(() => {
-    if (showAddForm && templates.length === 0 && !templatesLoading) {
-      setTemplatesLoading(true);
-      fetch("/api/service-templates")
-        .then((r) => r.json())
-        .then((data) => setTemplates(Array.isArray(data) ? data : []))
-        .catch(() => {})
-        .finally(() => setTemplatesLoading(false));
-    }
-  }, [showAddForm]); // eslint-disable-line react-hooks/exhaustive-deps
+    const sportId = addForm.sportId;
+    if (!sportId || templatesBySport[sportId] !== undefined) return;
+
+    setTemplatesLoading(true);
+    fetch(`/api/service-templates?sportIds=${sportId}`)
+      .then((r) => r.json())
+      .then((data) =>
+        setTemplatesBySport((prev) => ({
+          ...prev,
+          [sportId]: Array.isArray(data) ? data : [],
+        }))
+      )
+      .catch(() =>
+        setTemplatesBySport((prev) => ({ ...prev, [sportId]: [] }))
+      )
+      .finally(() => setTemplatesLoading(false));
+  }, [addForm.sportId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openAddForm = () => {
     setAddForm(emptyForm());
-    setAddTab("catalog");
     setAddError(null);
     setShowAddForm(true);
   };
@@ -378,6 +434,8 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
     }
   };
 
+  const currentTemplates = addForm.sportId ? (templatesBySport[addForm.sportId] ?? undefined) : undefined;
+
   return (
     <div className="card p-6 max-w-3xl">
       <div className="flex items-center justify-between mb-4">
@@ -406,94 +464,25 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
         </div>
       )}
 
-      {/* Add form */}
       {showAddForm && (
         <form
           onSubmit={handleAdd}
           className="mb-5 p-4 bg-[#F4F4F4] rounded-xl border border-gray-200 space-y-4"
         >
           <h3 className="font-700 text-[#0B5C71] text-sm">Nauja paslauga</h3>
-
-          <div className="flex bg-white rounded-xl p-1 border border-gray-200">
-            <button
-              type="button"
-              onClick={() => setAddTab("catalog")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-600 transition-all ${
-                addTab === "catalog"
-                  ? "bg-[#0B5C71] text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <BookOpen size={15} />
-              Iš katalogo
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAddTab("custom");
-                setAddForm((f) => ({ ...f, templateId: null }));
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-600 transition-all ${
-                addTab === "custom"
-                  ? "bg-[#0B5C71] text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <Sparkles size={15} />
-              Nauja paslauga
-            </button>
-          </div>
-
-          {addTab === "catalog" && (
-            <div>
-              {templatesLoading ? (
-                <p className="text-sm text-gray-400 text-center py-3">Kraunama...</p>
-              ) : templates.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-3">Katalogas tuščias</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-1">
-                  {templates.map((tpl) => (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      onClick={() =>
-                        setAddForm((f) => ({
-                          ...f,
-                          templateId: tpl.id,
-                          name: tpl.name,
-                          description: tpl.description ?? "",
-                        }))
-                      }
-                      className={`text-left p-3 rounded-xl border-2 transition-all ${
-                        addForm.templateId === tpl.id
-                          ? "border-[#0B5C71] bg-[#0B5C71]/5"
-                          : "border-gray-200 bg-white hover:border-[#0B5C71]/40 hover:bg-[#0B5C71]/5"
-                      }`}
-                    >
-                      <p className="font-700 text-sm text-[#0B5C71]">{tpl.name}</p>
-                      {tpl.description && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{tpl.description}</p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {addError && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {addError}
             </p>
           )}
-
           <ServiceFormFields
             form={addForm}
             onChange={(updates) => setAddForm((f) => ({ ...f, ...updates }))}
             mode="add"
             sports={sports}
+            templates={currentTemplates}
+            templatesLoading={templatesLoading}
           />
-
           <div className="flex items-center gap-3">
             <button
               type="submit"
@@ -515,7 +504,6 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
         </form>
       )}
 
-      {/* Services list */}
       {services.length === 0 ? (
         <p className="text-sm text-gray-400 py-4 text-center">
           Paslaugų nėra. Pridėkite pirmąją paslaugą.
@@ -531,117 +519,120 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices, s
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5733]/20 focus:border-[#FF5733]"
             />
           )}
-          {services.filter((s) =>
-            search.trim() === "" ||
-            s.name.toLowerCase().includes(search.toLowerCase()) ||
-            (s.description ?? "").toLowerCase().includes(search.toLowerCase())
-          ).map((svc) => (
-            <div key={svc.id}>
-              {editingId === svc.id ? (
-                <form
-                  onSubmit={(e) => handleEdit(e, svc.id)}
-                  className="p-4 bg-[#F4F4F4] rounded-xl border border-[#FF5733]/30 space-y-4"
-                >
-                  {editError && (
-                    <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                      {editError}
-                    </p>
-                  )}
-                  <ServiceFormFields
-                    form={editForm}
-                    onChange={(updates) => setEditForm((f) => ({ ...f, ...updates }))}
-                    mode="edit"
-                    sports={sports}
-                  />
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="submit"
-                      disabled={editSaving}
-                      className="btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
-                    >
-                      <Check size={14} />
-                      {editSaving ? "Saugoma..." : "Išsaugoti"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(null)}
-                      className="btn-secondary flex items-center gap-2 text-sm"
-                    >
-                      <X size={14} />
-                      Atšaukti
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-700 text-[#0B5C71] text-sm">{svc.name}</p>
-                      {svc.sport && (
-                        <span className="badge text-xs text-purple-600 bg-purple-50 border-purple-200">
-                          {svc.sport.icon && <span className="mr-1">{svc.sport.icon}</span>}
-                          {svc.sport.name}
-                        </span>
-                      )}
-                      <span
-                        className={`badge text-xs inline-flex items-center gap-1 ${
-                          svc.type === "GROUP"
-                            ? "text-orange-600 bg-orange-50 border-orange-200"
-                            : "text-blue-600 bg-blue-50 border-blue-200"
-                        }`}
-                      >
-                        {svc.type === "GROUP" ? (
-                          <><Users size={10} />Grupinė</>
-                        ) : (
-                          <><User size={10} />Individuali</>
-                        )}
-                      </span>
-                    </div>
-                    {svc.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{svc.description}</p>
+          {services
+            .filter(
+              (s) =>
+                search.trim() === "" ||
+                s.name.toLowerCase().includes(search.toLowerCase()) ||
+                (s.description ?? "").toLowerCase().includes(search.toLowerCase())
+            )
+            .map((svc) => (
+              <div key={svc.id}>
+                {editingId === svc.id ? (
+                  <form
+                    onSubmit={(e) => handleEdit(e, svc.id)}
+                    className="p-4 bg-[#F4F4F4] rounded-xl border border-[#FF5733]/30 space-y-4"
+                  >
+                    {editError && (
+                      <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        {editError}
+                      </p>
                     )}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="badge text-xs text-blue-600 bg-blue-50 border-blue-200">
-                        {svc.durationMinutes} min
-                      </span>
-                      <span className="badge text-xs text-green-600 bg-green-50 border-green-200">
-                        {formatPrice(svc.price, svc.type ?? "INDIVIDUAL", svc.priceType ?? null)}
-                      </span>
-                      {svc.type === "GROUP" && svc.maxParticipants && (
-                        <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">
-                          ≤{svc.maxParticipants} dalyvių
+                    <ServiceFormFields
+                      form={editForm}
+                      onChange={(updates) => setEditForm((f) => ({ ...f, ...updates }))}
+                      mode="edit"
+                      sports={sports}
+                    />
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={editSaving}
+                        className="btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
+                      >
+                        <Check size={14} />
+                        {editSaving ? "Saugoma..." : "Išsaugoti"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        className="btn-secondary flex items-center gap-2 text-sm"
+                      >
+                        <X size={14} />
+                        Atšaukti
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex items-start justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-700 text-[#0B5C71] text-sm">{svc.name}</p>
+                        {svc.sport && (
+                          <span className="badge text-xs text-purple-600 bg-purple-50 border-purple-200">
+                            {svc.sport.icon && <span className="mr-1">{svc.sport.icon}</span>}
+                            {svc.sport.name}
+                          </span>
+                        )}
+                        <span
+                          className={`badge text-xs inline-flex items-center gap-1 ${
+                            svc.type === "GROUP"
+                              ? "text-orange-600 bg-orange-50 border-orange-200"
+                              : "text-blue-600 bg-blue-50 border-blue-200"
+                          }`}
+                        >
+                          {svc.type === "GROUP" ? (
+                            <><Users size={10} />Grupinė</>
+                          ) : (
+                            <><User size={10} />Individuali</>
+                          )}
                         </span>
+                      </div>
+                      {svc.description && (
+                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{svc.description}</p>
                       )}
-                      {svc.type === "GROUP" && svc.priceType && (
-                        <span className="badge text-xs text-gray-500 bg-gray-100 border-gray-200">
-                          {svc.priceType === "PER_PERSON" ? "Kaina/asm." : "Bendra"}
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="badge text-xs text-blue-600 bg-blue-50 border-blue-200">
+                          {svc.durationMinutes} min
                         </span>
-                      )}
+                        <span className="badge text-xs text-green-600 bg-green-50 border-green-200">
+                          {formatPrice(svc.price, svc.type ?? "INDIVIDUAL", svc.priceType ?? null)}
+                        </span>
+                        {svc.type === "GROUP" && svc.maxParticipants && (
+                          <span className="badge text-xs text-orange-600 bg-orange-50 border-orange-200">
+                            ≤{svc.maxParticipants} dalyvių
+                          </span>
+                        )}
+                        {svc.type === "GROUP" && svc.priceType && (
+                          <span className="badge text-xs text-gray-500 bg-gray-100 border-gray-200">
+                            {svc.priceType === "PER_PERSON" ? "Kaina/asm." : "Bendra"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(svc)}
+                        className="p-2 text-gray-400 hover:text-[#0B5C71] hover:bg-[#0B5C71]/10 rounded-lg transition-colors"
+                        title="Redaguoti"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(svc.id)}
+                        disabled={deletingId === svc.id}
+                        className="p-2 text-gray-400 hover:text-[#FF5733] hover:bg-[#FF5733]/10 rounded-lg transition-colors disabled:opacity-40"
+                        title="Ištrinti"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(svc)}
-                      className="p-2 text-gray-400 hover:text-[#0B5C71] hover:bg-[#0B5C71]/10 rounded-lg transition-colors"
-                      title="Redaguoti"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(svc.id)}
-                      disabled={deletingId === svc.id}
-                      className="p-2 text-gray-400 hover:text-[#FF5733] hover:bg-[#FF5733]/10 rounded-lg transition-colors disabled:opacity-40"
-                      title="Ištrinti"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
