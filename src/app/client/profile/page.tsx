@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { User, Phone, Mail, Save, Loader2, Bell, BellOff, Camera } from "lucide-react";
+import { User, Phone, Mail, Save, Loader2, Bell, BellOff, Camera, CheckCircle } from "lucide-react";
 
 function resizeImage(file: File, maxDim: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -26,40 +26,69 @@ function resizeImage(file: File, maxDim: number): Promise<Blob> {
   });
 }
 
+async function getOrRegisterSW(): Promise<ServiceWorkerRegistration> {
+  if (!("serviceWorker" in navigator)) throw new Error("Naršyklė nepalaiko Service Worker");
+
+  // Try existing active SW first
+  const existing = await navigator.serviceWorker.getRegistration("/");
+  if (existing?.active) return existing;
+
+  // Register (or re-register) and wait for activation
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  if (reg.active) return reg;
+
+  // Wait for the installing/waiting SW to become active
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(
+      () => reject(new Error("Service worker neaktyvus — perkraukite puslapį ir bandykite dar kartą")),
+      10000
+    );
+    const done = (r: ServiceWorkerRegistration) => { clearTimeout(timeout); resolve(r); };
+    const fail = (msg: string) => { clearTimeout(timeout); reject(new Error(msg)); };
+
+    const sw = reg.installing ?? reg.waiting;
+    if (!sw) { fail("Nepavyko užregistruoti service worker"); return; }
+
+    sw.addEventListener("statechange", function () {
+      if (this.state === "activated") done(reg);
+      else if (this.state === "redundant") fail("Service worker įdiegimas nepavyko — perkraukite puslapį");
+    });
+  });
+}
+
 export default function ClientProfilePage() {
   const { data: session, update } = useSession();
   const user = (session?.user as any) || {};
 
-  const [form, setForm] = useState({
-    name: user.name || "",
-    phone: user.phone || "",
-  });
-  const [photoUrl, setPhotoUrl] = useState<string | null>(user.image || null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const photoRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [pushError, setPushError] = useState("");
 
-  // Load current phone from DB (not in session)
+  // Load everything from DB — single source of truth
   useEffect(() => {
     fetch("/api/user/profile")
       .then((r) => r.json())
       .then((d) => {
-        setForm((f) => ({ ...f, phone: d.phone || "" }));
+        setName(d.name || "");
+        setPhone(d.phone || "");
         setPhotoUrl(d.image || null);
+        setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => setLoaded(true));
   }, []);
-
-  // Sync form name from session
-  useEffect(() => {
-    if (user.name) setForm((f) => ({ ...f, name: user.name }));
-    if (user.image) setPhotoUrl(user.image);
-  }, [user.name, user.image]);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,7 +104,6 @@ export default function ClientProfilePage() {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Upload failed");
       const { url } = await res.json();
-
       await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -93,43 +121,43 @@ export default function ClientProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError("");
     try {
-      await fetch("/api/user/profile", {
+      const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ name: name.trim() || undefined, phone }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Klaida išsaugant");
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err) {
-      console.error(err);
+      await update(); // refresh session name
+    } catch (err: any) {
+      setSaveError(err.message || "Klaida");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
-
-  const getSwRegistration = (): Promise<ServiceWorkerRegistration> =>
-    Promise.race([
-      navigator.serviceWorker.ready,
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Service worker neaktyvus — pabandykite perkrauti puslapį")), 8000)
-      ),
-    ]);
 
   const handlePushToggle = async () => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      alert("Jūsų naršyklė nepalaiko push pranešimų.");
+      setPushError("Jūsų naršyklė nepalaiko push pranešimų.");
       return;
     }
     setPushLoading(true);
+    setPushError("");
     try {
       if (!pushEnabled) {
         const perm = await Notification.requestPermission();
         if (perm !== "granted") {
-          alert("Leidimai pranešimams nesuteikti.");
+          setPushError("Leidimai pranešimams nesuteikti.");
           setPushLoading(false);
           return;
         }
-        const reg = await getSwRegistration();
+        const reg = await getOrRegisterSW();
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
@@ -141,7 +169,7 @@ export default function ClientProfilePage() {
         });
         setPushEnabled(true);
       } else {
-        const reg = await getSwRegistration();
+        const reg = await getOrRegisterSW();
         const sub = await reg.pushManager.getSubscription();
         if (sub) {
           await sub.unsubscribe();
@@ -154,13 +182,12 @@ export default function ClientProfilePage() {
         setPushEnabled(false);
       }
     } catch (err: any) {
-      console.error(err);
-      alert(err?.message || "Klaida įjungiant pranešimus.");
+      setPushError(err?.message || "Klaida įjungiant pranešimus.");
     }
     setPushLoading(false);
   };
 
-  const initials = (user.name || user.email || "?")[0].toUpperCase();
+  const initials = (name || user.email || "?")[0].toUpperCase();
 
   return (
     <div className="space-y-6">
@@ -197,7 +224,7 @@ export default function ClientProfilePage() {
             </button>
           </div>
           <div>
-            <p className="font-700 text-gray-800">{user.name || "—"}</p>
+            <p className="font-700 text-gray-800">{name || user.email || "—"}</p>
             <p className="text-sm text-gray-500">{user.email}</p>
             <button
               type="button"
@@ -219,10 +246,11 @@ export default function ClientProfilePage() {
             </label>
             <input
               type="text"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Jūsų vardas"
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
+              disabled={!loaded}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors disabled:opacity-50"
             />
           </div>
           <div>
@@ -243,30 +271,38 @@ export default function ClientProfilePage() {
               <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="tel"
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="+370 600 00000"
-                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors"
+                disabled={!loaded}
+                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5733] transition-colors disabled:opacity-50"
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="btn-primary text-sm py-2.5 px-6 gap-2"
-          >
-            {saving ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : saved ? (
-              "✅ Išsaugota!"
-            ) : (
-              <>
-                <Save size={15} />
-                Išsaugoti
-              </>
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving || !loaded}
+              className="btn-primary text-sm py-2.5 px-6 gap-2"
+            >
+              {saving ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <>
+                  <Save size={15} />
+                  Išsaugoti
+                </>
+              )}
+            </button>
+            {saved && (
+              <span className="text-green-600 text-sm font-600 flex items-center gap-1">
+                <CheckCircle size={15} />
+                Išsaugota
+              </span>
             )}
-          </button>
+            {saveError && <span className="text-red-500 text-sm">{saveError}</span>}
+          </div>
         </form>
       </div>
 
@@ -302,6 +338,7 @@ export default function ClientProfilePage() {
             </>
           )}
         </button>
+        {pushError && <p className="text-sm text-red-500 mt-3">{pushError}</p>}
       </div>
     </div>
   );

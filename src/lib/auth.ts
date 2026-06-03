@@ -74,9 +74,12 @@ export const authOptions: NextAuthOptions = {
       } else if (trigger === "update") {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { image: true },
+          select: { name: true, image: true },
         });
-        if (dbUser) token.image = dbUser.image ?? null;
+        if (dbUser) {
+          token.name = dbUser.name ?? token.name;
+          token.image = dbUser.image ?? null;
+        }
       }
       return token;
     },
