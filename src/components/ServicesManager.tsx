@@ -7,6 +7,8 @@ export interface Service {
   id: string;
   trainerId: string;
   templateId: string | null;
+  sportId: string | null;
+  sport?: { id: string; name: string; icon: string | null; iconUrl: string | null } | null;
   name: string;
   description: string | null;
   durationMinutes: number;
@@ -22,10 +24,18 @@ interface ServiceTemplate {
   description: string | null;
 }
 
+interface SportOption {
+  id: string;
+  name: string;
+  icon: string | null;
+  iconUrl: string | null;
+}
+
 interface Props {
   trainerId: string;
   isAdmin: boolean;
   initialServices: Service[];
+  sports: SportOption[];
 }
 
 const inputCls =
@@ -34,6 +44,7 @@ const labelCls = "block text-sm font-700 text-gray-700 mb-1.5";
 
 interface FormState {
   templateId: string | null;
+  sportId: string;
   name: string;
   description: string;
   durationMinutes: string;
@@ -45,6 +56,7 @@ interface FormState {
 
 const emptyForm = (): FormState => ({
   templateId: null,
+  sportId: "",
   name: "",
   description: "",
   durationMinutes: "60",
@@ -61,6 +73,7 @@ function buildPayload(f: FormState) {
     durationMinutes: Number(f.durationMinutes),
     price: f.price !== "" ? f.price : null,
     templateId: f.templateId || null,
+    sportId: f.sportId || null,
     type: f.type,
     maxParticipants: f.type === "GROUP" && f.maxParticipants ? Number(f.maxParticipants) : null,
     priceType: f.type === "GROUP" ? f.priceType : null,
@@ -82,13 +95,34 @@ function ServiceFormFields({
   form,
   onChange,
   mode,
+  sports,
 }: {
   form: FormState;
   onChange: (updates: Partial<FormState>) => void;
   mode: "add" | "edit";
+  sports: SportOption[];
 }) {
   return (
     <>
+      {sports.length > 0 && (
+        <div>
+          <label className={labelCls}>Sporto šaka <span className="text-[#FF5733]">*</span></label>
+          <select
+            value={form.sportId}
+            onChange={(e) => onChange({ sportId: e.target.value })}
+            className={inputCls}
+            required
+          >
+            <option value="">— Pasirinkite sportą —</option>
+            {sports.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.icon ? `${s.icon} ` : ""}{s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div>
         <label className={labelCls}>
           Pavadinimas <span className="text-[#FF5733]">*</span>
@@ -211,7 +245,7 @@ function ServiceFormFields({
   );
 }
 
-export default function ServicesManager({ trainerId, isAdmin, initialServices }: Props) {
+export default function ServicesManager({ trainerId, isAdmin, initialServices, sports }: Props) {
   const [services, setServices] = useState<Service[]>(initialServices);
   const [search, setSearch] = useState("");
 
@@ -289,6 +323,7 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices }:
     setEditingId(svc.id);
     setEditForm({
       templateId: svc.templateId,
+      sportId: svc.sportId ?? "",
       name: svc.name,
       description: svc.description ?? "",
       durationMinutes: String(svc.durationMinutes),
@@ -456,6 +491,7 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices }:
             form={addForm}
             onChange={(updates) => setAddForm((f) => ({ ...f, ...updates }))}
             mode="add"
+            sports={sports}
           />
 
           <div className="flex items-center gap-3">
@@ -515,6 +551,7 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices }:
                     form={editForm}
                     onChange={(updates) => setEditForm((f) => ({ ...f, ...updates }))}
                     mode="edit"
+                    sports={sports}
                   />
                   <div className="flex items-center gap-3">
                     <button
@@ -540,6 +577,12 @@ export default function ServicesManager({ trainerId, isAdmin, initialServices }:
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-700 text-[#0B5C71] text-sm">{svc.name}</p>
+                      {svc.sport && (
+                        <span className="badge text-xs text-purple-600 bg-purple-50 border-purple-200">
+                          {svc.sport.icon && <span className="mr-1">{svc.sport.icon}</span>}
+                          {svc.sport.name}
+                        </span>
+                      )}
                       <span
                         className={`badge text-xs inline-flex items-center gap-1 ${
                           svc.type === "GROUP"

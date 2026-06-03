@@ -17,7 +17,7 @@ export default async function TrainerProfilePage() {
         arenas: { include: { arena: true } },
         sports: { include: { sport: true } },
         gallery: { orderBy: { order: "asc" } },
-        services: { orderBy: { name: "asc" } },
+        services: { include: { sport: true }, orderBy: { name: "asc" } },
       },
     }),
     prisma.arena.findMany({
@@ -64,6 +64,7 @@ export default async function TrainerProfilePage() {
             ...s,
             price: s.price !== null ? String(s.price) : null,
           }))}
+          sports={trainerProfile.sports.map((ts) => (ts as any).sport)}
         />
       )}
       <TrainerProfileForm

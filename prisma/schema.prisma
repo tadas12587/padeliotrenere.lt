@@ -255,6 +255,8 @@ model Service {
   trainer         TrainerProfile   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
   templateId      String?
   template        ServiceTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  sportId         String?          @db.VarChar(191)
+  sport           Sport?           @relation(fields: [sportId], references: [id], onDelete: SetNull)
   name            String           @db.VarChar(191)
   description     String?          @db.Text
   durationMinutes Int
@@ -311,6 +313,7 @@ model Sport {
   iconUrl  String? @db.VarChar(500)
   trainers TrainerSport[]
   arenas   ArenaSport[]
+  services Service[]
 }
 
 model TrainerSport {

@@ -16,6 +16,7 @@ export async function GET(
 
   const services = await prisma.service.findMany({
     where: { trainerId: id },
+    include: { sport: true },
     orderBy: { name: "asc" },
   });
 
@@ -39,7 +40,7 @@ export async function POST(
   }
 
   const body = await req.json();
-  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType } = body;
+  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType, sportId } = body;
 
   if (!name || !durationMinutes) {
     return NextResponse.json({ error: "name and durationMinutes are required" }, { status: 400 });
@@ -56,6 +57,7 @@ export async function POST(
     data: {
       trainerId: id,
       templateId: templateId || null,
+      sportId: sportId || null,
       name,
       description: description ?? null,
       durationMinutes: durationNum,
@@ -64,6 +66,7 @@ export async function POST(
       maxParticipants: serviceType === "GROUP" && maxParticipants ? Number(maxParticipants) : null,
       priceType: serviceType === "GROUP" ? (priceType === "PER_PERSON" ? "PER_PERSON" : "TOTAL") : null,
     },
+    include: { sport: true },
   });
 
   return NextResponse.json(service, { status: 201 });

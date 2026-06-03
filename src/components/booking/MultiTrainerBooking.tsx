@@ -654,6 +654,11 @@ export default function MultiTrainerBooking({
                                 </div>
                                 <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
                               </div>
+                              {(svc as any).sport && (
+                                <span className="text-xs text-gray-400 ml-6">
+                                  {(svc as any).sport.icon} {(svc as any).sport.name}
+                                </span>
+                              )}
                               {svc.description && (
                                 <p className="text-xs text-gray-500 mt-1 ml-6">{svc.description}</p>
                               )}

@@ -25,12 +25,13 @@ export async function PATCH(
   }
 
   const body = await req.json();
-  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType } = body;
+  const { name, description, durationMinutes, price, templateId, type, maxParticipants, priceType, sportId } = body;
 
   const updateData: any = {};
   if (name !== undefined) updateData.name = name;
   if (description !== undefined) updateData.description = description ?? null;
   if (templateId !== undefined) updateData.templateId = templateId || null;
+  if (sportId !== undefined) updateData.sportId = sportId || null;
   if (durationMinutes !== undefined) {
     const durationNum = Number(durationMinutes);
     if (!Number.isInteger(durationNum) || durationNum < 15) {
@@ -49,6 +50,7 @@ export async function PATCH(
   const service = await prisma.service.update({
     where: { id },
     data: updateData,
+    include: { sport: true },
   });
 
   return NextResponse.json(service);

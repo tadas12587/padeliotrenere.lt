@@ -12,6 +12,7 @@ const SERVICE_SELECT = {
   priceType: true,
   maxParticipants: true,
   description: true,
+  sport: { select: { id: true, name: true, icon: true, iconUrl: true } },
 };
 
 export async function GET(req: NextRequest) {

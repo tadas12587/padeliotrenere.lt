@@ -20,7 +20,7 @@ export default async function EditTrainerPage({ params }: Props) {
       include: {
         sports: { include: { sport: true } },
         gallery: { orderBy: { order: "asc" } },
-        services: { orderBy: { name: "asc" } },
+        services: { include: { sport: true }, orderBy: { name: "asc" } },
       },
     }),
     prisma.sport.findMany({ orderBy: { name: "asc" } }),
@@ -69,6 +69,7 @@ export default async function EditTrainerPage({ params }: Props) {
           ...s,
           price: s.price !== null ? String(s.price) : null,
         }))}
+        sports={allSports as any[]}
       />
     </div>
   );

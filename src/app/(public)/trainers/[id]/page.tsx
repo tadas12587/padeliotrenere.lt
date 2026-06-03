@@ -97,7 +97,7 @@ export default async function TrainerDetailPage({
     where: { id },
     include: {
       user: true,
-      services: true,
+      services: { include: { sport: true }, orderBy: { name: "asc" } },
       certifications: true,
       gallery: { orderBy: { order: "asc" } },
       arenas: {
@@ -233,56 +233,91 @@ export default async function TrainerDetailPage({
               <h2 className="text-xl font-800 text-[#0B5C71] mb-4">
                 Paslaugos
               </h2>
-              <div className="flex flex-col gap-4">
-                {trainer.services.map((service) => (
-                  <div
-                    key={service.id}
-                    className="border border-gray-100 rounded-xl p-4 flex flex-col gap-2"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="font-700 text-[#0B5C71]">
-                            {service.name}
-                          </h3>
-                          {service.type === "GROUP" ? (
-                            <span className="bg-[#0B5C71]/10 text-[#0B5C71] text-xs font-700 px-2 py-0.5 rounded-full">
-                              Grupinė
-                            </span>
-                          ) : (
-                            <span className="bg-[#FF5733]/10 text-[#FF5733] text-xs font-700 px-2 py-0.5 rounded-full">
-                              Individuali
-                            </span>
-                          )}
-                          {service.maxParticipants && service.type === "GROUP" && (
-                            <span className="text-gray-400 text-xs">
-                              iki {service.maxParticipants} asmenų
-                            </span>
-                          )}
-                        </div>
-                        {service.description && (
-                          <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                            {service.description}
-                          </p>
+              {(() => {
+                // Group services by sport
+                const servicesBySport = trainer.services.reduce<Record<string, typeof trainer.services>>((acc, svc) => {
+                  const key = (svc as any).sport?.id ?? "__none__";
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(svc);
+                  return acc;
+                }, {});
+
+                const sportGroups = Object.entries(servicesBySport).map(([key, svcs]) => ({
+                  key,
+                  sport: key === "__none__" ? null : (svcs[0] as any).sport,
+                  services: svcs,
+                }));
+
+                return (
+                  <div className="flex flex-col gap-6">
+                    {sportGroups.map(({ key, sport: grpSport, services: groupServices }) => (
+                      <div key={key}>
+                        {grpSport && (
+                          <div className="flex items-center gap-2 mb-3">
+                            {grpSport.iconUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={grpSport.iconUrl} alt={grpSport.name} className="w-5 h-5 object-contain" />
+                            ) : grpSport.icon ? (
+                              <span className="text-lg">{grpSport.icon}</span>
+                            ) : null}
+                            <h3 className="font-800 text-[#0B5C71]">{grpSport.name}</h3>
+                          </div>
                         )}
+                        <div className="flex flex-col gap-4">
+                          {groupServices.map((service) => (
+                            <div
+                              key={service.id}
+                              className="border border-gray-100 rounded-xl p-4 flex flex-col gap-2"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                                    <h3 className="font-700 text-[#0B5C71]">
+                                      {service.name}
+                                    </h3>
+                                    {service.type === "GROUP" ? (
+                                      <span className="bg-[#0B5C71]/10 text-[#0B5C71] text-xs font-700 px-2 py-0.5 rounded-full">
+                                        Grupinė
+                                      </span>
+                                    ) : (
+                                      <span className="bg-[#FF5733]/10 text-[#FF5733] text-xs font-700 px-2 py-0.5 rounded-full">
+                                        Individuali
+                                      </span>
+                                    )}
+                                    {service.maxParticipants && service.type === "GROUP" && (
+                                      <span className="text-gray-400 text-xs">
+                                        iki {service.maxParticipants} asmenų
+                                      </span>
+                                    )}
+                                  </div>
+                                  {service.description && (
+                                    <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                                      {service.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="shrink-0 text-right">
+                                  <p className="font-800 text-[#FF5733]">
+                                    {formatServicePrice(
+                                      service.price?.toString() ?? null,
+                                      service.type,
+                                      service.priceType ?? undefined
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+                                <Clock size={13} />
+                                <span>{service.durationMinutes} min</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="font-800 text-[#FF5733]">
-                          {formatServicePrice(
-                            service.price?.toString() ?? null,
-                            service.type,
-                            service.priceType ?? undefined
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-gray-400 text-sm">
-                      <Clock size={13} />
-                      <span>{service.durationMinutes} min</span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </div>
           )}
 
