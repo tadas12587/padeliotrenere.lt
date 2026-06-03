@@ -46,7 +46,7 @@ const BOOKING_INCLUDE = {
   },
   service: { select: { name: true } },
   sessionNote: true,
-} as const;
+};
 
 export default async function ClientDashboardPage() {
   const session = await getServerSession(authOptions);
