@@ -32,6 +32,7 @@ interface Service {
   description: string | null;
   type?: "INDIVIDUAL" | "GROUP" | null;
   priceType?: "TOTAL" | "PER_PERSON" | null;
+  sport?: { id: string; name: string; icon: string | null; iconUrl: string | null } | null;
 }
 
 interface AvailabilitySlot {
@@ -544,19 +545,26 @@ export default function MultiTrainerBooking({
                               : `${slot.currentBookings ?? 0}/${slot.maxParticipants} dalyvių · Laisva ${spotsLeft}`}
                           </p>
                         )}
-                        {/* Service hint */}
-                        {slot.services.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {slot.services.slice(0, 2).map((svc) => (
-                              <span key={svc.id} className="text-xs px-1.5 py-0.5 bg-[#0B5C71]/10 text-[#0B5C71] rounded font-600">
-                                {svc.name}
-                              </span>
-                            ))}
-                            {slot.services.length > 2 && (
-                              <span className="text-xs text-gray-400">+{slot.services.length - 2}</span>
-                            )}
-                          </div>
-                        )}
+                        {/* Sport labels */}
+                        {(() => {
+                          const svcs = slot.services.length > 0 ? slot.services : slot.trainer.services;
+                          const seen = new Set<string>();
+                          const uniqueSports = svcs.flatMap((s) => s.sport ? [s.sport] : []).filter((sp) => {
+                            if (seen.has(sp.id)) return false;
+                            seen.add(sp.id);
+                            return true;
+                          });
+                          return uniqueSports.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              {uniqueSports.map((sp) => (
+                                <span key={sp.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-700 bg-[#0B5C71] text-white">
+                                  {sp.icon && <span>{sp.icon}</span>}
+                                  {sp.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                       {!isFull && (
                         <ArrowRight size={16} className="text-gray-300 shrink-0" />
@@ -654,9 +662,10 @@ export default function MultiTrainerBooking({
                                 </div>
                                 <p className="font-700 text-sm text-[#0B5C71]">{svc.name}</p>
                               </div>
-                              {(svc as any).sport && (
-                                <span className="text-xs text-gray-400 ml-6">
-                                  {(svc as any).sport.icon} {(svc as any).sport.name}
+                              {svc.sport && (
+                                <span className="inline-flex items-center gap-1 ml-6 mt-0.5 px-1.5 py-0.5 rounded-full text-xs font-700 bg-[#0B5C71]/10 text-[#0B5C71]">
+                                  {svc.sport.icon && <span>{svc.sport.icon}</span>}
+                                  {svc.sport.name}
                                 </span>
                               )}
                               {svc.description && (
