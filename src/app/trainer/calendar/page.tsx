@@ -854,6 +854,7 @@ export default function TrainerCalendarPage() {
                             </div>
                           )}
                         </div>
+                        <div className="flex-1 min-w-0">
                         <p className="font-700 text-[#0B5C71] text-sm">
                           {p.user.name || "—"}
                         </p>
