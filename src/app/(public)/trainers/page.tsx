@@ -92,7 +92,7 @@ export default async function TrainersPage({
       </section>
 
       {/* Filters */}
-      <section className="bg-white border-b border-gray-100 py-6 sticky top-0 z-10 shadow-sm">
+      <section className="bg-white border-b border-gray-100 py-6 sticky top-[var(--header-height)] z-10 shadow-sm">
         <div className="container-tight">
           <TrainerFilters
             initialCity={cityFilter}

@@ -121,7 +121,13 @@ export default function Navbar({
                     </Link>
                   )}
                   <Link
-                    href="/client/profile"
+                    href={
+                      user?.role === "TRAINER"
+                        ? "/trainer/profile"
+                        : user?.role === "ADMIN"
+                        ? "/admin/dashboard"
+                        : "/client/profile"
+                    }
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#FF5733] transition-colors"
                   >

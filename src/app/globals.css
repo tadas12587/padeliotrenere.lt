@@ -28,6 +28,11 @@
   --color-teal: var(--brand-teal);
   --font-sans: var(--font-roboto), system-ui, Arial, sans-serif;
   --font-heading: var(--font-poppins), system-ui, Arial, sans-serif;
+  /* Numeric font-weight utilities: font-600, font-700, font-800, font-900 */
+  --font-weight-600: 600;
+  --font-weight-700: 700;
+  --font-weight-800: 800;
+  --font-weight-900: 900;
 }
 
 /* ========================================

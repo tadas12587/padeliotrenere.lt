@@ -8,7 +8,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const trainer = await prisma.trainerProfile.findUnique({
     where: { id },
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true } },
       services: true,
       certifications: true,
       arenas: { include: { arena: true } },

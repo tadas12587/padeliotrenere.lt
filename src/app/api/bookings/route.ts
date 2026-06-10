@@ -94,6 +94,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Laikas nerastas" }, { status: 404 });
     }
 
+    // Block booking past slots
+    if (availSlot.startTime <= new Date()) {
+      return NextResponse.json({ error: "Šio laiko nebegalima rezervuoti" }, { status: 409 });
+    }
+
     // Trainer can only book for others on their own slots
     if (targetUserId && user.role === "TRAINER") {
       const profile = await prisma.trainerProfile.findUnique({ where: { userId: user.id } });
@@ -120,49 +125,78 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Jūs jau esate užsiregistravę į šią treniruotę" }, { status: 409 });
       }
     } else {
-      // INDIVIDUAL: check slot is available
+      // INDIVIDUAL: pre-check (fast path before transaction)
       if (availSlot.status !== "AVAILABLE") {
         return NextResponse.json({ error: "Šis laikas jau užimtas" }, { status: 409 });
       }
     }
 
-    const booking = await prisma.$transaction(async (tx) => {
-      const newBooking = await tx.booking.create({
-        data: {
-          userId: effectiveUserId,
-          clientNotes,
-          status: "CONFIRMED",
-          trainerId: availSlot.trainerId,
-          arenaId: availSlot.arenaId,
-          serviceId: serviceId ?? null,
-          availabilitySlotId,
-        },
-        include: {
-          user: true,
-        },
-      });
-
-      if (isGroupSlot) {
-        // Check if now full and update status
-        const newCount = await tx.booking.count({
-          where: { availabilitySlotId, status: { in: ["PENDING", "CONFIRMED"] } },
-        });
-        if (newCount >= availSlot.maxParticipants!) {
-          await tx.availabilitySlot.update({
-            where: { id: availabilitySlotId },
+    let booking;
+    try {
+      booking = await prisma.$transaction(async (tx) => {
+        if (isGroupSlot) {
+          // Re-validate capacity inside transaction
+          const currentCount = await tx.booking.count({
+            where: { availabilitySlotId, status: { in: ["PENDING", "CONFIRMED"] } },
+          });
+          if (currentCount >= availSlot.maxParticipants!) {
+            throw new Error("FULL");
+          }
+          const dup = await tx.booking.findFirst({
+            where: { availabilitySlotId, userId: effectiveUserId, status: { in: ["PENDING", "CONFIRMED"] } },
+          });
+          if (dup) throw new Error("DUPLICATE");
+        } else {
+          // INDIVIDUAL: atomic claim — only succeeds if still AVAILABLE
+          const claimed = await tx.availabilitySlot.updateMany({
+            where: { id: availabilitySlotId, status: "AVAILABLE" },
             data: { status: "BOOKED" },
           });
+          if (claimed.count === 0) throw new Error("TAKEN");
         }
-      } else {
-        // INDIVIDUAL: mark slot as booked
-        await tx.availabilitySlot.update({
-          where: { id: availabilitySlotId },
-          data: { status: "BOOKED", bookingId: newBooking.id },
-        });
-      }
 
-      return newBooking;
-    });
+        const newBooking = await tx.booking.create({
+          data: {
+            userId: effectiveUserId,
+            clientNotes,
+            status: "CONFIRMED",
+            trainerId: availSlot.trainerId,
+            arenaId: availSlot.arenaId,
+            serviceId: serviceId ?? null,
+            availabilitySlotId,
+          },
+          include: { user: true },
+        });
+
+        if (isGroupSlot) {
+          const newCount = await tx.booking.count({
+            where: { availabilitySlotId, status: { in: ["PENDING", "CONFIRMED"] } },
+          });
+          if (newCount >= availSlot.maxParticipants!) {
+            await tx.availabilitySlot.update({
+              where: { id: availabilitySlotId },
+              data: { status: "BOOKED" },
+            });
+          }
+        } else {
+          // Set bookingId now that we have the ID
+          await tx.availabilitySlot.update({
+            where: { id: availabilitySlotId },
+            data: { bookingId: newBooking.id },
+          });
+        }
+
+        return newBooking;
+      });
+    } catch (err: any) {
+      if (err.message === "FULL")
+        return NextResponse.json({ error: "Grupinė treniruotė pilna" }, { status: 409 });
+      if (err.message === "DUPLICATE")
+        return NextResponse.json({ error: "Jūs jau esate užsiregistravę į šią treniruotę" }, { status: 409 });
+      if (err.message === "TAKEN")
+        return NextResponse.json({ error: "Šis laikas jau užimtas" }, { status: 409 });
+      throw err;
+    }
 
     // Send confirmation email to client
     if (booking.user.email) {

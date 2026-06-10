@@ -301,9 +301,9 @@ export async function sendTrainerBookingNotification({
               <p style="margin: 5px 0; color: #1a1a2e;"><strong>⏰ Laikas:</strong> ${timeStr}</p>
               ${isGroup && occupancy ? `<p style="margin: 5px 0; color: #FF5733;"><strong>👥 Užimtumas:</strong> ${occupancy} dalyvių</p>` : ""}
             </div>
-            <a href="${APP_URL}/trainer/bookings"
+            <a href="${APP_URL}/trainer/calendar"
                style="display: inline-block; background: #0B5C71; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
-              Peržiūrėti rezervacijas
+              Peržiūrėti kalendorių
             </a>
           </div>
           <div style="background: #f5f5f5; padding: 20px; text-align: center; color: #999; font-size: 14px;">
@@ -315,4 +315,57 @@ export async function sendTrainerBookingNotification({
   } catch (error) {
     console.error("Failed to send trainer booking notification email:", error);
   }
+}
+
+export async function sendCancellationNew({
+  clientEmail,
+  clientName,
+  trainerEmail,
+  trainerName,
+  arenaName,
+  startTime,
+  endTime,
+  cancelledBy,
+}: {
+  clientEmail: string;
+  clientName: string;
+  trainerEmail: string;
+  trainerName: string;
+  arenaName: string;
+  startTime: Date;
+  endTime: Date;
+  cancelledBy: "client" | "trainer" | "admin";
+}) {
+  const r = getResend();
+  if (!r) return;
+
+  const dateStr = startTime.toLocaleDateString("lt-LT", { timeZone: "Europe/Vilnius", year: "numeric", month: "long", day: "numeric" });
+  const timeStr = `${startTime.toLocaleTimeString("lt-LT", { timeZone: "Europe/Vilnius", hour: "2-digit", minute: "2-digit" })} – ${endTime.toLocaleTimeString("lt-LT", { timeZone: "Europe/Vilnius", hour: "2-digit", minute: "2-digit" })}`;
+
+  const footer = `<div style="background:#f5f5f5;padding:20px;text-align:center;color:#999;font-size:14px;"><p>© 2025 ManoTreniruote.lt</p></div>`;
+  const header = `<div style="background:#0B5C71;padding:24px;text-align:center;"><span style="color:#FF5733;font-size:22px;font-weight:bold;">ManoTreniruote.lt</span></div>`;
+  const block = `<div style="background:#fff5f5;border-left:4px solid #FF5733;padding:16px;margin:16px 0;border-radius:4px;">
+    <p style="margin:4px 0;color:#1a1a2e;"><strong>🏋️ Treneris:</strong> ${trainerName}</p>
+    <p style="margin:4px 0;color:#1a1a2e;"><strong>📍 Arena:</strong> ${arenaName}</p>
+    <p style="margin:4px 0;color:#1a1a2e;"><strong>📅 Data:</strong> ${dateStr}</p>
+    <p style="margin:4px 0;color:#1a1a2e;"><strong>⏰ Laikas:</strong> ${timeStr}</p>
+  </div>`;
+
+  const cancellerLabel = cancelledBy === "client" ? "klientas" : cancelledBy === "trainer" ? "treneris" : "administracija";
+
+  // Email to client
+  r.emails.send({
+    from: FROM,
+    to: clientEmail,
+    subject: "❌ Treniruotė atšaukta",
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">${header}<div style="padding:24px;background:#fff;"><h2 style="color:#0B5C71;">Sveiki, ${clientName}!</h2><p style="color:#555;">Jūsų treniruotė buvo atšaukta (${cancellerLabel}).</p>${block}<a href="${APP_URL}/booking" style="display:inline-block;background:#FF5733;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;margin-top:8px;">Rezervuoti naują laiką</a></div>${footer}</div>`,
+  }).catch(console.error);
+
+  // Email to trainer
+  r.emails.send({
+    from: FROM,
+    to: trainerEmail,
+    subject: `❌ Rezervacija atšaukta – ${clientName}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">${header}<div style="padding:24px;background:#fff;"><h2 style="color:#0B5C71;">Sveiki, ${trainerName}!</h2><p style="color:#555;">Kliento <strong>${clientName}</strong> rezervacija buvo atšaukta (${cancellerLabel}).</p>${block}<a href="${APP_URL}/trainer/calendar" style="display:inline-block;background:#0B5C71;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;margin-top:8px;">Peržiūrėti kalendorių</a></div>${footer}</div>`,
+  }).catch(console.error);
 }

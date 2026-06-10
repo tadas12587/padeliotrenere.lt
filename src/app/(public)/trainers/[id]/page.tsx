@@ -344,10 +344,10 @@ export default async function TrainerDetailPage({
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-[#FF5733]/10 flex items-center justify-center font-800 text-[#FF5733] text-xs shrink-0">
-                          {(review.author.name ?? review.author.email)[0].toUpperCase()}
+                          {(review.author.name ?? "A")[0].toUpperCase()}
                         </div>
                         <span className="font-700 text-sm text-[#0B5C71]">
-                          {review.author.name ?? review.author.email}
+                          {review.author.name ?? "Anonimas"}
                         </span>
                       </div>
                       <span className="text-gray-400 text-xs">

@@ -37,14 +37,23 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // For own=1 with no explicit `from`, default to 3 months back so history
+  // is visible but old slots don't crowd out future ones past the 500 cap.
+  const effectiveFrom = from
+    ? new Date(from)
+    : own
+    ? new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+    : new Date();
+
   const slots = await prisma.availabilitySlot.findMany({
     where: {
       ...statusFilter,
       ...(trainerId ? { trainerId } : {}),
       ...(arenaId ? { arenaId } : city ? { arena: { city: { contains: city } } } : {}),
-      ...(!own && from ? { startTime: { gte: new Date(from) } } : !own ? { startTime: { gte: new Date() } } : {}),
-      ...(from && own ? { startTime: { gte: new Date(from) } } : {}),
-      ...(to ? { endTime: { lte: new Date(to) } } : {}),
+      startTime: {
+        gte: effectiveFrom,
+        ...(to ? { lte: new Date(to) } : {}),
+      },
       trainer: {
         ...trainerFilter,
         ...(sport ? { sports: { some: { sport: { slug: sport } } } } : {}),

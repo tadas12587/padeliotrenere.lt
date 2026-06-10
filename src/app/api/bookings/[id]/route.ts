@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { sendBookingCancellation } from "@/lib/email";
+import { sendBookingCancellation, sendCancellationNew } from "@/lib/email";
 import { formatDateLT } from "@/lib/utils";
 
 export async function GET(
@@ -31,7 +31,13 @@ export async function GET(
   return NextResponse.json(booking);
 }
 
-const updateBookingSchema = z.object({
+// Clients may only cancel; admins may set any status
+const clientUpdateSchema = z.object({
+  status: z.literal("CANCELLED").optional(),
+  clientNotes: z.string().max(500).optional(),
+});
+
+const adminUpdateSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"]).optional(),
   clientNotes: z.string().max(500).optional(),
 });
@@ -45,20 +51,35 @@ export async function PATCH(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = session.user as any;
+  const isAdmin = user.role === "ADMIN";
+
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { user: true, slot: true },
+    include: {
+      user: true,
+      slot: true,
+      availabilitySlot: {
+        include: {
+          trainer: { include: { user: { select: { email: true, name: true } } } },
+          arena: { select: { name: true } },
+        },
+      },
+    },
   });
 
   if (!booking) return NextResponse.json({ error: "Rezervacija nerasta" }, { status: 404 });
-
-  if (user.role !== "ADMIN" && booking.userId !== user.id)
+  if (!isAdmin && booking.userId !== user.id)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const parsed = updateBookingSchema.safeParse(body);
+  const schema = isAdmin ? adminUpdateSchema : clientUpdateSchema;
+  const parsed = schema.safeParse(body);
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
+  // Prevent double-cancel side effects
+  const isNewCancellation =
+    parsed.data.status === "CANCELLED" && booking.status !== "CANCELLED";
 
   const updated = await prisma.booking.update({
     where: { id },
@@ -66,8 +87,8 @@ export async function PATCH(
     include: { slot: true, user: true, availabilitySlot: true },
   });
 
-  if (parsed.data.status === "CANCELLED") {
-    // Handle legacy TimeSlot cancellation email
+  if (isNewCancellation) {
+    // ── Legacy TimeSlot flow ──────────────────────────────────────────────────
     if (updated.user.email && updated.slot) {
       sendBookingCancellation({
         to: updated.user.email,
@@ -77,11 +98,12 @@ export async function PATCH(
       }).catch(console.error);
     }
 
-    // Handle AvailabilitySlot status revert
+    // ── AvailabilitySlot flow ─────────────────────────────────────────────────
     if (updated.availabilitySlotId && updated.availabilitySlot) {
-      const avSlot = updated.availabilitySlot;
-      if (avSlot.maxParticipants && avSlot.maxParticipants > 0) {
-        // GROUP slot: re-count remaining active bookings
+      const avSlot = updated.availabilitySlot as any;
+      const isGroup = avSlot.maxParticipants && avSlot.maxParticipants > 0;
+
+      if (isGroup) {
         const remaining = await prisma.booking.count({
           where: {
             availabilitySlotId: avSlot.id,
@@ -95,11 +117,29 @@ export async function PATCH(
           });
         }
       } else {
-        // INDIVIDUAL slot: revert to AVAILABLE and clear bookingId
-        await prisma.availabilitySlot.update({
-          where: { id: avSlot.id },
-          data: { status: "AVAILABLE", bookingId: null },
-        });
+        // INDIVIDUAL: only revert if this booking still owns the slot
+        if (avSlot.bookingId === id) {
+          await prisma.availabilitySlot.update({
+            where: { id: avSlot.id },
+            data: { status: "AVAILABLE", bookingId: null },
+          });
+        }
+      }
+
+      // Send cancellation emails to both client and trainer
+      const trainerUser = avSlot.trainer?.user;
+      if (updated.user.email && trainerUser?.email) {
+        const cancelledBy = isAdmin ? "admin" : "client";
+        sendCancellationNew({
+          clientEmail: updated.user.email,
+          clientName: updated.user.name || "Klientas",
+          trainerEmail: trainerUser.email,
+          trainerName: avSlot.trainer.displayName,
+          arenaName: avSlot.arena?.name || "",
+          startTime: avSlot.startTime,
+          endTime: avSlot.endTime,
+          cancelledBy,
+        }).catch(console.error);
       }
     }
   }

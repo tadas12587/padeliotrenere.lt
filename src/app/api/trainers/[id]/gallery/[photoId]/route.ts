@@ -25,6 +25,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Verify photo belongs to this trainer (IDOR protection)
+  const photo = await prisma.trainerPhoto.findUnique({ where: { id: photoId } });
+  if (!photo || photo.trainerId !== trainer.id) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   await prisma.trainerPhoto.delete({ where: { id: photoId } });
 
   return NextResponse.json({ ok: true });

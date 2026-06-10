@@ -25,6 +25,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Verify photo belongs to this arena (IDOR protection)
+  const photo = await prisma.arenaPhoto.findUnique({ where: { id: photoId } });
+  if (!photo || photo.arenaId !== arena.id) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   await prisma.arenaPhoto.delete({ where: { id: photoId } });
 
   return NextResponse.json({ ok: true });
